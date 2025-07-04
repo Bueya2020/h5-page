@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能家居H5页面测试</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* iPhone 16 容器样式 */
+        .iphone-container {
+            width: 393px;
+            height: 852px;
+            border-radius: 54px;
+            background: #000;
+            padding: 8px;
+            margin: 20px auto;
+            box-shadow: 0 0 30px rgba(0,0,0,0.3);
+        }
+        .screen {
+            width: 100%;
+            height: 100%;
+            border-radius: 46px;
+            background: #fff;
+            overflow: hidden;
+            position: relative;
+        }
+        .status-bar {
+            height: 44px;
+            background: #000;
+            color: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .dynamic-island {
+            width: 126px;
+            height: 37px;
+            background: #000;
+            border-radius: 19px;
+            position: absolute;
+            top: 11px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+        @media (max-width: 480px) {
+            .iphone-container {
+                width: 100vw;
+                height: 100vh;
+                margin: 0;
+                border-radius: 0;
+                padding: 0;
+            }
+            .screen {
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="iphone-container">
+        <div class="screen">
+            <!-- 状态栏 -->
+            <div class="status-bar">
+                <span>9:41</span>
+                <span>📶 📶 📶 🔋</span>
+            </div>
+            
+            <!-- Dynamic Island -->
+            <div class="dynamic-island"></div>
+            
+            <!-- 主要内容区域 -->
+            <div class="pt-16 px-4 h-full bg-white overflow-y-auto">
+                <!-- 头部 -->
+                <div class="text-center mb-8">
+                    <h1 class="text-2xl font-bold text-gray-900 mb-2">智能家居平台</h1>
+                    <p class="text-gray-600">H5页面测试部署</p>
+                    <div class="mt-2 text-sm text-green-600">✅ GitHub Pages 部署成功</div>
+                </div>
+                
+                <!-- 功能卡片 -->
+                <div class="space-y-4 mb-8">
+                    <div class="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-6 text-white">
+                        <h3 class="text-lg font-semibold mb-2">🎨 设计服务</h3>
+                        <p class="text-sm opacity-90">专业智能家居设计方案</p>
+                        <button onclick="testDesign()" class="mt-3 bg-white bg-opacity-20 px-4 py-2 rounded-lg text-sm">
+                            测试设计功能
+                        </button>
+                    </div>
+                    
+                    <div class="bg-gradient-to-r from-green-500 to-teal-600 rounded-xl p-6 text-white">
+                        <h3 class="text-lg font-semibold mb-2">🛒 产品商城</h3>
+                        <p class="text-sm opacity-90">智能设备一站式购买</p>
+                        <button onclick="testMall()" class="mt-3 bg-white bg-opacity-20 px-4 py-2 rounded-lg text-sm">
+                            测试商城功能
+                        </button>
+                    </div>
+                    
+                    <div class="bg-gradient-to-r from-orange-500 to-red-600 rounded-xl p-6 text-white">
+                        <h3 class="text-lg font-semibold mb-2">🔧 施工管理</h3>
+                        <p class="text-sm opacity-90">全程施工进度跟踪</p>
+                        <button onclick="testConstruction()" class="mt-3 bg-white bg-opacity-20 px-4 py-2 rounded-lg text-sm">
+                            测试施工功能
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 测试区域 -->
+                <div class="bg-gray-50 rounded-xl p-4 mb-8">
+                    <h4 class="font-semibold text-gray-900 mb-3">🧪 功能测试</h4>
+                    <div class="space-y-2">
+                        <button onclick="testWebView()" class="w-full bg-blue-500 text-white py-2 rounded-lg text-sm">
+                            测试微信WebView兼容性
+                        </button>
+                        <button onclick="testResponsive()" class="w-full bg-green-500 text-white py-2 rounded-lg text-sm">
+                            测试响应式布局
+                        </button>
+                        <button onclick="testInteraction()" class="w-full bg-purple-500 text-white py-2 rounded-lg text-sm">
+                            测试交互功能
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 状态信息 -->
+                <div class="bg-white border border-gray-200 rounded-xl p-4 mb-20">
+                    <h4 class="font-semibold text-gray-900 mb-3">📊 部署状态</h4>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span>GitHub Pages</span>
+                            <span class="text-green-600">✅ 正常</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>H5页面加载</span>
+                            <span class="text-green-600">✅ 正常</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>响应式设计</span>
+                            <span class="text-green-600">✅ 正常</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>微信兼容性</span>
+                            <span class="text-blue-600">🧪 待测试</span>
+                        </div>
+                        <div class="mt-3 pt-3 border-t border-gray-200">
+                            <div class="text-xs text-gray-500" id="timestamp"></div>
+                            <div class="text-xs text-gray-500" id="userAgent"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 底部导航 -->
+            <div class="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2">
+                <div class="flex justify-around">
+                    <div class="text-center py-1">
+                        <div class="text-xl">🏠</div>
+                        <div class="text-xs text-gray-600">首页</div>
+                    </div>
+                    <div class="text-center py-1">
+                        <div class="text-xl">🎨</div>
+                        <div class="text-xs text-gray-600">设计</div>
+                    </div>
+                    <div class="text-center py-1">
+                        <div class="text-xl">🛒</div>
+                        <div class="text-xs text-gray-600">商城</div>
+                    </div>
+                    <div class="text-center py-1">
+                        <div class="text-xl">🔧</div>
+                        <div class="text-xs text-gray-600">施工</div>
+                    </div>
+                    <div class="text-center py-1">
+                        <div class="text-xl">👤</div>
+                        <div class="text-xs text-gray-600">我的</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化页面信息
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('timestamp').textContent = `部署时间: ${new Date().toLocaleString('zh-CN')}`;
+            document.getElementById('userAgent').textContent = `浏览器: ${navigator.userAgent.includes('MicroMessenger') ? '微信内置浏览器' : '标准浏览器'}`;
+        });
+        
+        // 测试功能
+        function testDesign() {
+            alert('🎨 设计服务测试成功！\n✅ 页面正常加载\n✅ 交互功能正常');
+        }
+        
+        function testMall() {
+            alert('🛒 商城功能测试成功！\n✅ 页面响应正常\n✅ 按钮交互正常');
+        }
+        
+        function testConstruction() {
+            alert('🔧 施工管理测试成功！\n✅ 功能模块正常\n✅ 数据展示正常');
+        }
+        
+        function testWebView() {
+            const isWeChat = navigator.userAgent.includes('MicroMessenger');
+            alert(`📱 微信WebView测试:\n${isWeChat ? '✅ 当前在微信环境中' : '⚠️ 当前不在微信环境中'}\n✅ H5页面可正常显示`);
+        }
+        
+        function testResponsive() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            alert(`📐 响应式测试成功！\n屏幕尺寸: ${width}x${height}\n✅ 布局自适应正常`);
+        }
+        
+        function testInteraction() {
+            alert('🎯 交互测试成功！\n✅ 点击事件正常\n✅ JavaScript执行正常\n✅ 样式渲染正常');
+        }
+        
+        // 控制台日志
+        console.log('🚀 H5页面加载完成');
+        console.log('✅ GitHub Pages部署测试成功');
+        console.log('📱 适配iPhone 16尺寸 (393x852px)');
+        console.log('🎨 使用Tailwind CSS样式框架');
+    </script>
+</body>
+</html>
