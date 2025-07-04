@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+    <title>知识库 - 智能设计与施工</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'system': ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', '"SF Pro Icons"', '"Helvetica Neue"', 'Helvetica', 'Arial', 'sans-serif']
+                    },
+                    colors: {
+                        'primary-text': '#1A1A1A',
+                        'main-bg': '#F8F9FA'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            -webkit-text-size-adjust: 100%;
+            -moz-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .scrollbar-none::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-none {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        :root {
+            --safe-area-inset-top: env(safe-area-inset-top);
+            --safe-area-inset-bottom: env(safe-area-inset-bottom);
+        }
+
+        .horizontal-scrollbar::-webkit-scrollbar {
+            height: 4px;
+            background: transparent;
+        }
+        .horizontal-scrollbar::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 2px;
+        }
+        /* 卡片悬停效果 */
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        /* 分类图标悬停效果 */
+        .category-icon {
+            transition: all 0.3s ease;
+        }
+        .category-icon:hover {
+            transform: scale(1.05);
+            background-color: #f3f4f6;
+        }
+
+        .text-shadow {
+            text-shadow: 0 1px 0 rgb(0 0 0 / 40%);
+        }
+    </style>
+    <link href="css/styles.css" rel="stylesheet"/><link href="css/iphone16_fix.css" rel="stylesheet"/>
+
+    <!-- 全局错误处理和兜底方案 -->
+    <script>
+        (function() {
+            'use strict';
+            
+            // 创建 Trace 对象的兜底实现
+            window.Trace = window.Trace || {
+                init: function() { console.log('Trace initialized (fallback)'); },
+                log: function() { console.log.apply(console, arguments); },
+                error: function() { console.error.apply(console, arguments); },
+                warn: function() { console.warn.apply(console, arguments); },
+                info: function() { console.info.apply(console, arguments); }
+            };
+
+            // 防止其他可能的调试工具错误
+            window.wx = window.wx || {};
+            window.my = window.my || {};
+            
+            // 防止 chartId 未定义错误
+            window.chartId = window.chartId || 'default-chart-id';
+            
+            // 全局错误处理
+            window.addEventListener('error', function(e) {
+                console.error('Global error caught:', e.error);
+                return true; // 阻止默认错误处理
+            });
+            
+            window.addEventListener('unhandledrejection', function(e) {
+                console.error('Unhandled promise rejection:', e.reason);
+                e.preventDefault(); // 阻止默认处理
+            });
+            
+            console.log('✅ 全局错误处理已初始化');
+        })();
+    </script>
+</head>
+<body class="min-h-screen w-full bg-[#000000] flex items-center justify-center font-system">
+<!-- iPhone 容器 -->
+<div class="w-full max-w-[393px] h-[852px] bg-[#1E1E1E] shadow-2xl overflow-hidden relative mx-auto rounded-[54px]">
+    <!-- iPhone 状态栏 -->
+    <div class="w-full h-[47px] bg-black px-5 flex items-center justify-between text-white text-[14px] font-medium">
+        <div class="flex items-center space-x-1">
+            <!-- 信号图标 -->
+            <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                <path d="M2 20h.01"></path>
+                <path d="M7 20v-4"></path>
+                <path d="M12 20v-8"></path>
+                <path d="M17 20V8"></path>
+                <path d="M22 4v16"></path>
+            </svg>
+            <span>中国移动</span>
+            <!-- WiFi图标 -->
+            <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 20h.01"></path>
+                <path d="M2 8.82a15 15 0 0 1 20 0"></path>
+                <path d="M5 12.859a10 10 0 0 1 14 0"></path>
+                <path d="M8.5 16.429a5 5 0 0 1 7 0"></path>
+            </svg>
+        </div>
+        <div class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">15:52</div>
+        <div class="flex items-center space-x-1">
+            <span>89%</span>
+            <!-- 电池图标 -->
+            <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                <rect height="10" rx="2" ry="2" width="16" x="2" y="7"></rect>
+                <line x1="22" x2="22" y1="11" y2="13"></line>
+            </svg>
+        </div>
+    </div>
+    <!-- 动态岛 -->
+    <button class="absolute left-1/2 -translate-x-1/2 bg-black transition-all duration-300 ease-out w-[126px] h-[37.5px] -top-0.5 rounded-b-[24px]"></button>
+
+    <!-- 主内容区域 -->
+    <div class="w-full h-[calc(100%-47px)] bg-white overflow-hidden relative">
+        <!-- 顶部白色导航区域 -->
+        <div class="absolute top-0 left-0 right-0 z-30">
+            <div class="bg-white text-black border-b border-gray-100">
+                <!-- 顶部操作按钮 -->
+                <div class="flex items-center justify-center px-4 relative h-[75px]">
+                    <!-- 返回按钮 -->
+                    <button onclick="history.back()" class="absolute left-4 top-1/2 -translate-y-1/2 text-black/70 hover:text-black transition-colors">
+                        <svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg">
+                            <path d="m15 18-6-6 6-6"></path>
+                        </svg>
+                    </button>
+                    <!-- 标题 -->
+                    <h1 class="text-lg font-semibold text-black">知识库</h1>
+                    <!-- 右侧按钮组 -->
+                    <div class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center space-x-3">
+                        <!-- 分享按钮 -->
+                        <button class="text-black/70 hover:text-black transition-colors">
+                            <svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="18" cy="5" r="3"></circle>
+                                <circle cx="6" cy="12" r="3"></circle>
+                                <circle cx="18" cy="19" r="3"></circle>
+                                <line x1="8.59" x2="15.42" y1="13.51" y2="17.49"></line>
+                                <line x1="15.41" x2="8.59" y1="6.51" y2="10.49"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 滚动内容区域 -->
+        <div class="absolute inset-0 top-[75px] bottom-[84px] overflow-y-auto scrollbar-none">
+            <!-- 搜索栏区域 -->
+            <section class="p-4 bg-white sticky top-0 z-40 shadow-sm">
+                <div class="relative">
+                    <input type="search"
+                           placeholder="搜索文章/课程/标准"
+                           class="w-full h-10 pl-10 pr-4 rounded-full text-sm bg-gray-100 focus:outline-none focus:ring-1 focus:ring-black">
+                    <div class="absolute left-3 top-1/2 transform -translate-y-1/2">
+                        <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.3-4.3"></path>
+                        </svg>
+                    </div>
+                </div>
+            </section>
+
+        <!-- 内容分类 -->
+        <section class="px-4 py-4 bg-white">
+            <div class="grid grid-cols-3 gap-4 text-center">
+                <!-- 分类项1 -->
+                <a href="#" class="p-3 bg-gray-50 rounded-lg shadow-sm card-hover">
+                    <div class="flex justify-center items-center h-12 w-12 bg-gray-100 rounded-full mx-auto mb-2 category-icon">
+                        <i class="fas fa-file text-2xl text-black"></i>
+                    </div>
+                    <p class="text-xs font-medium text-black">设计指南</p>
+                </a>
+                <!-- 分类项2 -->
+                <a href="#" class="p-3 bg-gray-50 rounded-lg shadow-sm card-hover">
+                    <div class="flex justify-center items-center h-12 w-12 bg-gray-100 rounded-full mx-auto mb-2 category-icon">
+                        <i class="fas fa-ruler text-2xl text-black"></i>
+                    </div>
+                    <p class="text-xs font-medium text-black">施工标准</p>
+                </a>
+                <!-- 分类项3 -->
+                <a href="#" class="p-3 bg-gray-50 rounded-lg shadow-sm card-hover">
+                    <div class="flex justify-center items-center h-12 w-12 bg-gray-100 rounded-full mx-auto mb-2 category-icon">
+                        <i class="fas fa-search text-2xl text-black"></i>
+                    </div>
+                    <p class="text-xs font-medium text-black">材料科普</p>
+                </a>
+                <!-- 分类项4 -->
+                <a href="#" class="p-3 bg-gray-50 rounded-lg shadow-sm card-hover">
+                    <div class="flex justify-center items-center h-12 w-12 bg-gray-100 rounded-full mx-auto mb-2 category-icon">
+                        <i class="fas fa-exclamation-triangle text-2xl text-black"></i>
+                    </div>
+                    <p class="text-xs font-medium text-black">避坑攻略</p>
+                </a>
+                <!-- 分类项5 -->
+                <a href="#" class="p-3 bg-gray-50 rounded-lg shadow-sm card-hover">
+                    <div class="flex justify-center items-center h-12 w-12 bg-gray-100 rounded-full mx-auto mb-2 category-icon">
+                        <i class="fas fa-video text-2xl text-black"></i>
+                    </div>
+                    <p class="text-xs font-medium text-black">视频教程</p>
+                </a>
+                <!-- 分类项6 -->
+                <a href="#" class="p-3 bg-gray-50 rounded-lg shadow-sm card-hover">
+                    <div class="flex justify-center items-center h-12 w-12 bg-gray-100 rounded-full mx-auto mb-2 category-icon">
+                        <i class="far fa-file text-2xl text-black"></i>
+                    </div>
+                    <p class="text-xs font-medium text-black">行业资讯</p>
+                </a>
+            </div>
+        </section>
+
+        <!-- 热门文章区域 -->
+        <section class="py-4 px-4">
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="text-lg font-semibold text-black">热门文章</h2>
+                <a href="#" class="text-xs text-gray-600 hover:text-black flex items-center">
+                    查看全部 <i class="fas fa-chevron-right text-xs ml-1"></i>
+                </a>
+            </div>
+            <div class="space-y-3">
+                <!-- 文章项1 -->
+                <a href="knowledge-article.html" class="block bg-white rounded-lg shadow-sm p-3 card-hover">
+                    <div class="flex items-start">
+                        <img src="https://images.unsplash.com/photo-1513694203232-719a280e022f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&q=80&grayscale=1" alt="文章缩略图" class="w-20 h-20 object-cover rounded-md mr-3 flex-shrink-0">
+                        <div class="flex-grow">
+                            <h3 class="font-semibold text-black text-sm leading-tight mb-1">如何选择合适的智能家居控制系统？</h3>
+                            <p class="text-xs text-gray-600 leading-snug line-clamp-2 mb-1.5">从入门到精通，全面解析各大主流系统特点与选购要点，助您打造便捷智能生活。</p>
+                            <div class="text-xxs text-gray-400 flex items-center">
+                                <span>张三丰</span>
+                                <span class="mx-1.5">·</span>
+                                <span>3天前</span>
+                                <span class="ml-auto flex items-center">
+                                    <i class="fas fa-lock text-orange-500 mr-1"></i>
+                                    <span class="text-orange-500">付费</span>
+                                    <span class="mx-1">·</span>
+                                    <i class="far fa-eye mr-0.5"></i> 1.2k
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                <!-- 文章项2 -->
+                <a href="#" class="block bg-white rounded-lg shadow-sm p-3 card-hover">
+                     <div class="flex items-start">
+                        <!-- 无图示例 -->
+                        <div class="flex-grow">
+                            <h3 class="font-semibold text-black text-sm leading-tight mb-1">小户型装修的5个空间放大秘诀</h3>
+                            <p class="text-xs text-gray-600 leading-snug line-clamp-2 mb-1.5">告别局促感，设计师教你如何通过色彩、布局和家具选择，让小家也能显大。</p>
+                            <div class="text-xxs text-gray-400 flex items-center">
+                                <span>李四</span>
+                                <span class="mx-1.5">·</span>
+                                <span>1周前</span>
+                                <span class="ml-auto flex items-center"><i class="far fa-heart mr-0.5"></i> 890</span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- 精选课程区域 -->
+        <section class="py-4 px-4">
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="text-lg font-semibold text-black">精选课程</h2>
+                <a href="#" class="text-xs text-gray-600 hover:text-black flex items-center">
+                    查看全部 <i class="fas fa-chevron-right text-xs ml-1"></i>
+                </a>
+            </div>
+            <div class="flex overflow-x-auto space-x-3 pb-2 horizontal-scrollbar">
+                <!-- 课程卡片1 -->
+                <a href="#" class="flex-shrink-0 w-40 bg-white rounded-lg shadow-sm overflow-hidden card-hover">
+                    <div class="relative">
+                        <img src="https://images.unsplash.com/photo-1588075592446-28910109559a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=300&q=80&grayscale=1" alt="课程封面" class="w-full h-24 object-cover">
+                        <div class="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white text-xxs px-1.5 py-0.5 rounded">
+                            12课时
+                        </div>
+                    </div>
+                    <div class="p-2.5">
+                        <h4 class="font-semibold text-black text-xs leading-tight truncate mb-0.5">智能照明设计实战</h4>
+                        <p class="text-xxs text-gray-500 truncate mb-1">王老师 | XX学院</p>
+                        <p class="text-xs font-bold text-black">¥99</p>
+                    </div>
+                </a>
+                <!-- 课程卡片2 -->
+                <a href="#" class="flex-shrink-0 w-40 bg-white rounded-lg shadow-sm overflow-hidden card-hover">
+                    <div class="relative">
+                        <img src="https://images.unsplash.com/photo-1516534775068-ba3e7458af70?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=300&q=80&grayscale=1" alt="课程封面" class="w-full h-24 object-cover">
+                        <div class="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white text-xxs px-1.5 py-0.5 rounded">
+                            8课时
+                        </div>
+                    </div>
+                    <div class="p-2.5">
+                        <h4 class="font-semibold text-black text-xs leading-tight truncate mb-0.5">家居色彩搭配入门</h4>
+                        <p class="text-xxs text-gray-500 truncate mb-1">李讲师</p>
+                        <p class="text-xs font-bold text-green-600">免费</p>
+                    </div>
+                </a>
+                <!-- 课程卡片3 -->
+                <a href="#" class="flex-shrink-0 w-40 bg-white rounded-lg shadow-sm overflow-hidden card-hover">
+                    <div class="relative">
+                        <img src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80&grayscale=1" alt="课程封面" class="w-full h-24 object-cover">
+                        <div class="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white text-xxs px-1.5 py-0.5 rounded">
+                            15课时
+                        </div>
+                    </div>
+                    <div class="p-2.5">
+                        <h4 class="font-semibold text-black text-xs leading-tight truncate mb-0.5">智能家居系统集成</h4>
+                        <p class="text-xxs text-gray-500 truncate mb-1">赵工程师</p>
+                        <p class="text-xs font-bold text-black">¥199</p>
+                    </div>
+                </a>
+            </div>
+        </section>
+        </div>
+
+        <!-- 底部导航栏 -->
+<div class="absolute bottom-0 left-0 right-0 h-[84px] bg-white/80 backdrop-blur-xl border-t border-white/20">
+<!-- 导航栏内容 -->
+<nav class="h-[49px] flex items-center px-2">
+<div class="flex justify-around w-full text-[12px]">
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="home.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+<polyline points="9 22 9 12 15 12 15 22"></polyline>
+</svg>
+</div>
+<span class="mt-1">首页</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="design-result.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<circle cx="13.5" cy="6.5" fill="currentColor" r=".5"></circle>
+<circle cx="17.5" cy="10.5" fill="currentColor" r=".5"></circle>
+<circle cx="8.5" cy="7.5" fill="currentColor" r=".5"></circle>
+<circle cx="6.5" cy="12.5" fill="currentColor" r=".5"></circle>
+<path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+</svg>
+</div>
+<span class="mt-1">设计</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="mall.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+<path d="M3 6h18"></path>
+<path d="M16 10a4 4 0 0 1-8 0"></path>
+</svg>
+</div>
+<span class="mt-1">商城</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="spaces.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="m15 12-8.373 8.373a1 1 0 1 1-3-3L12 9"></path>
+<path d="m18 15 4-4"></path>
+<path d="m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172V7l-2.26-2.26a6 6 0 0 0-4.202-1.756L9 2.96l.92.82A6.18 6.18 0 0 1 12 8.4V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5"></path>
+</svg>
+</div>
+<span class="mt-1">施工</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="me.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+<circle cx="12" cy="7" r="4"></circle>
+</svg>
+</div>
+<span class="mt-1">我的</span>
+</a>
+</div>
+</nav>
+<!-- iPhone 16 Home Indicator -->
+<div class="h-[34px] flex items-center justify-center">
+<div class="w-[134px] h-[5px] bg-black rounded-full"></div>
+</div>
+</div>
+        </div>
+    </div>
+
+    <!-- 返回顶部按钮 -->
+    <button id="back-to-top" class="fixed bottom-24 right-6 w-10 h-10 bg-black bg-opacity-70 text-white rounded-full flex items-center justify-center shadow-lg opacity-0 transition-opacity duration-300">
+        <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+            <path d="m18 15-6-6-6 6"></path>
+        </svg>
+    </button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 返回顶部按钮功能
+            const backToTopButton = document.getElementById('back-to-top');
+            const scrollContainer = document.querySelector('.absolute.inset-0.top-\\[75px\\].bottom-\\[84px\\]');
+
+            if (scrollContainer) {
+                scrollContainer.addEventListener('scroll', function() {
+                    if (scrollContainer.scrollTop > 300) {
+                        backToTopButton.classList.remove('opacity-0');
+                    } else {
+                        backToTopButton.classList.add('opacity-0');
+                    }
+                });
+
+                backToTopButton.addEventListener('click', function() {
+                    scrollContainer.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>

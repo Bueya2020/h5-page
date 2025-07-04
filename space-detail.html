@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>项目详情</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-gray-50">
+    <!-- iPhone 16 Pro Max 容器 -->
+    <div class="iphone-container mx-auto bg-black rounded-[3rem] p-2 shadow-2xl" style="width: 430px; height: 932px;">
+        <!-- iPhone 屏幕 -->
+        <div class="w-full h-full bg-white rounded-[2.5rem] overflow-hidden relative">
+            <!-- 状态栏 -->
+            <div class="status-bar h-[47px] bg-white flex items-center justify-between px-6 relative z-10">
+                <!-- 左侧：时间 -->
+                <div class="text-[15px] font-semibold text-black">
+                    <span id="currentTime">9:41</span>
+                </div>
+
+                <!-- 动态岛 -->
+                <div class="absolute left-1/2 top-[10px] transform -translate-x-1/2 w-[126px] h-[37px] bg-black rounded-full"></div>
+
+                <!-- 右侧：状态图标 -->
+                <div class="flex items-center space-x-1">
+                    <div class="flex items-center space-x-1">
+                        <div class="w-[18px] h-[10px] border border-black rounded-sm">
+                            <div class="w-[14px] h-[6px] bg-black rounded-sm m-[1px]"></div>
+                        </div>
+                        <div class="w-[2px] h-[4px] bg-black rounded-full"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 主内容区域 -->
+            <div class="w-full h-[calc(100%-47px)] bg-white overflow-hidden relative">
+                <!-- 导航栏 -->
+                <div class="h-[60px] bg-white border-b border-gray-100 flex items-center px-4">
+                    <button onclick="history.back()" class="mr-4">
+                        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                    </button>
+                    <h1 id="pageTitle" class="text-[16px] font-medium text-black">项目详情</h1>
+                </div>
+
+                <!-- 滚动内容区域 -->
+                <div class="absolute top-[60px] left-0 right-0 bottom-[84px] overflow-y-auto scrollbar-none" style="padding-bottom: 20px;">
+                    <!-- 项目信息卡片 -->
+                    <div id="projectInfoCard" class="bg-white mx-4 mt-4 rounded-lg shadow-sm border border-gray-200 p-4">
+                        <!-- 项目信息将通过JavaScript动态加载 -->
+                    </div>
+
+                    <!-- 设计方案展示 -->
+                    <div id="designContentArea" class="mx-4 mt-4">
+                        <!-- 设计内容将根据权限级别动态加载 -->
+                    </div>
+
+                    <!-- 权限提示区域 -->
+                    <div id="permissionNotice" class="mx-4 mt-4" style="display: none;">
+                        <!-- 权限相关提示 -->
+                    </div>
+                </div>
+
+                <!-- 底部导航栏 -->
+                <div class="absolute bottom-0 left-0 right-0 h-[84px] bg-white/80 backdrop-blur-xl border-t border-white/20">
+                    <!-- 导航栏内容 -->
+                    <nav class="h-[49px] flex items-center px-2">
+                        <div class="flex justify-around w-full text-[12px]">
+                            <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="home.html">
+                                <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                    <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                                    </svg>
+                                </div>
+                                <span class="mt-1">首页</span>
+                            </a>
+                            <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="design-result.html">
+                                <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                    <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                        <circle cx="13.5" cy="6.5" fill="currentColor" r=".5"></circle>
+                                        <circle cx="17.5" cy="10.5" fill="currentColor" r=".5"></circle>
+                                        <circle cx="8.5" cy="7.5" fill="currentColor" r=".5"></circle>
+                                        <circle cx="6.5" cy="12.5" fill="currentColor" r=".5"></circle>
+                                        <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+                                    </svg>
+                                </div>
+                                <span class="mt-1">设计</span>
+                            </a>
+                            <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="mall.html">
+                                <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                    <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+                                        <path d="M3 6h18"></path>
+                                        <path d="M16 10a4 4 0 0 1-8 0"></path>
+                                    </svg>
+                                </div>
+                                <span class="mt-1">商城</span>
+                            </a>
+                            <a class="flex flex-col items-center group text-black transition-colors" href="spaces.html">
+                                <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                    <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="m15 12-8.373 8.373a1 1 0 1 1-3-3L12 9"></path>
+                                        <path d="m18 15 4-4"></path>
+                                        <path d="m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172V7l-2.26-2.26a6 6 0 0 0-4.202-1.756L9 2.96l.92.82A6.18 6.18 0 0 1 12 8.4V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5"></path>
+                                    </svg>
+                                </div>
+                                <span class="mt-1">施工</span>
+                            </a>
+                            <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="me.html">
+                                <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                    <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="12" cy="7" r="4"></circle>
+                                    </svg>
+                                </div>
+                                <span class="mt-1">我的</span>
+                            </a>
+                        </div>
+                    </nav>
+                    <!-- iPhone 16 Home Indicator -->
+                    <div class="h-[34px] flex items-center justify-center">
+                        <div class="w-[134px] h-[5px] bg-black rounded-full"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入权限控制系统 -->
+    <script src="js/design-order-permission.js"></script>
+    <script src="js/design-order-test-data.js"></script>
+
+    <script>
+        // 项目详情页面管理器
+        class SpaceDetailManager {
+            constructor() {
+                this.orderId = this.getOrderIdFromUrl();
+                this.mode = this.getModeFromUrl();
+                this.permissionManager = new DesignOrderPermissionManager();
+                this.orderData = null;
+                this.permissionData = null;
+            }
+
+            // 从URL获取订单ID
+            getOrderIdFromUrl() {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get('orderId');
+            }
+
+            // 从URL获取模式
+            getModeFromUrl() {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get('mode') || 'demo';
+            }
+
+            // 初始化页面
+            init() {
+                if (!this.orderId) {
+                    // 弹出提示，然后显示demo页面
+                    alert('未找到订单信息，将为您展示演示内容');
+                    this.showDemoContent();
+                    return;
+                }
+
+                this.loadOrderData();
+                this.checkPermissions();
+                this.renderContent();
+                this.updatePageTitle();
+            }
+
+            // 加载订单数据
+            loadOrderData() {
+                const orders = JSON.parse(localStorage.getItem('designOrders') || '[]');
+                this.orderData = orders.find(order => order.orderId === this.orderId);
+
+                if (!this.orderData) {
+                    this.showError('订单不存在');
+                    return;
+                }
+
+                console.log('加载订单数据:', this.orderData);
+            }
+
+            // 检查权限
+            checkPermissions() {
+                this.permissionData = this.permissionManager.getOrderPermission(this.orderData);
+                console.log('权限检查结果:', this.permissionData);
+
+                // 验证访问权限
+                if (!this.permissionData.designCompleted) {
+                    this.showError('设计尚未完成，无法查看项目详情');
+                    return;
+                }
+            }
+
+            // 渲染内容
+            renderContent() {
+                this.renderProjectInfo();
+                this.renderDesignContent();
+                this.renderPermissionNotice();
+            }
+
+            // 渲染项目信息
+            renderProjectInfo() {
+                const container = document.getElementById('projectInfoCard');
+                if (!container) return;
+
+                const projectInfo = this.orderData.extendedInfo?.projectInfo || {};
+                const permissionBadge = this.permissionData.canViewFull ?
+                    '<span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">完整权限</span>' :
+                    '<span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">演示模式</span>';
+
+                container.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h2 class="text-lg font-semibold text-gray-900">${this.orderData.items[0]?.name || '设计项目'}</h2>
+                            <p class="text-sm text-gray-500">订单号: ${this.orderData.orderNumber}</p>
+                        </div>
+                        ${permissionBadge}
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div class="text-center p-3 bg-gray-50 rounded-lg">
+                            <div class="text-lg font-bold text-blue-600">${projectInfo.area || 0}㎡</div>
+                            <div class="text-xs text-gray-500">房屋面积</div>
+                        </div>
+                        <div class="text-center p-3 bg-gray-50 rounded-lg">
+                            <div class="text-sm font-medium text-gray-900">${projectInfo.style || '现代简约'}</div>
+                            <div class="text-xs text-gray-500">设计风格</div>
+                        </div>
+                    </div>
+
+                    <div class="text-center p-3 bg-blue-50 rounded-lg">
+                        <div class="text-2xl font-bold text-blue-600">100%</div>
+                        <div class="text-xs text-gray-500">设计完成度</div>
+                    </div>
+                `;
+            }
+
+            // 渲染设计内容
+            renderDesignContent() {
+                const container = document.getElementById('designContentArea');
+                if (!container) return;
+
+                if (this.permissionData.canViewFull) {
+                    container.innerHTML = this.renderFullContent();
+                } else {
+                    container.innerHTML = this.renderDemoContent();
+                }
+            }
+
+            // 渲染完整内容
+            renderFullContent() {
+                return `
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
+                        <h3 class="text-lg font-semibold mb-4">完整设计方案</h3>
+
+                        <!-- 设计图片 -->
+                        <div class="grid grid-cols-2 gap-3 mb-4">
+                            <div class="aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
+                                <span class="text-gray-500 text-sm">客厅效果图</span>
+                            </div>
+                            <div class="aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
+                                <span class="text-gray-500 text-sm">卧室效果图</span>
+                            </div>
+                            <div class="aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
+                                <span class="text-gray-500 text-sm">厨房效果图</span>
+                            </div>
+                            <div class="aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
+                                <span class="text-gray-500 text-sm">卫生间效果图</span>
+                            </div>
+                        </div>
+
+                        <!-- 详细设计说明 -->
+                        <div class="space-y-3">
+                            <div class="p-3 bg-green-50 rounded-lg">
+                                <h4 class="font-medium text-green-800 mb-2">设计理念</h4>
+                                <p class="text-sm text-green-700">采用现代简约风格，注重空间的实用性和美观性，营造舒适的居住环境。</p>
+                            </div>
+
+                            <div class="p-3 bg-blue-50 rounded-lg">
+                                <h4 class="font-medium text-blue-800 mb-2">材料清单</h4>
+                                <p class="text-sm text-blue-700">包含地板、墙面、吊顶等所有装修材料的详细规格和品牌推荐。</p>
+                            </div>
+
+                            <div class="p-3 bg-purple-50 rounded-lg">
+                                <h4 class="font-medium text-purple-800 mb-2">施工图纸</h4>
+                                <p class="text-sm text-purple-700">提供水电布局图、家具布置图、施工节点详图等专业图纸。</p>
+                            </div>
+                        </div>
+
+                        <!-- 操作按钮 -->
+                        <div class="flex space-x-3 mt-4">
+                            <button onclick="spaceDetailManager.viewDeviceList()"
+                                    class="flex-1 bg-green-500 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-green-600 transition-colors">
+                                查看设备清单
+                            </button>
+                            <button onclick="spaceDetailManager.downloadFiles()"
+                                    class="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors">
+                                下载文件
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // 渲染演示内容
+            renderDemoContent() {
+                return `
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
+                        <h3 class="text-lg font-semibold mb-4">设计方案预览</h3>
+
+                        <!-- 模糊的设计图片 -->
+                        <div class="grid grid-cols-2 gap-3 mb-4">
+                            <div class="aspect-square bg-gray-100 rounded-lg flex items-center justify-center relative overflow-hidden">
+                                <span class="text-gray-500 text-sm">客厅效果图</span>
+                                <div class="absolute inset-0 bg-white bg-opacity-70 backdrop-blur-sm flex items-center justify-center">
+                                    <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="aspect-square bg-gray-100 rounded-lg flex items-center justify-center relative overflow-hidden">
+                                <span class="text-gray-500 text-sm">卧室效果图</span>
+                                <div class="absolute inset-0 bg-white bg-opacity-70 backdrop-blur-sm flex items-center justify-center">
+                                    <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 基础设计说明 -->
+                        <div class="space-y-3">
+                            <div class="p-3 bg-yellow-50 rounded-lg">
+                                <h4 class="font-medium text-yellow-800 mb-2">基础设计概念</h4>
+                                <p class="text-sm text-yellow-700">现代简约风格设计，注重功能性和美观性的平衡。</p>
+                            </div>
+                        </div>
+
+                        <!-- 升级提示 -->
+                        <div class="mt-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
+                            <div class="flex items-center mb-2">
+                                <svg class="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <h4 class="font-medium text-blue-800">升级到完整版本</h4>
+                            </div>
+                            <p class="text-sm text-blue-700 mb-3">支付设备清单费用，解锁完整的设计方案、材料清单、施工图纸等内容。</p>
+                            <button onclick="spaceDetailManager.upgradeToFull()"
+                                    class="w-full bg-blue-500 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors">
+                                立即升级 ¥7,000
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // 渲染权限提示
+            renderPermissionNotice() {
+                const container = document.getElementById('permissionNotice');
+                if (!container) return;
+
+                if (!this.permissionData.canViewFull) {
+                    container.style.display = 'block';
+                    container.innerHTML = `
+                        <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                </svg>
+                                <span>当前为演示模式，部分内容需要升级后查看</span>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            // 更新页面标题
+            updatePageTitle() {
+                const titleElement = document.getElementById('pageTitle');
+                if (titleElement && this.orderData) {
+                    const projectName = this.orderData.items[0]?.name || '设计项目';
+                    titleElement.textContent = projectName;
+                }
+            }
+
+            // 查看设备清单
+            viewDeviceList() {
+                if (this.permissionData.canViewFull) {
+                    window.location.href = `device-list.html?orderId=${this.orderId}&mode=full`;
+                } else {
+                    this.upgradeToFull();
+                }
+            }
+
+            // 下载文件
+            downloadFiles() {
+                alert('正在准备下载文件...\n包含：设计图纸、材料清单、施工说明等');
+            }
+
+            // 升级到完整版本
+            upgradeToFull() {
+                window.location.href = `order-confirm.html?source=design&upgrade=${this.orderId}`;
+            }
+
+            // 显示demo内容
+            showDemoContent() {
+                // 显示demo项目信息
+                this.renderDemoProjectInfo();
+                // 显示demo设计内容
+                this.renderDemoDesignContent();
+                // 更新页面标题
+                document.getElementById('pageTitle').textContent = '施工项目详情（演示）';
+            }
+
+            // 渲染demo项目信息
+            renderDemoProjectInfo() {
+                const container = document.getElementById('projectInfoCard');
+                if (!container) return;
+
+                container.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h2 class="text-lg font-semibold text-gray-900">现代简约风智能家居</h2>
+                            <p class="text-sm text-gray-500">北京市朝阳区 · 120㎡ 三室两厅</p>
+                            <p class="text-sm text-gray-500">开始时间: 2025-05-15</p>
+                        </div>
+                        <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">进行中</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div class="text-center p-3 bg-gray-50 rounded-lg">
+                            <div class="text-lg font-bold text-blue-600">120㎡</div>
+                            <div class="text-xs text-gray-500">房屋面积</div>
+                        </div>
+                        <div class="text-center p-3 bg-gray-50 rounded-lg">
+                            <div class="text-sm font-medium text-gray-900">三室两厅</div>
+                            <div class="text-xs text-gray-500">户型结构</div>
+                        </div>
+                    </div>
+
+                    <div class="text-center p-3 bg-green-50 rounded-lg">
+                        <div class="text-2xl font-bold text-green-600">60%</div>
+                        <div class="text-xs text-gray-500">施工进度</div>
+                    </div>
+                `;
+            }
+
+            // 渲染demo设计内容
+            renderDemoDesignContent() {
+                const container = document.getElementById('designContentArea');
+                if (!container) return;
+
+                container.innerHTML = `
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
+                        <h3 class="text-base font-semibold mb-3">设计方案预览</h3>
+
+                        <!-- 效果图展示 -->
+                        <div class="mb-4">
+                            <div class="aspect-video bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg flex items-center justify-center mb-2">
+                                <div class="text-center">
+                                    <svg class="w-12 h-12 text-blue-500 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                    <p class="text-sm text-blue-600">客厅效果图</p>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-500">现代简约风格客厅设计，采用智能照明系统</p>
+                        </div>
+
+                        <!-- 设备清单预览 -->
+                        <div class="mb-4">
+                            <h4 class="text-sm font-medium mb-2">智能设备清单</h4>
+                            <div class="space-y-2">
+                                <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+                                    <span class="text-sm">智能照明系统</span>
+                                    <span class="text-sm text-blue-600">¥3,200</span>
+                                </div>
+                                <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+                                    <span class="text-sm">智能安防系统</span>
+                                    <span class="text-sm text-blue-600">¥2,800</span>
+                                </div>
+                                <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+                                    <span class="text-sm">智能温控系统</span>
+                                    <span class="text-sm text-blue-600">¥2,400</span>
+                                </div>
+                            </div>
+                            <div class="mt-2 pt-2 border-t border-gray-200">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm font-medium">预估总价</span>
+                                    <span class="text-lg font-bold text-blue-600">¥8,400</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 操作按钮 -->
+                        <div class="grid grid-cols-2 gap-3">
+                            <button onclick="alert('演示模式下，请先创建真实订单')"
+                                    class="py-2 px-4 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors">
+                                查看详细方案
+                            </button>
+                            <button onclick="window.location.href='design.html'"
+                                    class="py-2 px-4 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
+                                开始设计
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 演示提示 -->
+                    <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span>当前为演示模式，展示的是示例内容。要查看真实项目详情，请先完成设计订单。</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // 显示错误信息
+            showError(message) {
+                const container = document.getElementById('designContentArea');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="text-center py-12">
+                            <div class="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+                                <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">访问受限</h3>
+                            <p class="text-gray-500 mb-6">${message}</p>
+                            <button onclick="history.back()"
+                                    class="bg-blue-500 text-white py-2 px-6 rounded-lg font-medium hover:bg-blue-600 transition-colors">
+                                返回
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // 全局实例
+        let spaceDetailManager;
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 更新时间显示
+            document.getElementById('currentTime').textContent = new Date().toLocaleTimeString('zh-CN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            });
+
+            // 延迟初始化，确保权限系统已加载
+            setTimeout(() => {
+                if (typeof DesignOrderPermissionManager !== 'undefined') {
+                    spaceDetailManager = new SpaceDetailManager();
+                    spaceDetailManager.init();
+                    console.log('项目详情页面初始化完成');
+                } else {
+                    console.error('权限管理系统未加载');
+                }
+            }, 100);
+        });
+    </script>
+</body>
+</html>

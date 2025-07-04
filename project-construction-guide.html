@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>施工说明 - 智能设计与施工</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/iphone16_fix.css">
+    <style>
+        .construction-step {
+            transition: all 0.3s ease;
+        }
+        .construction-step:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .step-number {
+            background: linear-gradient(135deg, #000 0%, #333 100%);
+        }
+        .progress-bar {
+            background: linear-gradient(90deg, #000 0%, #333 100%);
+        }
+    </style>
+
+    <!-- 全局错误处理和兜底方案 -->
+    <script>
+        (function() {
+            'use strict';
+            
+            // 创建 Trace 对象的兜底实现
+            window.Trace = window.Trace || {
+                init: function() { console.log('Trace initialized (fallback)'); },
+                log: function() { console.log.apply(console, arguments); },
+                error: function() { console.error.apply(console, arguments); },
+                warn: function() { console.warn.apply(console, arguments); },
+                info: function() { console.info.apply(console, arguments); }
+            };
+
+            // 防止其他可能的调试工具错误
+            window.wx = window.wx || {};
+            window.my = window.my || {};
+            
+            // 防止 chartId 未定义错误
+            window.chartId = window.chartId || 'default-chart-id';
+            
+            // 全局错误处理
+            window.addEventListener('error', function(e) {
+                console.error('Global error caught:', e.error);
+                return true; // 阻止默认错误处理
+            });
+            
+            window.addEventListener('unhandledrejection', function(e) {
+                console.error('Unhandled promise rejection:', e.reason);
+                e.preventDefault(); // 阻止默认处理
+            });
+            
+            console.log('✅ 全局错误处理已初始化');
+        })();
+    </script>
+</head>
+<body class="min-h-screen w-full bg-[#000000] flex items-center justify-center font-system">
+    <!-- iPhone 容器 -->
+    <div class="w-full max-w-[393px] h-[852px] bg-[#1E1E1E] shadow-2xl overflow-hidden relative mx-auto rounded-[54px]">
+        <!-- iPhone 状态栏 -->
+        <div class="w-full h-[47px] bg-black px-5 flex items-center justify-between text-white text-[14px] font-medium">
+            <div class="flex items-center space-x-1">
+                <!-- 信号图标 -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 20h.01"></path>
+                    <path d="M7 20v-4"></path>
+                    <path d="M12 20v-8"></path>
+                    <path d="M17 20V8"></path>
+                    <path d="M22 4v16"></path>
+                </svg>
+                <span>中国移动</span>
+                <!-- WiFi图标 -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h.01"></path>
+                    <path d="M2 8.82a15 15 0 0 1 20 0"></path>
+                    <path d="M5 12.859a10 10 0 0 1 14 0"></path>
+                    <path d="M8.5 16.429a5 5 0 0 1 7 0"></path>
+                </svg>
+            </div>
+            <div class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">9:41</div>
+            <div class="flex items-center space-x-1">
+                <span>89%</span>
+                <!-- 电池图标 -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="16" height="10" x="2" y="7" rx="2" ry="2"></rect>
+                    <line x1="22" x2="22" y1="11" y2="13"></line>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 动态岛 -->
+        <button class="absolute left-1/2 -translate-x-1/2 bg-black transition-all duration-300 ease-out w-[126px] h-[37.5px] -top-0.5 rounded-b-[24px]"></button>
+
+        <!-- 主内容区域 -->
+        <div class="w-full h-[calc(100%-47px)] bg-white overflow-hidden relative">
+            <!-- 滚动内容区域 -->
+            <div class="absolute inset-0 bottom-[84px] overflow-y-auto scrollbar-none">
+
+                <!-- 顶部导航栏 -->
+                <header class="bg-white border-b border-gray-100 sticky top-0 z-10">
+                    <div class="flex items-center justify-between px-4 py-3">
+                        <a href="my-projects.html" class="text-black hover:text-gray-600 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m15 18-6-6 6-6"></path>
+                            </svg>
+                        </a>
+                        <h1 class="text-[16px] font-medium text-black">施工说明</h1>
+                        <button class="text-black hover:text-gray-600 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </header>
+
+                <!-- 项目信息卡片 -->
+                <div class="px-4 py-4 bg-gradient-to-r from-gray-50 to-gray-100">
+                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                        <div class="flex items-center justify-between mb-3">
+                            <h2 class="text-[16px] font-semibold text-black">现代简约客厅改造</h2>
+                            <span class="px-2 py-1 bg-green-100 text-green-800 text-[12px] rounded-full">施工中</span>
+                        </div>
+                        <div class="flex items-center text-[14px] text-gray-600 mb-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
+                                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                            <span>北京市朝阳区望京SOHO</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="text-[12px] text-gray-500">
+                                施工进度: 65%
+                            </div>
+                            <div class="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                <div class="progress-bar h-full w-[65%] rounded-full"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 施工步骤 -->
+                <div class="px-4 py-4">
+                    <h3 class="text-[16px] font-semibold text-black mb-4">施工步骤</h3>
+
+                    <!-- 步骤1 -->
+                    <div class="construction-step bg-white rounded-lg p-4 mb-4 border border-gray-100">
+                        <div class="flex items-start">
+                            <div class="step-number w-8 h-8 rounded-full flex items-center justify-center text-white text-[14px] font-bold mr-3 mt-1">
+                                1
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="text-[14px] font-semibold text-black mb-2">前期准备</h4>
+                                <p class="text-[12px] text-gray-600 mb-3">清理现场，保护家具，准备施工工具和材料</p>
+                                <div class="flex items-center justify-between">
+                                    <span class="px-2 py-1 bg-green-100 text-green-800 text-[10px] rounded-full">已完成</span>
+                                    <span class="text-[10px] text-gray-500">2024-01-15 完成</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 步骤2 -->
+                    <div class="construction-step bg-white rounded-lg p-4 mb-4 border border-gray-100">
+                        <div class="flex items-start">
+                            <div class="step-number w-8 h-8 rounded-full flex items-center justify-center text-white text-[14px] font-bold mr-3 mt-1">
+                                2
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="text-[14px] font-semibold text-black mb-2">水电改造</h4>
+                                <p class="text-[12px] text-gray-600 mb-3">重新布线，安装智能开关和插座，预留设备接口</p>
+                                <div class="flex items-center justify-between">
+                                    <span class="px-2 py-1 bg-green-100 text-green-800 text-[10px] rounded-full">已完成</span>
+                                    <span class="text-[10px] text-gray-500">2024-01-20 完成</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 步骤3 -->
+                    <div class="construction-step bg-white rounded-lg p-4 mb-4 border border-gray-100">
+                        <div class="flex items-start">
+                            <div class="step-number w-8 h-8 rounded-full flex items-center justify-center text-white text-[14px] font-bold mr-3 mt-1">
+                                3
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="text-[14px] font-semibold text-black mb-2">设备安装</h4>
+                                <p class="text-[12px] text-gray-600 mb-3">安装智能网关、传感器、照明设备等智能家居设备</p>
+                                <div class="flex items-center justify-between">
+                                    <span class="px-2 py-1 bg-blue-100 text-blue-800 text-[10px] rounded-full">进行中</span>
+                                    <span class="text-[10px] text-gray-500">预计 2024-01-25 完成</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 步骤4 -->
+                    <div class="construction-step bg-white rounded-lg p-4 mb-4 border border-gray-100">
+                        <div class="flex items-start">
+                            <div class="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center text-gray-400 text-[14px] font-bold mr-3 mt-1">
+                                4
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="text-[14px] font-semibold text-gray-400 mb-2">系统调试</h4>
+                                <p class="text-[12px] text-gray-400 mb-3">调试智能家居系统，配置场景模式，测试各项功能</p>
+                                <div class="flex items-center justify-between">
+                                    <span class="px-2 py-1 bg-gray-100 text-gray-500 text-[10px] rounded-full">待开始</span>
+                                    <span class="text-[10px] text-gray-400">预计 2024-01-28 开始</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 步骤5 -->
+                    <div class="construction-step bg-white rounded-lg p-4 mb-4 border border-gray-100">
+                        <div class="flex items-start">
+                            <div class="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center text-gray-400 text-[14px] font-bold mr-3 mt-1">
+                                5
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="text-[14px] font-semibold text-gray-400 mb-2">验收交付</h4>
+                                <p class="text-[12px] text-gray-400 mb-3">最终验收，用户培训，交付使用说明和保修卡</p>
+                                <div class="flex items-center justify-between">
+                                    <span class="px-2 py-1 bg-gray-100 text-gray-500 text-[10px] rounded-full">待开始</span>
+                                    <span class="text-[10px] text-gray-400">预计 2024-01-30 完成</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 注意事项 -->
+                <div class="px-4 py-4 bg-yellow-50">
+                    <h3 class="text-[16px] font-semibold text-black mb-3">注意事项</h3>
+                    <div class="space-y-2">
+                        <div class="flex items-start">
+                            <div class="w-2 h-2 bg-yellow-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                            <p class="text-[12px] text-gray-700">施工期间请保持现场通风，确保施工人员安全</p>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="w-2 h-2 bg-yellow-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                            <p class="text-[12px] text-gray-700">贵重物品请提前收纳，避免施工过程中损坏</p>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="w-2 h-2 bg-yellow-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                            <p class="text-[12px] text-gray-700">如有疑问请及时联系项目经理或施工负责人</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 联系信息 -->
+                <div class="px-4 py-4">
+                    <h3 class="text-[16px] font-semibold text-black mb-3">联系方式</h3>
+                    <div class="bg-white rounded-lg p-4 border border-gray-100">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mr-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="12" cy="7" r="4"></circle>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="text-[14px] font-semibold text-black">张工程师</h4>
+                                    <p class="text-[12px] text-gray-600">项目经理</p>
+                                </div>
+                            </div>
+                            <button class="px-3 py-1 bg-black text-white text-[12px] rounded-full">
+                                联系
+                            </button>
+                        </div>
+                        <div class="flex items-center text-[12px] text-gray-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
+                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                            </svg>
+                            <span>138-0013-8888</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 底部导航栏 -->
+            <div class="absolute bottom-0 left-0 right-0 h-[84px] bg-white/80 backdrop-blur-xl border-t border-white/20">
+                <!-- 导航栏内容 -->
+                <nav class="h-[49px] flex items-center px-2">
+                    <div class="flex justify-around w-full text-[12px]">
+                        <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="home.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                                </svg>
+                            </div>
+                            <span class="mt-1">首页</span>
+                        </a>
+                        <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="design-result.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="13.5" cy="6.5" fill="currentColor" r=".5"></circle>
+                                    <circle cx="17.5" cy="10.5" fill="currentColor" r=".5"></circle>
+                                    <circle cx="8.5" cy="7.5" fill="currentColor" r=".5"></circle>
+                                    <circle cx="6.5" cy="12.5" fill="currentColor" r=".5"></circle>
+                                    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+                                </svg>
+                            </div>
+                            <span class="mt-1">设计</span>
+                        </a>
+                        <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="mall.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+                                    <path d="M3 6h18"></path>
+                                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                                </svg>
+                            </div>
+                            <span class="mt-1">商城</span>
+                        </a>
+                        <a class="flex flex-col items-center group text-black transition-colors" href="spaces.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="m15 12-8.373 8.373a1 1 0 1 1-3-3L12 9"></path>
+                                    <path d="m18 15 4-4"></path>
+                                    <path d="m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172V7l-2.26-2.26a6 6 0 0 0-4.202-1.756L9 2.96l.92.82A6.18 6.18 0 0 1 12 8.4V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5"></path>
+                                </svg>
+                            </div>
+                            <span class="mt-1">施工</span>
+                        </a>
+                        <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="me.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                            </div>
+                            <span class="mt-1">我的</span>
+                        </a>
+                    </div>
+                </nav>
+                <!-- iPhone 16 Home Indicator -->
+                <div class="h-[34px] flex items-center justify-center">
+                    <div class="w-[134px] h-[5px] bg-black rounded-full"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

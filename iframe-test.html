@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>页面测试 - 智能设计与施工</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'system': ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', '"SF Pro Icons"', '"Helvetica Neue"', 'Helvetica', 'Arial', 'sans-serif']
+                    },
+                    colors: {
+                        'primary-text': '#1A1A1A',
+                        'main-bg': '#F8F9FA'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            -webkit-text-size-adjust: 100%;
+            -moz-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .scrollbar-none::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-none {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        :root {
+            --safe-area-inset-top: env(safe-area-inset-top);
+            --safe-area-inset-bottom: env(safe-area-inset-bottom);
+        }
+
+        .file-exists {
+            background-color: #d4edda;
+            border-color: #28a745;
+        }
+        .file-missing {
+            background-color: #f8d7da;
+            border-color: #dc3545;
+        }
+    </style>
+
+    <!-- 全局错误处理和兜底方案 -->
+    <script>
+        (function() {
+            'use strict';
+            
+            // 创建 Trace 对象的兜底实现
+            window.Trace = window.Trace || {
+                init: function() { console.log('Trace initialized (fallback)'); },
+                log: function() { console.log.apply(console, arguments); },
+                error: function() { console.error.apply(console, arguments); },
+                warn: function() { console.warn.apply(console, arguments); },
+                info: function() { console.info.apply(console, arguments); }
+            };
+
+            // 防止其他可能的调试工具错误
+            window.wx = window.wx || {};
+            window.my = window.my || {};
+            
+            // 防止 chartId 未定义错误
+            window.chartId = window.chartId || 'default-chart-id';
+            
+            // 全局错误处理
+            window.addEventListener('error', function(e) {
+                console.error('Global error caught:', e.error);
+                return true; // 阻止默认错误处理
+            });
+            
+            window.addEventListener('unhandledrejection', function(e) {
+                console.error('Unhandled promise rejection:', e.reason);
+                e.preventDefault(); // 阻止默认处理
+            });
+            
+            console.log('✅ 全局错误处理已初始化');
+        })();
+    </script>
+</head>
+<body class="min-h-screen w-full bg-[#000000] flex items-center justify-center font-system">
+    <!-- iPhone 容器 -->
+    <div class="w-full max-w-[393px] h-[852px] bg-[#1E1E1E] shadow-2xl overflow-hidden relative mx-auto rounded-[54px]">
+        <!-- iPhone 状态栏 -->
+        <div class="w-full h-[47px] bg-black px-5 flex items-center justify-between text-white text-[14px] font-medium">
+            <div class="flex items-center space-x-1">
+                <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2 20h.01"></path>
+                    <path d="M7 20v-4"></path>
+                    <path d="M12 20v-8"></path>
+                    <path d="M17 20V8"></path>
+                    <path d="M22 4v16"></path>
+                </svg>
+                <span>中国移动</span>
+                <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 20h.01"></path>
+                    <path d="M2 8.82a15 15 0 0 1 20 0"></path>
+                    <path d="M5 12.859a10 10 0 0 1 14 0"></path>
+                    <path d="M8.5 16.429a5 5 0 0 1 7 0"></path>
+                </svg>
+            </div>
+            <div class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">9:41</div>
+            <div class="flex items-center space-x-1">
+                <span>89%</span>
+                <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                    <rect height="10" rx="2" ry="2" width="16" x="2" y="7"></rect>
+                    <line x1="22" x2="22" y1="11" y2="13"></line>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 动态岛 -->
+        <button class="absolute left-1/2 -translate-x-1/2 bg-black transition-all duration-300 ease-out w-[126px] h-[37.5px] -top-0.5 rounded-b-[24px]"></button>
+
+        <!-- 主内容区域 -->
+        <div class="w-full h-[calc(100%-47px)] bg-white overflow-hidden relative">
+            <!-- 滚动内容区域 -->
+            <div class="absolute inset-0 bottom-[84px] overflow-y-auto scrollbar-none">
+                <!-- 顶部导航栏 -->
+                <header class="bg-white border-b border-gray-100">
+                    <div class="flex items-center justify-between px-4 py-3">
+                        <a class="text-black/70 hover:text-black transition-colors" href="home.html">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m15 18-6-6 6-6"></path>
+                            </svg>
+                        </a>
+                        <h1 class="text-[16px] font-medium text-[#1A1A1A]">页面测试</h1>
+                        <button class="text-black/70 hover:text-black transition-colors" onclick="refreshTest()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+                                <path d="M21 3v5h-5"></path>
+                                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+                                <path d="M3 21v-5h5"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </header>
+
+                <!-- 测试状态 -->
+                <section class="px-3 py-4 bg-[#F8F9FA]">
+                    <div class="bg-white p-4 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+                        <h2 class="text-[16px] font-semibold mb-2 text-[#1A1A1A]">页面加载测试</h2>
+                        <div id="status" class="text-[13px] text-blue-600 mb-2">正在检测页面文件...</div>
+                        <div class="text-[13px] text-gray-500">检测所有原型页面的加载状态</div>
+                    </div>
+                </section>
+
+                <!-- 测试iframe -->
+                <section class="px-3 py-4 bg-white">
+                    <div class="bg-white border border-gray-100 rounded-xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+                        <h3 class="text-[14px] font-medium mb-3 text-[#1A1A1A]">Iframe加载测试</h3>
+                        <div class="bg-gray-50 rounded-lg h-48 overflow-hidden">
+                            <iframe src="home.html" class="w-full h-full border-0" id="testIframe"></iframe>
+                        </div>
+                        <div class="mt-3 text-[12px] text-gray-600">
+                            测试页面: home.html
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 文件检测结果 -->
+                <section class="px-3 py-4 bg-[#F8F9FA]">
+                    <div class="bg-white p-4 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+                        <h3 class="text-[14px] font-medium mb-3 text-[#1A1A1A]">页面文件检测</h3>
+                        <div id="fileList" class="grid grid-cols-1 gap-2 text-[12px]">
+                            <div class="p-2 bg-gray-50 rounded border">检测中...</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 解决方案 -->
+                <section class="px-3 py-4 bg-white">
+                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                        <h3 class="text-[14px] font-medium mb-2 text-blue-800">解决方案</h3>
+                        <div class="text-[12px] text-blue-700 space-y-2">
+                            <p><strong>如果页面无法在iframe中显示：</strong></p>
+                            <ul class="list-disc list-inside space-y-1 ml-2">
+                                <li>浏览器安全策略限制本地文件iframe加载</li>
+                                <li>需要通过HTTP服务器访问</li>
+                                <li>某些页面可能包含阻止iframe嵌入的代码</li>
+                            </ul>
+                            <p class="mt-2"><strong>建议解决方案：</strong></p>
+                            <ul class="list-disc list-inside space-y-1 ml-2">
+                                <li>使用本地HTTP服务器（Live Server等）</li>
+                                <li>直接点击链接在新窗口中查看页面</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- 底部导航栏 -->
+            <div class="absolute bottom-0 left-0 right-0 h-[84px] bg-white/80 backdrop-blur-xl border-t border-white/20">
+                <nav class="h-[49px] flex items-center px-2">
+                    <div class="flex justify-around w-full text-[12px]">
+                        <a class="flex flex-col items-center group text-black transition-colors" href="home.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                                </svg>
+                            </div>
+                            <span class="mt-1">首页</span>
+                        </a>
+                        <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="design-result.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="13.5" cy="6.5" fill="currentColor" r=".5"></circle>
+                                    <circle cx="17.5" cy="10.5" fill="currentColor" r=".5"></circle>
+                                    <circle cx="8.5" cy="7.5" fill="currentColor" r=".5"></circle>
+                                    <circle cx="6.5" cy="12.5" fill="currentColor" r=".5"></circle>
+                                    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+                                </svg>
+                            </div>
+                            <span class="mt-1">设计</span>
+                        </a>
+                        <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="mall.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+                                    <path d="M3 6h18"></path>
+                                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                                </svg>
+                            </div>
+                            <span class="mt-1">商城</span>
+                        </a>
+                        <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="spaces.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="m15 12-8.373 8.373a1 1 0 1 1-3-3L12 9"></path>
+                                    <path d="m18 15 4-4"></path>
+                                    <path d="m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172V7l-2.26-2.26a6 6 0 0 0-4.202-1.756L9 2.96l.92.82A6.18 6.18 0 0 1 12 8.4V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5"></path>
+                                </svg>
+                            </div>
+                            <span class="mt-1">施工</span>
+                        </a>
+                        <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="me.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                            </div>
+                            <span class="mt-1">我的</span>
+                        </a>
+                    </div>
+                </nav>
+                <!-- iPhone 16 Home Indicator -->
+                <div class="h-[34px] flex items-center justify-center">
+                    <div class="w-[134px] h-[5px] bg-black rounded-full"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 页面文件列表
+        const pageFiles = [
+            'home.html', 'design-result.html', 'mall.html', 'spaces.html', 'me.html',
+            'optimized_knowledge.html', 'construction-projects.html', 'construction-project-detail.html',
+            'construction-space.html', 'construction-feed.html', 'construction-demo.html',
+            'my-projects.html', 'project-drawings.html', 'project-3d-effects.html',
+            'equipment-list.html', 'project-construction-guide.html', 'design-budget.html',
+            'design-budget-viewer.html', 'design-equipment-list.html', 'welcome-coming-soon.html',
+            'welcome-discover.html', 'welcome-household.html', 'welcome-your-wish.html',
+            'login.html', 'register.html', 'forgot-password.html', 'design.html',
+            'design-upload.html', 'design-project-detail.html', 'design-history.html',
+            'design-service-detail.html', 'mall-category-enhanced.html', 'mall-detail.html',
+            'mall-cart.html', 'mall-order.html', 'mall-search.html', 'order-confirm.html',
+            'profile-edit.html', 'profile-address.html', 'profile-help.html',
+            'knowledge.html', 'knowledge-detail.html', 'knowledge-content.html',
+            'knowledge-article.html', 'knowledge-video-preview.html', 'ai-assistant.html',
+            'project-team.html', 'design-payment.html'
+        ];
+
+        // 检测文件是否存在
+        async function checkFiles() {
+            const fileList = document.getElementById('fileList');
+            const status = document.getElementById('status');
+
+            let existingFiles = 0;
+            let missingFiles = 0;
+
+            fileList.innerHTML = '';
+
+            for (const file of pageFiles) {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'p-2 rounded border text-[12px]';
+                fileItem.textContent = file;
+
+                try {
+                    const response = await fetch(file, { method: 'HEAD' });
+                    if (response.ok) {
+                        fileItem.classList.add('file-exists');
+                        existingFiles++;
+                    } else {
+                        fileItem.classList.add('file-missing');
+                        missingFiles++;
+                    }
+                } catch (error) {
+                    fileItem.classList.add('file-missing');
+                    missingFiles++;
+                }
+
+                fileList.appendChild(fileItem);
+            }
+
+            if (missingFiles === 0) {
+                status.className = 'text-[13px] text-green-600 mb-2';
+                status.textContent = `✅ 检测完成: ${existingFiles} 个文件存在`;
+            } else {
+                status.className = 'text-[13px] text-red-600 mb-2';
+                status.textContent = `❌ 检测完成: ${existingFiles} 个文件存在, ${missingFiles} 个文件缺失`;
+            }
+        }
+
+        // 刷新测试
+        function refreshTest() {
+            checkFiles();
+            const testIframe = document.getElementById('testIframe');
+            testIframe.src = testIframe.src; // 重新加载iframe
+        }
+
+        // 测试iframe加载
+        const testIframe = document.getElementById('testIframe');
+        testIframe.onload = function() {
+            console.log('✅ 测试iframe加载成功');
+        };
+        testIframe.onerror = function() {
+            console.log('❌ 测试iframe加载失败');
+        };
+
+        // 页面加载完成后开始检测
+        document.addEventListener('DOMContentLoaded', function() {
+            checkFiles();
+        });
+    </script>
+</body>
+</html>

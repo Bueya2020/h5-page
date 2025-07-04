@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>购物车 - 智能设计与施工</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/iphone16_fix.css">
+    <style>
+        .cart-item {
+            transition: transform 0.2s;
+        }
+
+        .cart-item:active {
+            transform: scale(0.98);
+        }
+
+        .quantity-btn {
+            transition: background-color 0.2s;
+        }
+
+        .quantity-btn:active {
+            background-color: #f3f4f6;
+        }
+
+
+    </style>
+
+    <!-- 全局错误处理和兜底方案 -->
+    <script>
+        (function() {
+            'use strict';
+            
+            // 创建 Trace 对象的兜底实现
+            window.Trace = window.Trace || {
+                init: function() { console.log('Trace initialized (fallback)'); },
+                log: function() { console.log.apply(console, arguments); },
+                error: function() { console.error.apply(console, arguments); },
+                warn: function() { console.warn.apply(console, arguments); },
+                info: function() { console.info.apply(console, arguments); }
+            };
+
+            // 防止其他可能的调试工具错误
+            window.wx = window.wx || {};
+            window.my = window.my || {};
+            
+            // 防止 chartId 未定义错误
+            window.chartId = window.chartId || 'default-chart-id';
+            
+            // 全局错误处理
+            window.addEventListener('error', function(e) {
+                console.error('Global error caught:', e.error);
+                return true; // 阻止默认错误处理
+            });
+            
+            window.addEventListener('unhandledrejection', function(e) {
+                console.error('Unhandled promise rejection:', e.reason);
+                e.preventDefault(); // 阻止默认处理
+            });
+            
+            console.log('✅ 全局错误处理已初始化');
+        })();
+    </script>
+</head>
+<body class="min-h-screen w-full bg-[#000000] flex items-center justify-center font-system">
+    <!-- iPhone 容器 -->
+    <div class="w-full max-w-[393px] h-[852px] bg-[#1E1E1E] shadow-2xl overflow-hidden relative mx-auto rounded-[54px]">
+        <!-- iPhone 状态栏 -->
+        <div class="w-full h-[47px] bg-black px-5 flex items-center justify-between text-white text-[14px] font-medium">
+            <div class="flex items-center space-x-1">
+                <!-- 信号图标 -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 20h.01"></path>
+                    <path d="M7 20v-4"></path>
+                    <path d="M12 20v-8"></path>
+                    <path d="M17 20V8"></path>
+                    <path d="M22 4v16"></path>
+                </svg>
+                <span>中国移动</span>
+                <!-- WiFi图标 -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h.01"></path>
+                    <path d="M2 8.82a15 15 0 0 1 20 0"></path>
+                    <path d="M5 12.859a10 10 0 0 1 14 0"></path>
+                    <path d="M8.5 16.429a5 5 0 0 1 7 0"></path>
+                </svg>
+            </div>
+            <div class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">9:41</div>
+            <div class="flex items-center space-x-1">
+                <span>89%</span>
+                <!-- 电池图标 -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="16" height="10" x="2" y="7" rx="2" ry="2"></rect>
+                    <line x1="22" x2="22" y1="11" y2="13"></line>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 动态岛 -->
+        <button class="absolute left-1/2 -translate-x-1/2 bg-black transition-all duration-300 ease-out w-[126px] h-[37.5px] -top-0.5 rounded-b-[24px]"></button>
+
+        <!-- 主内容区域 -->
+        <div class="w-full h-[calc(100%-47px)] bg-white overflow-hidden relative">
+            <!-- 顶部导航栏 -->
+            <header class="bg-white border-b border-gray-100 sticky top-0 z-10">
+                <div class="flex items-center justify-between px-4 py-3">
+                    <a href="mall.html" class="text-black hover:text-gray-600 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m15 18-6-6 6-6"></path>
+                        </svg>
+                    </a>
+                    <h1 class="text-[16px] font-medium text-black">购物车</h1>
+                    <button class="text-black hover:text-gray-600 transition-colors text-[14px]">编辑</button>
+                </div>
+            </header>
+
+            <!-- 滚动内容区域 -->
+            <div class="absolute inset-0 top-[75px] bottom-[84px] overflow-y-auto scrollbar-none">
+                <!-- 购物车区域（商品列表 + 去结算栏） -->
+                <section class="px-4 py-4">
+                    <!-- 购物车商品列表 -->
+                    <div class="space-y-4" id="cartItemsList">
+                        <!-- 购物车商品将通过JavaScript动态生成 -->
+                        <div id="emptyCart" class="text-center py-12 hidden">
+                            <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400">
+                                    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+                                    <path d="M3 6h18"></path>
+                                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-lg font-medium text-gray-600 mb-2">购物车是空的</h3>
+                            <p class="text-sm text-gray-500 mb-4">快去挑选您喜欢的商品吧</p>
+                            <a href="mall.html" class="inline-block px-6 py-2 bg-black text-white rounded-lg text-sm">去购物</a>
+                        </div>
+                    </div>
+
+                    <!-- 去结算栏 -->
+                    <div id="checkoutBar" class="mt-4 bg-white rounded-lg shadow-sm border border-gray-100 p-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-4">
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" id="selectAll" class="rounded border-gray-300">
+                                    <span class="text-sm text-gray-600">全选</span>
+                                </label>
+                                <div class="text-sm text-gray-600">
+                                    已选 <span id="selectedCount" class="text-black font-medium">0</span> 件
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <div class="text-right">
+                                    <div class="text-xs text-gray-500">合计</div>
+                                    <div class="text-lg font-bold text-black">¥<span id="totalPrice">0</span></div>
+                                </div>
+                                <button id="checkoutBtn" class="bg-black text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors" onclick="goToCheckout()">
+                                    去结算
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 推荐商品 -->
+                <section class="px-4 py-4">
+                    <h2 class="text-sm font-semibold mb-3">为您推荐</h2>
+                    <div class="grid grid-cols-2 gap-3">
+                        <a href="mall-detail.html" class="bg-white rounded-lg overflow-hidden shadow-sm">
+                            <img src="https://images.unsplash.com/photo-1573770012830-7c314f4fcc99?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=180&h=120&q=80" alt="智能摄像头" class="w-full h-28 object-cover">
+                            <div class="p-2">
+                                <h3 class="text-xs font-medium">智能摄像头</h3>
+                                <p class="text-sm font-bold">¥199</p>
+                            </div>
+                        </a>
+                        <a href="mall-detail.html" class="bg-white rounded-lg overflow-hidden shadow-sm">
+                            <img src="https://images.unsplash.com/photo-1556656793-08538906a9f8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=180&h=120&q=80" alt="智能插座" class="w-full h-28 object-cover">
+                            <div class="p-2">
+                                <h3 class="text-xs font-medium">智能插座</h3>
+                                <p class="text-sm font-bold">¥59</p>
+                            </div>
+                        </a>
+                    </div>
+                </section>
+            </div>
+
+            <!-- 底部导航栏 -->
+            <div class="absolute bottom-0 left-0 right-0 h-[84px] bg-white/80 backdrop-blur-xl border-t border-white/20">
+                <!-- 导航栏内容 -->
+                <nav class="h-[49px] flex items-center px-2">
+                    <div class="flex justify-around w-full text-[12px]">
+                        <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="home.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                                </svg>
+                            </div>
+                            <span class="mt-1">首页</span>
+                        </a>
+                        <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="design-result.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="13.5" cy="6.5" fill="currentColor" r=".5"></circle>
+                                    <circle cx="17.5" cy="10.5" fill="currentColor" r=".5"></circle>
+                                    <circle cx="8.5" cy="7.5" fill="currentColor" r=".5"></circle>
+                                    <circle cx="6.5" cy="12.5" fill="currentColor" r=".5"></circle>
+                                    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+                                </svg>
+                            </div>
+                            <span class="mt-1">设计</span>
+                        </a>
+                        <a class="flex flex-col items-center group text-black transition-colors" href="mall.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+                                    <path d="M3 6h18"></path>
+                                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                                </svg>
+                            </div>
+                            <span class="mt-1">商城</span>
+                        </a>
+                        <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="spaces.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="m15 12-8.373 8.373a1 1 0 1 1-3-3L12 9"></path>
+                                    <path d="m18 15 4-4"></path>
+                                    <path d="m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172V7l-2.26-2.26a6 6 0 0 0-4.202-1.756L9 2.96l.92.82A6.18 6.18 0 0 1 12 8.4V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5"></path>
+                                </svg>
+                            </div>
+                            <span class="mt-1">施工</span>
+                        </a>
+                        <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="me.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                            </div>
+                            <span class="mt-1">我的</span>
+                        </a>
+                    </div>
+                </nav>
+                <!-- iPhone 16 Home Indicator -->
+                <div class="h-[34px] flex items-center justify-center">
+                    <div class="w-[134px] h-[5px] bg-black rounded-full"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 购物车数据
+        let cartData = [];
+
+        // DOM元素
+        const cartItemsList = document.getElementById("cartItemsList");
+        const emptyCart = document.getElementById("emptyCart");
+        const checkoutBar = document.getElementById("checkoutBar");
+        const selectAllCheckbox = document.getElementById("selectAll");
+        const selectedCountSpan = document.getElementById("selectedCount");
+        const totalPriceSpan = document.getElementById("totalPrice");
+        const checkoutBtn = document.getElementById("checkoutBtn");
+
+        // 加载购物车数据
+        function loadCartData() {
+            // 从localStorage加载购物车数据
+            const savedCart = localStorage.getItem("smartHomeCart");
+            if (savedCart) {
+                cartData = JSON.parse(savedCart);
+            } else {
+                // 如果没有数据，创建一些示例数据
+                cartData = [
+                    {
+                        id: 'gw001',
+                        name: 'Aqara Hub M2 智能网关',
+                        price: 299,
+                        originalPrice: 399,
+                        image: 'https://images.unsplash.com/photo-1558089687-f282ffcbc0d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80',
+                        brand: 'Aqara',
+                        quantity: 1,
+                        selected: true,
+                        specs: '白色 | 标准版'
+                    },
+                    {
+                        id: 'sw001',
+                        name: 'Aqara墙壁开关D1',
+                        price: 89,
+                        originalPrice: 119,
+                        image: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80',
+                        brand: 'Aqara',
+                        quantity: 2,
+                        selected: true,
+                        specs: '单开 | 零火线版'
+                    }
+                ];
+                saveCartData();
+            }
+        }
+
+        // 保存购物车数据
+        function saveCartData() {
+            localStorage.setItem("smartHomeCart", JSON.stringify(cartData));
+        }
+
+        // 渲染购物车商品
+        function renderCartItems() {
+            if (cartData.length === 0) {
+                cartItemsList.innerHTML = '';
+                emptyCart.classList.remove('hidden');
+                checkoutBar.classList.add('hidden');
+                return;
+            }
+
+            emptyCart.classList.add('hidden');
+            checkoutBar.classList.remove('hidden');
+
+            const cartHTML = cartData.map((item, index) => `
+                <div class="bg-white rounded-lg p-4 shadow-sm cart-item">
+                    <div class="flex items-start space-x-3">
+                        <!-- 选择框 -->
+                        <input type="checkbox" class="item-checkbox mt-2" data-index="${index}" ${item.selected ? 'checked' : ''}>
+
+                        <!-- 商品图片 -->
+                        <img src="${item.image}" alt="${item.name}" class="w-16 h-16 object-cover rounded-lg">
+
+                        <!-- 商品信息 -->
+                        <div class="flex-1">
+                            <h3 class="text-sm font-medium text-black mb-1">${item.name}</h3>
+                            <p class="text-xs text-gray-500 mb-2">${item.specs}</p>
+
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-sm font-bold text-black">¥${item.price}</span>
+                                    ${item.originalPrice ? `<span class="text-xs text-gray-400 line-through">¥${item.originalPrice}</span>` : ''}
+                                </div>
+
+                                <!-- 数量控制 -->
+                                <div class="flex items-center space-x-2">
+                                    <button class="decrease-btn quantity-btn w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center text-gray-600" data-index="${index}">
+                                        <i class="fas fa-minus text-xs"></i>
+                                    </button>
+                                    <span class="text-sm font-medium w-8 text-center">${item.quantity}</span>
+                                    <button class="increase-btn quantity-btn w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center text-gray-600" data-index="${index}">
+                                        <i class="fas fa-plus text-xs"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 删除按钮 -->
+                        <button class="delete-btn text-gray-400 hover:text-red-500 transition-colors" data-index="${index}">
+                            <i class="fas fa-trash text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            cartItemsList.innerHTML = cartHTML;
+            updateCheckoutBar();
+        }
+
+        // 更新去结算栏
+        function updateCheckoutBar() {
+            let totalPrice = 0;
+            let selectedCount = 0;
+            let allSelected = true;
+
+            cartData.forEach(item => {
+                if (item.selected) {
+                    totalPrice += item.price * item.quantity;
+                    selectedCount += item.quantity;
+                } else {
+                    allSelected = false;
+                }
+            });
+
+            // 更新全选状态
+            selectAllCheckbox.checked = cartData.length > 0 && allSelected;
+
+            // 更新选中数量和总价
+            selectedCountSpan.textContent = selectedCount;
+            totalPriceSpan.textContent = totalPrice;
+
+            // 更新去结算按钮状态
+            if (selectedCount > 0) {
+                checkoutBtn.disabled = false;
+                checkoutBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                checkoutBtn.classList.add('hover:bg-gray-800');
+            } else {
+                checkoutBtn.disabled = true;
+                checkoutBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                checkoutBtn.classList.remove('hover:bg-gray-800');
+            }
+        }
+
+        // 初始化页面
+        function initPage() {
+            loadCartData();
+            renderCartItems();
+            initEventListeners();
+        }
+
+        // 去结算功能
+        function goToCheckout() {
+            const selectedItems = getSelectedItems();
+            if (selectedItems.length === 0) {
+                alert("请选择要结算的商品");
+                return;
+            }
+
+            // 保存选中的商品到订单数据
+            localStorage.setItem("smartHomeOrder", JSON.stringify(selectedItems));
+
+            // 跳转到订单确认页面
+            window.location.href = "order-confirm.html";
+        }
+
+        // 获取选中的商品
+        function getSelectedItems() {
+            return cartData.filter(item => item.selected);
+        }
+
+        // 事件监听器引用，用于清理
+        const eventListeners = {
+            selectAllChange: null,
+            cartItemsChange: null,
+            cartItemsClick: null,
+            checkoutClick: null
+        };
+
+        // 事件监听
+        function initEventListeners() {
+            // 全选/取消全选
+            eventListeners.selectAllChange = (event) => {
+                try {
+                    const isChecked = event.target.checked;
+                    cartData.forEach(item => {
+                        item.selected = isChecked;
+                    });
+                    saveCartData();
+                    renderCartItems();
+                } catch (error) {
+                    console.error('全选操作失败:', error);
+                }
+            };
+
+            if (selectAllCheckbox) {
+                selectAllCheckbox.addEventListener("change", eventListeners.selectAllChange);
+            }
+
+            // 商品选择/取消选择
+            eventListeners.cartItemsChange = (event) => {
+                try {
+                    if (event.target.classList.contains("item-checkbox")) {
+                        const index = parseInt(event.target.dataset.index);
+                        if (index >= 0 && index < cartData.length) {
+                            cartData[index].selected = event.target.checked;
+                            saveCartData();
+                            updateCheckoutBar();
+                        }
+                    }
+                } catch (error) {
+                    console.error('商品选择操作失败:', error);
+                }
+            };
+
+            if (cartItemsList) {
+                cartItemsList.addEventListener("change", eventListeners.cartItemsChange);
+            }
+
+            // 数量增减
+            eventListeners.cartItemsClick = (event) => {
+                try {
+                    const target = event.target.closest("button");
+                    if (!target) return;
+
+                    const index = parseInt(target.dataset.index);
+                    if (isNaN(index) || index < 0 || index >= cartData.length) {
+                        console.error('无效的商品索引:', index);
+                        return;
+                    }
+
+                    if (target.classList.contains("increase-btn")) {
+                        cartData[index].quantity++;
+                    } else if (target.classList.contains("decrease-btn")) {
+                        if (cartData[index].quantity > 1) {
+                            cartData[index].quantity--;
+                        }
+                    } else if (target.classList.contains("delete-btn")) {
+                        if (confirm('确定要删除这个商品吗？')) {
+                            cartData.splice(index, 1);
+                        } else {
+                            return; // 用户取消删除
+                        }
+                    }
+                    saveCartData();
+                    renderCartItems();
+                } catch (error) {
+                    console.error('商品操作失败:', error);
+                }
+            };
+
+            if (cartItemsList) {
+                cartItemsList.addEventListener("click", eventListeners.cartItemsClick);
+            }
+
+            // 去结算按钮点击
+            eventListeners.checkoutClick = goToCheckout;
+            if (checkoutBtn) {
+                checkoutBtn.addEventListener("click", eventListeners.checkoutClick);
+            }
+        }
+
+        // 清理事件监听器
+        function cleanup() {
+            try {
+                if (selectAllCheckbox && eventListeners.selectAllChange) {
+                    selectAllCheckbox.removeEventListener("change", eventListeners.selectAllChange);
+                }
+
+                if (cartItemsList) {
+                    if (eventListeners.cartItemsChange) {
+                        cartItemsList.removeEventListener("change", eventListeners.cartItemsChange);
+                    }
+                    if (eventListeners.cartItemsClick) {
+                        cartItemsList.removeEventListener("click", eventListeners.cartItemsClick);
+                    }
+                }
+
+                if (checkoutBtn && eventListeners.checkoutClick) {
+                    checkoutBtn.removeEventListener("click", eventListeners.checkoutClick);
+                }
+
+                console.log('购物车页面事件监听器清理完成');
+            } catch (error) {
+                console.error('清理事件监听器时出错:', error);
+            }
+        }
+
+        // 实时数据同步功能
+        let syncInterval = null;
+        let lastSyncTime = Date.now();
+
+        // 初始化实时同步
+        function initRealTimeSync() {
+            // 监听localStorage变化（跨标签页同步）
+            window.addEventListener('storage', handleStorageChange);
+
+            // 定期同步数据（防止数据丢失）
+            syncInterval = setInterval(syncCartData, 5000);
+
+            // 监听页面可见性变化
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+
+            console.log('实时数据同步已启动');
+        }
+
+        // 处理localStorage变化
+        function handleStorageChange(event) {
+            if (event.key === 'smartHomeCart' && event.newValue !== event.oldValue) {
+                console.log('检测到购物车数据变化，同步中...');
+                loadCartData();
+                renderCartItems();
+                showSyncNotification('购物车数据已同步');
+            }
+        }
+
+        // 处理页面可见性变化
+        function handleVisibilityChange() {
+            if (!document.hidden) {
+                // 页面变为可见时，检查是否需要同步
+                const currentTime = Date.now();
+                if (currentTime - lastSyncTime > 10000) { // 10秒以上未同步
+                    syncCartData();
+                }
+            }
+        }
+
+        // 同步购物车数据
+        function syncCartData() {
+            try {
+                // 模拟与服务器同步
+                const localData = localStorage.getItem('smartHomeCart');
+                if (localData) {
+                    // 这里可以添加与服务器的同步逻辑
+                    console.log('购物车数据同步检查完成');
+                    lastSyncTime = Date.now();
+
+                    // 更新同步状态
+                    updateSyncStatus('已同步');
+                }
+            } catch (error) {
+                console.error('数据同步失败:', error);
+                updateSyncStatus('同步失败');
+            }
+        }
+
+        // 显示同步通知
+        function showSyncNotification(message) {
+            // 创建通知元素
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-lg text-sm z-50';
+            notification.textContent = message;
+
+            document.body.appendChild(notification);
+
+            // 3秒后移除通知
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 3000);
+        }
+
+        // 更新同步状态
+        function updateSyncStatus(status) {
+            // 在页面上显示同步状态（可选）
+            console.log('同步状态:', status);
+        }
+
+        // 增强的保存购物车数据函数
+        function saveCartDataWithSync() {
+            try {
+                // 保存到localStorage
+                localStorage.setItem('smartHomeCart', JSON.stringify(cartData));
+
+                // 触发同步事件
+                window.dispatchEvent(new CustomEvent('cartDataChanged', {
+                    detail: { cartData: cartData, timestamp: Date.now() }
+                }));
+
+                // 更新同步时间
+                lastSyncTime = Date.now();
+
+                console.log('购物车数据已保存并同步');
+            } catch (error) {
+                console.error('保存购物车数据失败:', error);
+            }
+        }
+
+        // 替换原有的saveCartData函数
+        function saveCartData() {
+            saveCartDataWithSync();
+        }
+
+        // 清理同步相关资源
+        function cleanupSync() {
+            if (syncInterval) {
+                clearInterval(syncInterval);
+                syncInterval = null;
+            }
+
+            window.removeEventListener('storage', handleStorageChange);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+
+            console.log('实时同步资源已清理');
+        }
+
+        // 页面加载时执行
+        document.addEventListener("DOMContentLoaded", function() {
+            initPage();
+            initRealTimeSync();
+        });
+
+        // 页面卸载时清理
+        window.addEventListener('beforeunload', function() {
+            cleanup();
+            cleanupSync();
+        });
+
+        window.addEventListener('pagehide', function() {
+            cleanup();
+            cleanupSync();
+        });
+    </script>

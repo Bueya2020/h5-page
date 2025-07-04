@@ -1,0 +1,235 @@
+/* iPhone 16 系列适配修复样式 */
+
+/* iPhone 16 Pro Max 适配 */
+@media only screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) {
+    /* 安全区域适配 */
+    .safe-area-top {
+        padding-top: env(safe-area-inset-top);
+    }
+    
+    .safe-area-bottom {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+    
+    .safe-area-left {
+        padding-left: env(safe-area-inset-left);
+    }
+    
+    .safe-area-right {
+        padding-right: env(safe-area-inset-right);
+    }
+    
+    /* 状态栏高度调整 */
+    .status-bar-height {
+        height: 54px; /* iPhone 16 Pro Max 状态栏高度 */
+    }
+    
+    /* 导航栏适配 */
+    .navbar {
+        padding-top: calc(54px + 10px);
+    }
+    
+    /* 底部安全区域 */
+    .bottom-safe-area {
+        padding-bottom: 34px; /* Home Indicator 区域 */
+    }
+}
+
+/* iPhone 16 Pro 适配 */
+@media only screen and (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) {
+    .safe-area-top {
+        padding-top: env(safe-area-inset-top);
+    }
+    
+    .safe-area-bottom {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+    
+    .status-bar-height {
+        height: 54px;
+    }
+    
+    .navbar {
+        padding-top: calc(54px + 10px);
+    }
+    
+    .bottom-safe-area {
+        padding-bottom: 34px;
+    }
+}
+
+/* iPhone 16 Plus 适配 */
+@media only screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) {
+    .safe-area-top {
+        padding-top: env(safe-area-inset-top);
+    }
+    
+    .safe-area-bottom {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+    
+    .status-bar-height {
+        height: 47px;
+    }
+    
+    .navbar {
+        padding-top: calc(47px + 10px);
+    }
+    
+    .bottom-safe-area {
+        padding-bottom: 34px;
+    }
+}
+
+/* iPhone 16 标准版适配 */
+@media only screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) {
+    .safe-area-top {
+        padding-top: env(safe-area-inset-top);
+    }
+    
+    .safe-area-bottom {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+    
+    .status-bar-height {
+        height: 47px;
+    }
+    
+    .navbar {
+        padding-top: calc(47px + 10px);
+    }
+    
+    .bottom-safe-area {
+        padding-bottom: 34px;
+    }
+}
+
+/* 通用刘海屏适配 */
+@supports (padding: max(0px)) {
+    .safe-area-inset-top {
+        padding-top: max(20px, env(safe-area-inset-top));
+    }
+    
+    .safe-area-inset-bottom {
+        padding-bottom: max(20px, env(safe-area-inset-bottom));
+    }
+    
+    .safe-area-inset-left {
+        padding-left: max(0px, env(safe-area-inset-left));
+    }
+    
+    .safe-area-inset-right {
+        padding-right: max(0px, env(safe-area-inset-right));
+    }
+}
+
+/* 横屏适配 */
+@media screen and (orientation: landscape) {
+    .landscape-hide {
+        display: none !important;
+    }
+    
+    .landscape-show {
+        display: block !important;
+    }
+    
+    /* 横屏时的安全区域 */
+    .safe-area-landscape {
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+    }
+}
+
+/* 竖屏适配 */
+@media screen and (orientation: portrait) {
+    .portrait-hide {
+        display: none !important;
+    }
+    
+    .portrait-show {
+        display: block !important;
+    }
+}
+
+/* 动态岛适配 (iPhone 14 Pro 系列及以上) */
+@media only screen and (min-device-width: 393px) and (max-device-width: 430px) and (-webkit-device-pixel-ratio: 3) {
+    .dynamic-island-space {
+        margin-top: 10px; /* 为动态岛留出空间 */
+    }
+    
+    .content-below-dynamic-island {
+        padding-top: calc(env(safe-area-inset-top) + 10px);
+    }
+}
+
+/* 修复常见的显示问题 */
+.fix-viewport {
+    width: 100vw;
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+}
+
+/* 修复iOS Safari的100vh问题 */
+.full-height {
+    height: 100vh;
+    height: -webkit-fill-available;
+}
+
+/* 修复滚动问题 */
+.scroll-fix {
+    -webkit-overflow-scrolling: touch;
+    overflow-scrolling: touch;
+}
+
+/* 修复点击延迟 */
+.touch-fix {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* 修复字体渲染 */
+.font-fix {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+/* 修复输入框缩放 */
+input, textarea, select {
+    font-size: 16px !important; /* 防止iOS缩放 */
+}
+
+/* 修复按钮样式 */
+button, input[type="button"], input[type="submit"] {
+    -webkit-appearance: none;
+    appearance: none;
+    border-radius: 0;
+}
+
+/* 修复选择文本的颜色 */
+::selection {
+    background-color: rgba(0, 123, 255, 0.2);
+}
+
+::-moz-selection {
+    background-color: rgba(0, 123, 255, 0.2);
+}
+
+/* 修复滚动条样式 */
+::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.3);
+}

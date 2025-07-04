@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>商品分类 - 智能设计与施工</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'system': ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', '"SF Pro Icons"', '"Helvetica Neue"', 'Helvetica', 'Arial', 'sans-serif']
+                    },
+                    colors: {
+                        'primary-text': '#1A1A1A',
+                        'main-bg': '#F8F9FA'
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/iphone16_fix.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            -webkit-text-size-adjust: 100%;
+            -moz-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .scrollbar-none::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-none {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        :root {
+            --safe-area-inset-top: env(safe-area-inset-top);
+            --safe-area-inset-bottom: env(safe-area-inset-bottom);
+        }
+
+        .category-item {
+            transition: all 0.2s ease;
+            border-radius: 8px;
+            margin: 2px 4px;
+        }
+
+        .category-item:hover {
+            background-color: #f9fafb;
+        }
+
+        .category-item:active {
+            transform: scale(0.98);
+            background-color: #f3f4f6;
+        }
+
+        .category-item.active {
+            background-color: #f3f4f6;
+            border-right: 2px solid #000;
+            font-weight: 500;
+        }
+
+        .product-card {
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .product-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transform: translateY(-1px);
+        }
+
+        .add-to-cart-btn {
+            background: linear-gradient(135deg, #000 0%, #333 100%);
+            transition: all 0.3s ease;
+        }
+
+        .add-to-cart-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .checkout-btn {
+            position: absolute;
+            bottom: 110px;
+            right: 20px;
+            z-index: 1000;
+            background: #000;
+            color: white;
+            border-radius: 25px;
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+            min-width: 100px;
+            height: 44px;
+            border: none;
+            cursor: pointer;
+            opacity: 1;
+            visibility: visible;
+            max-width: calc(393px - 40px);
+        }
+
+        .checkout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+            background: #333;
+        }
+
+        .checkout-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+    </style>
+
+    <!-- 全局错误处理和兜底方案 -->
+    <script>
+        (function() {
+            'use strict';
+            
+            // 创建 Trace 对象的兜底实现
+            window.Trace = window.Trace || {
+                init: function() { console.log('Trace initialized (fallback)'); },
+                log: function() { console.log.apply(console, arguments); },
+                error: function() { console.error.apply(console, arguments); },
+                warn: function() { console.warn.apply(console, arguments); },
+                info: function() { console.info.apply(console, arguments); }
+            };
+
+            // 防止其他可能的调试工具错误
+            window.wx = window.wx || {};
+            window.my = window.my || {};
+            
+            // 防止 chartId 未定义错误
+            window.chartId = window.chartId || 'default-chart-id';
+            
+            // 全局错误处理
+            window.addEventListener('error', function(e) {
+                console.error('Global error caught:', e.error);
+                return true; // 阻止默认错误处理
+            });
+            
+            window.addEventListener('unhandledrejection', function(e) {
+                console.error('Unhandled promise rejection:', e.reason);
+                e.preventDefault(); // 阻止默认处理
+            });
+            
+            console.log('✅ 全局错误处理已初始化');
+        })();
+    </script>
+</head>
+<body class="min-h-screen w-full bg-[#000000] flex items-center justify-center font-system">
+    <!-- iPhone 容器 -->
+    <div class="w-full max-w-[393px] h-[852px] bg-[#1E1E1E] shadow-2xl overflow-hidden relative mx-auto rounded-[54px]">
+        <!-- iPhone 状态栏 -->
+        <div class="w-full h-[47px] bg-black px-5 flex items-center justify-between text-white text-[14px] font-medium">
+            <div class="flex items-center space-x-1">
+                <!-- 信号图标 -->
+                <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2 20h.01"></path>
+                    <path d="M7 20v-4"></path>
+                    <path d="M12 20v-8"></path>
+                    <path d="M17 20V8"></path>
+                    <path d="M22 4v16"></path>
+                </svg>
+                <span>中国移动</span>
+                <!-- WiFi图标 -->
+                <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 20h.01"></path>
+                    <path d="M2 8.82a15 15 0 0 1 20 0"></path>
+                    <path d="M5 12.859a10 10 0 0 1 14 0"></path>
+                    <path d="M8.5 16.429a5 5 0 0 1 7 0"></path>
+                </svg>
+            </div>
+            <div class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">13:53</div>
+            <div class="flex items-center space-x-1">
+                <span>89%</span>
+                <!-- 电池图标 -->
+                <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                    <rect height="10" rx="2" ry="2" width="16" x="2" y="7"></rect>
+                    <line x1="22" x2="22" y1="11" y2="13"></line>
+                </svg>
+            </div>
+        </div>
+        <!-- 动态岛 -->
+        <button class="absolute left-1/2 -translate-x-1/2 bg-black transition-all duration-300 ease-out w-[126px] h-[37.5px] -top-0.5 rounded-b-[24px]"></button>
+
+        <!-- 主内容区域 -->
+        <div class="w-full h-[calc(100%-47px)] bg-white overflow-hidden relative">
+            <!-- 顶部白色导航区域 -->
+            <div class="absolute top-0 left-0 right-0 z-30">
+                <div class="bg-white text-black border-b border-gray-100">
+                    <!-- 顶部操作按钮 -->
+                    <div class="flex items-center justify-center px-4 relative h-[75px]">
+                        <!-- 返回按钮 -->
+                        <button onclick="window.history.back()" class="absolute left-4 top-1/2 -translate-y-1/2 text-black/70 hover:text-black transition-colors">
+                            <svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg">
+                                <path d="m15 18-6-6 6-6"></path>
+                            </svg>
+                        </button>
+                        <!-- 标题 -->
+                        <h1 class="text-[16px] font-medium text-black">智能家居产品</h1>
+                        <!-- 右侧按钮组 -->
+                        <div class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center space-x-3">
+                            <!-- 搜索按钮 -->
+                            <button class="text-black/70 hover:text-black transition-colors">
+                                <svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <path d="m21 21-4.3-4.3"></path>
+                                </svg>
+                            </button>
+                            <!-- 购物车按钮 -->
+                            <button class="relative text-black/70 hover:text-black transition-colors" onclick="goToCart()">
+                                <svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+                                    <path d="M3 6h18"></path>
+                                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                                </svg>
+                                <!-- 购物车数量徽章 -->
+                                <div class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full min-w-[16px] h-4 flex items-center justify-center font-medium" id="headerCartBadge" style="display: none;">0</div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 滚动内容区域 -->
+            <div class="absolute inset-0 top-[75px] bottom-[84px] overflow-y-auto scrollbar-none">
+                <!-- 主内容区域 -->
+                <div class="flex h-full">
+                    <!-- 左侧分类菜单 -->
+                    <div class="w-[80px] bg-[#F8F9FA] border-r border-gray-100">
+                        <div class="py-2" id="categoryMenu">
+                            <!-- 分类菜单将在这里动态生成 -->
+                        </div>
+                    </div>
+
+                    <!-- 右侧商品列表 -->
+                    <div class="flex-1 bg-white">
+                        <!-- 推荐横幅 -->
+                        <div class="p-3">
+                            <div class="bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl p-3 mb-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h3 class="text-[14px] font-medium text-gray-800 mb-1">智能网关主机</h3>
+                                        <p class="text-[11px] text-gray-600">全屋智能 | 一键控制 | 稳定连接</p>
+                                        <button class="mt-2 bg-white text-[10px] text-gray-700 px-2 py-1 rounded-full hover:bg-gray-50 active:bg-gray-100 transition-colors">
+                                            点击进入 >
+                                        </button>
+                                    </div>
+                                    <div class="w-16 h-16 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                                        <img src="https://images.unsplash.com/photo-1558089687-f282ffcbc0d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=64&h=64&q=80" alt="智能网关" class="w-12 h-12 object-cover rounded">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 商品列表 -->
+                        <div class="px-3 pb-4" id="productList">
+                            <!-- 商品将在这里动态生成 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- 去结算按钮 -->
+            <button class="checkout-btn" id="checkoutBtn" onclick="goToCheckout()">
+                去结算
+            </button>
+
+            <!-- 底部导航栏 -->
+            <div class="absolute bottom-0 left-0 right-0 h-[84px] bg-white/80 backdrop-blur-xl border-t border-white/20">
+                <!-- 导航栏内容 -->
+                <nav class="h-[49px] flex items-center px-2">
+                    <div class="flex justify-around w-full text-[12px]">
+                        <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="home.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                                </svg>
+                            </div>
+                            <span class="mt-1">首页</span>
+                        </a>
+                        <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="design-result.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="13.5" cy="6.5" fill="currentColor" r=".5"></circle>
+                                    <circle cx="17.5" cy="10.5" fill="currentColor" r=".5"></circle>
+                                    <circle cx="8.5" cy="7.5" fill="currentColor" r=".5"></circle>
+                                    <circle cx="6.5" cy="12.5" fill="currentColor" r=".5"></circle>
+                                    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+                                </svg>
+                            </div>
+                            <span class="mt-1">设计</span>
+                        </a>
+                        <a class="flex flex-col items-center group text-black transition-colors" href="mall.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+                                    <path d="M3 6h18"></path>
+                                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                                </svg>
+                            </div>
+                            <span class="mt-1">商城</span>
+                        </a>
+                        <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="spaces.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="m15 12-8.373 8.373a1 1 0 1 1-3-3L12 9"></path>
+                                    <path d="m18 15 4-4"></path>
+                                    <path d="m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172V7l-2.26-2.26a6 6 0 0 0-4.202-1.756L9 2.96l.92.82A6.18 6.18 0 0 1 12 8.4V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5"></path>
+                                </svg>
+                            </div>
+                            <span class="mt-1">施工</span>
+                        </a>
+                        <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="me.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                            </div>
+                            <span class="mt-1">我的</span>
+                        </a>
+                    </div>
+                </nav>
+                <!-- iPhone 16 Home Indicator -->
+                <div class="h-[34px] flex items-center justify-center">
+                    <div class="w-[134px] h-[5px] bg-black rounded-full"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 模拟购物车商品数量
+        let cartItemCount = 0;
+
+        function updateCartDisplay() {
+            const headerCartBadge = document.getElementById('headerCartBadge');
+            const checkoutBtn = document.getElementById('checkoutBtn');
+
+            if (cartItemCount > 0) {
+                headerCartBadge.textContent = cartItemCount;
+                headerCartBadge.style.display = 'flex';
+            } else {
+                headerCartBadge.style.display = 'none';
+            }
+
+            // 去结算按钮始终显示
+            checkoutBtn.style.opacity = '1';
+            checkoutBtn.style.visibility = 'visible';
+        }
+
+        // 模拟添加商品到购物车
+        function addToCart(productId) {
+            console.log(`Adding product ${productId} to cart`);
+            cartItemCount++;
+            updateCartDisplay();
+        }
+
+        // 模拟跳转到购物车页面
+        function goToCart() {
+            window.location.href = 'mall-cart.html'; // 假设购物车页面是 mall-cart.html
+        }
+
+        // 模拟跳转到结算页面
+        function goToCheckout() {
+            if (cartItemCount > 0) {
+                window.location.href = 'order-confirm.html'; // 跳转到订单确认页面
+            } else {
+                alert('购物车为空，请先添加商品！');
+            }
+        }
+
+        // 页面加载时更新购物车显示
+        document.addEventListener('DOMContentLoaded', () => {
+            updateCartDisplay();
+
+            // 示例：模拟一些商品数据和分类数据
+            const categories = [
+                { id: 'gateway', name: '网关' },
+                { id: 'switch', name: '开关' },
+                { id: 'light', name: '灯具' },
+                { id: 'window', name: '窗帘' },
+                { id: 'sensor', name: '传感器' },
+                { id: 'env', name: '环境控制' },
+                { id: 'home-ent', name: '家庭娱乐' },
+                { id: 'health', name: '健康管理' },
+                { id: 'energy', name: '能耗管理' },
+                { id: 'network', name: '网络WiFi' },
+                { id: 'home-control', name: '家电控制' },
+                { id: 'security', name: '安防监控' },
+                { id: 'door-lock', name: '智能门锁' }
+            ];
+
+            const products = {
+                'gateway': [
+                    { id: 'p1', name: 'Aqara Hub M2 智能网关', desc: '支持Zigbee 3.0, 连接多达128个子设备', price: '¥299', oldPrice: '¥399', img: 'https://images.unsplash.com/photo-1558089687-f282ffcbc0d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=64&h=64&q=80' },
+                    { id: 'p2', name: '小米多模网关', desc: '支持zigbee, WiFi, 蓝牙多协议', price: '¥199', oldPrice: '', img: 'https://images.unsplash.com/photo-1558089687-f282ffcbc0d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=64&h=64&q=80' },
+                    { id: 'p3', name: '华为智选网关', desc: 'HarmonyOS智能家居中枢', price: '¥259', oldPrice: '', img: 'https://images.unsplash.com/photo-1558089687-f282ffcbc0d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=64&h=64&q=80' }
+                ],
+                'switch': [
+                    { id: 's1', name: 'Aqara墙壁开关D1', desc: '零火线版本，支持HomeKit', price: '¥89', oldPrice: '¥119', img: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80' },
+                    { id: 's2', name: '小米智能开关', desc: '单火线版本，易安装', price: '¥59', oldPrice: '', img: 'https://images.unsplash.com/photo-1565814329452-e1efa11c5b89?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80' },
+                    { id: 's3', name: '欧普智能开关', desc: '触摸式操作，夜光指示', price: '¥79', oldPrice: '', img: 'https://images.unsplash.com/photo-1544256718-3bcf237f3974?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80' }
+                ],
+                'light': [
+                    { id: 'l1', name: 'Yeelight智能吸顶灯', desc: '调光调色，语音控制', price: '¥199', oldPrice: '¥259', img: 'https://images.unsplash.com/photo-1565814329452-e1efa11c5b89?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80' },
+                    { id: 'l2', name: 'Philips Hue灯泡', desc: '1600万色彩，HomeKit支持', price: '¥299', oldPrice: '', img: 'https://images.unsplash.com/photo-1544256718-3bcf237f3974?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80' },
+                    { id: 'l3', name: '小米智能台灯', desc: '护眼台灯，无频闪', price: '¥149', oldPrice: '', img: 'https://images.unsplash.com/photo-1558089687-f282ffcbc0d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80' }
+                ],
+                'window': [
+                    { id: 'w1', name: 'Aqara智能窗帘电机', desc: '静音设计，定时开合', price: '¥599', oldPrice: '¥699', img: 'https://images.unsplash.com/photo-1551651653-c5186a1fbba2?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80' },
+                    { id: 'w2', name: '小米智能窗帘', desc: '语音控制，手机远程', price: '¥399', oldPrice: '', img: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80' }
+                ],
+                'sensor': [
+                    { id: 'se1', name: 'Aqara温湿度传感器', desc: '高精度检测，超长续航', price: '¥59', oldPrice: '¥79', img: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80' },
+                    { id: 'se2', name: '小米人体传感器', desc: '红外感应，智能联动', price: '¥39', oldPrice: '', img: 'https://images.unsplash.com/photo-1573770012830-7c314f4fcc99?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80' },
+                    { id: 'se3', name: '绿米门窗传感器', desc: '磁吸式安装，防盗报警', price: '¥49', oldPrice: '', img: 'https://images.unsplash.com/photo-1556656793-08538906a9f8?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80' }
+                ],
+                'env': [
+                    { id: 'e1', name: '小米空气净化器4', desc: 'HEPA滤网，智能净化', price: '¥899', oldPrice: '¥1099', img: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80' },
+                    { id: 'e2', name: '戴森空气净化器', desc: '360°净化，实时监测', price: '¥2999', oldPrice: '', img: 'https://images.unsplash.com/photo-1558089687-f282ffcbc0d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80' }
+                ],
+                'home-ent': [
+                    { id: 'he1', name: '小米电视音响', desc: '杜比全景声，无线连接', price: '¥599', oldPrice: '', img: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80' },
+                    { id: 'he2', name: '智能投影仪', desc: '4K超清，自动对焦', price: '¥1299', oldPrice: '¥1599', img: 'https://images.unsplash.com/photo-1565814329452-e1efa11c5b89?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80' }
+                ],
+                'health': [
+                    { id: 'h1', name: '智能体重秤', desc: '多项身体数据检测', price: '¥199', oldPrice: '', img: 'https://images.unsplash.com/photo-1544256718-3bcf237f3974?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80' },
+                    { id: 'h2', name: '空气质量检测仪', desc: 'PM2.5/甲醛/温湿度检测', price: '¥199', oldPrice: '', img: 'https://images.unsplash.com/photo-1558089687-f282ffcbc0d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80' }
+                ],
+                'energy': [
+                    { id: 'en1', name: '智能插座', desc: '远程控制，定时开关', price: '¥59', oldPrice: '', img: 'https://images.unsplash.com/photo-1556656793-08538906a9f8?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80' },
+                    { id: 'en2', name: '智能电表', desc: '实时监控用电量', price: '¥299', oldPrice: '', img: 'https://images.unsplash.com/photo-1573770012830-7c314f4fcc99?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80' }
+                ],
+                'network': [
+                    { id: 'n1', name: '小米路由器AX6000', desc: 'WiFi 6，千兆网口', price: '¥599', oldPrice: '', img: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80' },
+                    { id: 'n2', name: 'WiFi信号放大器', desc: '扩展WiFi覆盖范围', price: '¥199', oldPrice: '', img: 'https://images.unsplash.com/photo-1565814329452-e1efa11c5b89?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80' }
+                ],
+                'home-control': [
+                    { id: 'hc1', name: '智能万能遥控器', desc: '控制所有红外设备', price: '¥99', oldPrice: '', img: 'https://images.unsplash.com/photo-1544256718-3bcf237f3974?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80' },
+                    { id: 'hc2', name: '智能空调伴侣', desc: '让普通空调变智能', price: '¥199', oldPrice: '', img: 'https://images.unsplash.com/photo-1558089687-f282ffcbc0d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80' }
+                ],
+                'security': [
+                    { id: 'sc1', name: '智能摄像头', desc: '1080P高清，夜视功能', price: '¥199', oldPrice: '', img: 'https://images.unsplash.com/photo-1573770012830-7c314f4fcc99?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80' },
+                    { id: 'sc2', name: '智能门铃', desc: '可视对讲，远程监控', price: '¥399', oldPrice: '', img: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80' }
+                ],
+                'door-lock': [
+                    { id: 'dl1', name: '智能门锁指纹版', desc: '指纹+密码+卡片，多重安全', price: '¥1299', oldPrice: '', img: 'https://images.unsplash.com/photo-1546054454-aa26e2b734c7?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80' },
+                    { id: 'dl2', name: '智能猫眼', desc: '高清摄像，移动侦测', price: '¥599', oldPrice: '', img: 'https://images.unsplash.com/photo-1565814329452-e1efa11c5b89?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80' }
+                ]
+            };
+
+            const categoryMenu = document.getElementById('categoryMenu');
+            const productList = document.getElementById('productList');
+
+            // 渲染分类菜单
+            categories.forEach(category => {
+                const categoryItem = document.createElement('button');
+                categoryItem.className = 'category-item w-full py-2 px-2 text-left text-xs text-gray-600 hover:text-black active:text-gray-800 transition-colors';
+                categoryItem.textContent = category.name;
+                categoryItem.onclick = () => {
+                    // 移除所有active类
+                    document.querySelectorAll('.category-item').forEach(item => item.classList.remove('active'));
+                    // 添加active类到当前点击的分类
+                    categoryItem.classList.add('active');
+                    renderProducts(products[category.id] || []);
+                };
+                categoryMenu.appendChild(categoryItem);
+            });
+
+            // 渲染商品列表
+            function renderProducts(productsToRender) {
+                productList.innerHTML = '';
+                productsToRender.forEach(product => {
+                    const productCard = document.createElement('div');
+                    productCard.className = 'product-card bg-white rounded-xl p-3 mb-3 flex items-center shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all';
+                    productCard.innerHTML = `
+                        <img src="${product.img}" alt="${product.name}" class="w-20 h-20 object-cover rounded-lg mr-3">
+                        <div class="flex-1">
+                            <h3 class="text-sm font-medium text-gray-800 mb-1">${product.name}</h3>
+                            <p class="text-[11px] text-gray-600 mb-1">${product.desc}</p>
+                            <div class="flex items-baseline">
+                                <span class="text-sm font-semibold text-black">${product.price}</span>
+                                ${product.oldPrice ? `<span class="text-[10px] text-gray-400 line-through ml-1">${product.oldPrice}</span>` : ''}
+                            </div>
+                        </div>
+                        <button class="bg-black text-white text-[11px] px-3 py-1.5 rounded-full hover:bg-gray-800 active:bg-gray-900 transition-colors" onclick="addToCart('${product.id}')">
+                            选规格
+                        </button>
+                    `;
+                    productList.appendChild(productCard);
+                });
+            }
+
+            // 默认加载第一个分类的商品
+            if (categories.length > 0) {
+                categoryMenu.children[0].classList.add('active');
+                renderProducts(products[categories[0].id] || []);
+            }
+        });
+    </script>
+</body>
+</html>

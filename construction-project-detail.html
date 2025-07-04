@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>项目详情 - 智能设计与施工</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/iphone16_fix.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        .btn-primary {
+            transition: background-color 0.2s;
+        }
+        .btn-primary:active {
+            background-color: #333;
+        }
+        .scrollbar-none::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-none {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* 人员联系方式弹窗样式 */
+        .contact-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .contact-popup.show {
+            display: flex;
+        }
+
+        .contact-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin: 20px;
+            max-width: 320px;
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            transform: scale(0.9);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .contact-popup.show .contact-card {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .contact-item {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .contact-item:hover {
+            background-color: #f5f5f5;
+        }
+
+        .contact-highlight {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+
+        /* 空间tab样式 - 小米有品风格 */
+        .space-tab-container {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .space-tab-scroll {
+            display: flex;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding: 0 4px;
+        }
+
+        .space-tab-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .space-tab {
+            flex-shrink: 0;
+            background-color: #f8f9fa;
+            color: #666666;
+            border: 1px solid #e5e7eb;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            position: relative;
+            margin-right: 8px;
+        }
+
+        .space-tab:last-child {
+            margin-right: 0;
+        }
+
+        .space-tab.active {
+            background-color: #ffffff;
+            color: #000000;
+            border-color: #000000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transform: translateY(-1px);
+        }
+
+        .space-tab:hover:not(.active) {
+            background-color: #f0f0f0;
+            color: #333333;
+            transform: translateY(-0.5px);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+        }
+
+        /* 滚动指示器 */
+        .scroll-indicator {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .scroll-indicator:hover {
+            background: rgba(255,255,255,1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .scroll-indicator.left {
+            left: -8px;
+        }
+
+        .scroll-indicator.right {
+            right: -8px;
+        }
+
+        .scroll-indicator.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* 空间内容切换 */
+        .space-content {
+            transition: opacity 0.3s ease;
+        }
+        .space-content.hidden {
+            display: none;
+        }
+    </style>
+
+    <!-- 全局错误处理和兜底方案 -->
+    <script>
+        (function() {
+            'use strict';
+
+            // 创建 Trace 对象的兜底实现
+            window.Trace = window.Trace || {
+                init: function() { console.log('Trace initialized (fallback)'); },
+                log: function() { console.log.apply(console, arguments); },
+                error: function() { console.error.apply(console, arguments); },
+                warn: function() { console.warn.apply(console, arguments); },
+                info: function() { console.info.apply(console, arguments); }
+            };
+
+            // 防止其他可能的调试工具错误
+            window.wx = window.wx || {};
+            window.my = window.my || {};
+
+            // 防止 chartId 未定义错误
+            window.chartId = window.chartId || 'default-chart-id';
+
+            // 全局错误处理
+            window.addEventListener('error', function(e) {
+                console.error('Global error caught:', e.error);
+                return true; // 阻止默认错误处理
+            });
+
+            window.addEventListener('unhandledrejection', function(e) {
+                console.error('Unhandled promise rejection:', e.reason);
+                e.preventDefault(); // 阻止默认处理
+            });
+
+            console.log('✅ 全局错误处理已初始化');
+        })();
+    </script>
+</head>
+<body class="min-h-screen w-full bg-[#000000] flex items-center justify-center font-system">
+    <!-- iPhone 容器 -->
+    <div class="w-full max-w-[393px] h-[852px] bg-[#1E1E1E] shadow-2xl overflow-hidden relative mx-auto rounded-[54px]">
+        <!-- iPhone 状态栏 -->
+        <div class="w-full h-[47px] bg-black px-5 flex items-center justify-between text-white text-[14px] font-medium">
+            <div class="flex items-center space-x-1">
+                <!-- 信号图标 -->
+                <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2 20h.01"></path>
+                    <path d="M7 20v-4"></path>
+                    <path d="M12 20v-8"></path>
+                    <path d="M17 20V8"></path>
+                    <path d="M22 4v16"></path>
+                </svg>
+                <span>中国移动</span>
+                <!-- WiFi图标 -->
+                <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 20h.01"></path>
+                    <path d="M2 8.82a15 15 0 0 1 20 0"></path>
+                    <path d="M5 12.859a10 10 0 0 1 14 0"></path>
+                    <path d="M8.5 16.429a5 5 0 0 1 7 0"></path>
+                </svg>
+            </div>
+            <div class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">9:41</div>
+            <div class="flex items-center space-x-1">
+                <span>89%</span>
+                <!-- 电池图标 -->
+                <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                    <rect height="10" rx="2" ry="2" width="16" x="2" y="7"></rect>
+                    <line x1="22" x2="22" y1="11" y2="13"></line>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 动态岛 -->
+        <button class="absolute left-1/2 -translate-x-1/2 bg-black transition-all duration-300 ease-out w-[126px] h-[37.5px] -top-0.5 rounded-b-[24px]"></button>
+
+        <!-- 主内容区域 -->
+        <div class="w-full h-[calc(100%-47px)] bg-white overflow-hidden relative">
+            <!-- 滚动内容区域 -->
+            <div class="absolute inset-0 bottom-[84px] overflow-y-auto scrollbar-none">
+                <!-- 顶部导航栏 -->
+                <header class="bg-white border-b border-gray-200">
+                    <div class="flex items-center justify-between px-4 py-3">
+                        <a class="text-black" href="spaces.html">
+                            <i class="fas fa-arrow-left"></i>
+                        </a>
+                        <h1 class="text-sm font-medium text-black">项目详情</h1>
+                        <a class="text-black" href="#">
+                            <i class="fas fa-ellipsis-vertical"></i>
+                        </a>
+                    </div>
+                </header>
+<!-- 项目基本信息 -->
+<section class="px-4 py-3 bg-white">
+<div class="flex justify-between items-start mb-2">
+<h2 class="text-base font-semibold">现代简约风智能家居</h2>
+<span class="px-2 py-0.5 bg-black text-white text-xs rounded-full">进行中</span>
+</div>
+<div class="flex items-center text-xs text-gray-500 mb-1">
+<i class="fas fa-map-marker-alt mr-1"></i>
+<span>北京市朝阳区 · 120㎡ 三室两厅</span>
+</div>
+<div class="flex items-center text-xs text-gray-500">
+<i class="fas fa-calendar-alt mr-1"></i>
+<span>开始时间: 2025-05-15</span>
+</div>
+</section>
+
+
+
+<!-- 功能模块 -->
+<section class="px-4 py-3 bg-white">
+<div class="grid grid-cols-4 gap-2">
+<a href="project-equipment-list.html" class="flex flex-col items-center">
+<div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-1 hover:bg-gray-200 transition-colors">
+<i class="fas fa-list text-black text-sm"></i>
+</div>
+<span class="text-xs text-center">设备清单</span>
+</a>
+<a href="project-drawings.html" class="flex flex-col items-center">
+<div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-1 hover:bg-gray-200 transition-colors">
+<i class="fas fa-file-alt text-black text-sm"></i>
+</div>
+<span class="text-xs text-center">项目图纸</span>
+</a>
+<a href="lighting-control.html" class="flex flex-col items-center">
+<div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-1 hover:bg-gray-200 transition-colors">
+<i class="fas fa-lightbulb text-black text-sm"></i>
+</div>
+<span class="text-xs text-center">3D效果图</span>
+</a>
+<a href="construction-feed.html" class="flex flex-col items-center">
+<div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-1 hover:bg-gray-200 transition-colors">
+<i class="fas fa-tools text-black text-sm"></i>
+</div>
+<span class="text-xs text-center">施工动态</span>
+</a>
+</div>
+</section>
+
+<!-- 项目进度与施工空间 -->
+<section class="px-4 py-3 bg-gray-50">
+<div class="bg-white p-3 rounded-lg">
+<!-- 项目进度 -->
+<div class="mb-3">
+<div class="flex justify-between mb-1">
+<span class="text-xs font-medium">项目总进度</span>
+<span class="text-xs">60%</span>
+</div>
+<div class="h-1.5 bg-gray-100 rounded-full">
+<div class="h-full bg-black rounded-full" style="width: 60%;"></div>
+</div>
+</div>
+
+<!-- 施工空间 -->
+<div class="border-t border-gray-100 pt-3">
+<div class="flex items-center justify-between mb-2">
+<h3 class="text-xs font-medium text-gray-900">施工空间</h3>
+<button onclick="showAddSpaceDialog()" class="text-xs text-blue-500 flex items-center">
+<i class="fas fa-plus mr-1 text-xs"></i>
+<span class="text-xs">添加</span>
+</button>
+</div>
+<div class="space-tab-container">
+<!-- 左滚动指示器 -->
+<div class="scroll-indicator left hidden" id="scrollLeft" onclick="scrollSpaceTabs('left')">
+<i class="fas fa-chevron-left text-xs text-gray-600"></i>
+</div>
+<!-- 右滚动指示器 -->
+<div class="scroll-indicator right" id="scrollRight" onclick="scrollSpaceTabs('right')">
+<i class="fas fa-chevron-right text-xs text-gray-600"></i>
+</div>
+<!-- 滚动容器 -->
+<div class="space-tab-scroll" id="spaceTabContainer">
+<button onclick="switchSpace('living')" id="space-tab-living" class="space-tab active px-2 py-1.5 text-xs font-medium rounded-full">
+<i class="fas fa-couch mr-1 text-xs"></i>
+<span class="text-xs">客厅</span>
+<span class="ml-1 text-xs bg-green-100 text-green-600 px-1 rounded">75%</span>
+</button>
+<button onclick="switchSpace('bedroom')" id="space-tab-bedroom" class="space-tab px-2 py-1.5 text-xs font-medium rounded-full">
+<i class="fas fa-bed mr-1 text-xs"></i>
+<span class="text-xs">主卧</span>
+<span class="ml-1 text-xs bg-blue-100 text-blue-600 px-1 rounded">0%</span>
+</button>
+<button onclick="switchSpace('kitchen')" id="space-tab-kitchen" class="space-tab px-2 py-1.5 text-xs font-medium rounded-full">
+<i class="fas fa-utensils mr-1 text-xs"></i>
+<span class="text-xs">厨房</span>
+<span class="ml-1 text-xs bg-gray-100 text-gray-600 px-1 rounded">100%</span>
+</button>
+<button onclick="switchSpace('bathroom')" id="space-tab-bathroom" class="space-tab px-2 py-1.5 text-xs font-medium rounded-full">
+<i class="fas fa-bath mr-1 text-xs"></i>
+<span class="text-xs">卫生间</span>
+<span class="ml-1 text-xs bg-yellow-100 text-yellow-600 px-1 rounded">30%</span>
+</button>
+<button onclick="switchSpace('study')" id="space-tab-study" class="space-tab px-2 py-1.5 text-xs font-medium rounded-full">
+<i class="fas fa-book mr-1 text-xs"></i>
+<span class="text-xs">书房</span>
+<span class="ml-1 text-xs bg-purple-100 text-purple-600 px-1 rounded">50%</span>
+</button>
+<button onclick="switchSpace('balcony')" id="space-tab-balcony" class="space-tab px-2 py-1.5 text-xs font-medium rounded-full">
+<i class="fas fa-seedling mr-1 text-xs"></i>
+<span class="text-xs">阳台</span>
+<span class="ml-1 text-xs bg-orange-100 text-orange-600 px-1 rounded">20%</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+
+<!-- 施工阶段 -->
+<section class="px-4 py-3 bg-white">
+<h3 class="text-xs font-medium mb-2">施工阶段</h3>
+<div class="space-y-2">
+<!-- 交底阶段 - 已完成 -->
+<a href="construction-feed.html?stage=交底" class="block">
+<div class="flex items-center p-3 bg-blue-500 text-white rounded-lg">
+<div class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-2">
+<i class="fas fa-clipboard-check text-white text-xs"></i>
+</div>
+<div class="flex-grow">
+<div class="text-xs font-medium">交底</div>
+<div class="text-xs opacity-90">技术交底与安全交底</div>
+</div>
+<div class="text-right">
+<div class="text-xs opacity-90">已完成</div>
+<div class="text-xs opacity-75">2025-05-15</div>
+</div>
+</div>
+</a>
+
+<!-- 布线阶段 - 进行中 -->
+<a href="construction-feed.html?stage=布线" class="block">
+<div class="flex items-center p-3 bg-green-500 text-white rounded-lg">
+<div class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-2">
+<i class="fas fa-hammer text-white text-xs"></i>
+</div>
+<div class="flex-grow">
+<div class="text-xs font-medium">布线</div>
+<div class="text-xs opacity-90">水电改造与线路布置</div>
+</div>
+<div class="text-right">
+<div class="text-xs opacity-90">进行中</div>
+<div class="text-xs opacity-75">65%</div>
+</div>
+</div>
+</a>
+
+<!-- 吊顶阶段 - 待开始 -->
+<a href="construction-feed.html?stage=吊顶" class="block">
+<div class="flex items-center p-3 bg-gray-100 text-gray-600 rounded-lg">
+<div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-2">
+<i class="fas fa-home text-gray-500 text-xs"></i>
+</div>
+<div class="flex-grow">
+<div class="text-xs font-medium">吊顶</div>
+<div class="text-xs text-gray-500">吊顶安装与装饰</div>
+</div>
+<div class="text-right">
+<div class="text-xs text-gray-500">待开始</div>
+<div class="text-xs text-gray-400">预计6-18</div>
+</div>
+</div>
+</a>
+
+<!-- 安装阶段 - 待开始 -->
+<a href="construction-feed.html?stage=安装" class="block">
+<div class="flex items-center p-3 bg-gray-100 text-gray-600 rounded-lg">
+<div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-2">
+<i class="fas fa-cog text-gray-500 text-xs"></i>
+</div>
+<div class="flex-grow">
+<div class="text-xs font-medium">安装</div>
+<div class="text-xs text-gray-500">智能设备安装配置</div>
+</div>
+<div class="text-right">
+<div class="text-xs text-gray-500">待开始</div>
+<div class="text-xs text-gray-400">预计6-20</div>
+</div>
+</div>
+</a>
+
+<!-- 调试阶段 - 待开始 -->
+<a href="construction-feed.html?stage=调试" class="block">
+<div class="flex items-center p-3 bg-gray-100 text-gray-600 rounded-lg">
+<div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-2">
+<i class="fas fa-wrench text-gray-500 text-xs"></i>
+</div>
+<div class="flex-grow">
+<div class="text-xs font-medium">调试</div>
+<div class="text-xs text-gray-500">系统联调与功能测试</div>
+</div>
+<div class="text-right">
+<div class="text-xs text-gray-500">待开始</div>
+<div class="text-xs text-gray-400">预计6-25</div>
+</div>
+</div>
+</a>
+
+<!-- 售后阶段 - 待开始 -->
+<a href="construction-feed.html?stage=售后" class="block">
+<div class="flex items-center p-3 bg-gray-100 text-gray-600 rounded-lg">
+<div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-2">
+<i class="fas fa-headset text-gray-500 text-xs"></i>
+</div>
+<div class="flex-grow">
+<div class="text-xs font-medium">售后</div>
+<div class="text-xs text-gray-500">验收交付与维护服务</div>
+</div>
+<div class="text-right">
+<div class="text-xs text-gray-500">待开始</div>
+<div class="text-xs text-gray-400">预计6-30</div>
+</div>
+</div>
+</a>
+</div>
+</section>
+
+<!-- 项目文件核心区 -->
+<section class="px-4 py-4 bg-white mt-2">
+<h3 class="text-sm font-medium mb-3">项目文件</h3>
+<div class="space-y-3">
+<!-- 项目图纸 -->
+<div class="flex items-center p-3 border border-gray-100 rounded-lg">
+<div class="w-10 h-10 bg-blue-100 rounded flex items-center justify-center mr-3">
+<i class="fas fa-file-pdf text-blue-600"></i>
+</div>
+<div class="flex-grow">
+<div class="text-sm font-medium">项目图纸</div>
+<div class="text-xs text-gray-500">查看项目设计图纸PDF文件</div>
+</div>
+<a class="text-black" href="project-drawings (2).html">
+<i class="fas fa-chevron-right"></i>
+</a>
+</div>
+<!-- 3D效果图 -->
+<div class="flex items-center p-3 border border-gray-100 rounded-lg">
+<div class="w-10 h-10 bg-purple-100 rounded flex items-center justify-center mr-3">
+<i class="fas fa-cube text-purple-600"></i>
+</div>
+<div class="flex-grow">
+<div class="text-sm font-medium">3D效果图</div>
+<div class="text-xs text-gray-500">查看不同空间的3D效果展示</div>
+</div>
+<a class="text-black" href="3d-renderings.html">
+<i class="fas fa-chevron-right"></i>
+</a>
+</div>
+<!-- 设备清单 -->
+<div class="flex items-center p-3 border border-gray-100 rounded-lg">
+<div class="w-10 h-10 bg-green-100 rounded flex items-center justify-center mr-3">
+<i class="fas fa-list text-green-600"></i>
+</div>
+<div class="flex-grow">
+<div class="text-sm font-medium">设备清单</div>
+<div class="text-xs text-gray-500">智能家居设备清单（不含价格）</div>
+</div>
+<a class="text-black" href="project-equipment-list.html">
+<i class="fas fa-chevron-right"></i>
+</a>
+</div>
+<!-- 施工要点 -->
+<div class="flex items-center p-3 border border-gray-100 rounded-lg">
+<div class="w-10 h-10 bg-orange-100 rounded flex items-center justify-center mr-3">
+<i class="fas fa-hammer text-orange-600"></i>
+</div>
+<div class="flex-grow">
+<div class="text-sm font-medium">施工要点</div>
+<div class="text-xs text-gray-500">施工中各个环节的要点指导</div>
+</div>
+<a class="text-black" href="project-construction-guide.html">
+<i class="fas fa-chevron-right"></i>
+</a>
+</div>
+</div>
+</section>
+<!-- 项目协作人员 -->
+<section class="px-4 py-4 bg-white mt-2">
+<div class="flex justify-between items-center mb-3">
+<h3 class="text-sm font-medium">项目协作人员</h3>
+<a href="project-team.html" class="text-sm text-black hover:text-gray-600">
+<i class="fas fa-user mr-1"></i> 查看全部
+                </a>
+</div>
+<div class="space-y-3">
+<!-- 业主 -->
+<div class="flex items-center contact-item p-2 rounded-lg" onclick="showContactInfo('张先生', '业主', '13636669666', '您')">
+<div class="w-10 h-10 bg-gray-200 rounded-full mr-3 flex items-center justify-center">
+<i class="fas fa-user text-gray-600"></i>
+</div>
+<div class="flex-grow">
+<div class="text-sm font-medium flex items-center">
+张先生 (您)
+<span class="contact-highlight">业主</span>
+</div>
+<div class="text-xs text-gray-500">点击查看联系方式</div>
+</div>
+<i class="fas fa-chevron-right text-gray-400"></i>
+</div>
+<!-- 设计师 -->
+<div class="flex items-center contact-item p-2 rounded-lg" onclick="showContactInfo('王设计师', '设计师', '13888888888', '负责方案设计')">
+<div class="w-10 h-10 bg-blue-100 rounded-full mr-3 flex items-center justify-center">
+<i class="fas fa-palette text-blue-600"></i>
+</div>
+<div class="flex-grow">
+<div class="text-sm font-medium flex items-center">
+王设计师
+<span class="contact-highlight" style="background: linear-gradient(135deg, #4f46e5, #7c3aed);">设计师</span>
+</div>
+<div class="text-xs text-gray-500">点击查看联系方式</div>
+</div>
+<i class="fas fa-chevron-right text-gray-400"></i>
+</div>
+<!-- 施工师傅 -->
+<div class="flex items-center contact-item p-2 rounded-lg" onclick="showContactInfo('李师傅', '施工师傅', '13999999999', '负责现场施工')">
+<div class="w-10 h-10 bg-orange-100 rounded-full mr-3 flex items-center justify-center">
+<i class="fas fa-hammer text-orange-600"></i>
+</div>
+<div class="flex-grow">
+<div class="text-sm font-medium flex items-center">
+李师傅
+<span class="contact-highlight" style="background: linear-gradient(135deg, #f59e0b, #f97316);">施工师傅</span>
+</div>
+<div class="text-xs text-gray-500">点击查看联系方式</div>
+</div>
+<i class="fas fa-chevron-right text-gray-400"></i>
+</div>
+</div>
+</section>
+<!-- 预约施工 -->
+<section class="px-4 py-4 bg-white mt-2">
+<a class="w-full py-3 px-4 bg-black text-white rounded-lg font-medium text-center text-base hover:bg-gray-800 flex items-center justify-center" href="spaces.html">
+<i class="fas fa-hammer mr-2"></i>
+                预约施工服务
+            </a>
+</section>
+<!-- 分享项目 -->
+<section class="px-4 py-4 bg-white mt-2">
+<button class="w-full py-3 px-4 bg-gray-100 text-black rounded-lg font-medium text-center text-base hover:bg-gray-200 flex items-center justify-center">
+<i class="fas fa-share-alt mr-2"></i>
+                分享项目
+            </button>
+                </section>
+            </div>
+
+            <!-- 底部导航栏 -->
+<div class="absolute bottom-0 left-0 right-0 h-[84px] bg-white/80 backdrop-blur-xl border-t border-white/20">
+<!-- 导航栏内容 -->
+<nav class="h-[49px] flex items-center px-2">
+<div class="flex justify-around w-full text-[12px]">
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="home.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+<polyline points="9 22 9 12 15 12 15 22"></polyline>
+</svg>
+</div>
+<span class="mt-1">首页</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="design-result.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<circle cx="13.5" cy="6.5" fill="currentColor" r=".5"></circle>
+<circle cx="17.5" cy="10.5" fill="currentColor" r=".5"></circle>
+<circle cx="8.5" cy="7.5" fill="currentColor" r=".5"></circle>
+<circle cx="6.5" cy="12.5" fill="currentColor" r=".5"></circle>
+<path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+</svg>
+</div>
+<span class="mt-1">设计</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="mall.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+<path d="M3 6h18"></path>
+<path d="M16 10a4 4 0 0 1-8 0"></path>
+</svg>
+</div>
+<span class="mt-1">商城</span>
+</a>
+<a class="flex flex-col items-center group text-black transition-colors" href="spaces.html" class="flex flex-col items-center group text-black transition-colors">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="m15 12-8.373 8.373a1 1 0 1 1-3-3L12 9"></path>
+<path d="m18 15 4-4"></path>
+<path d="m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172V7l-2.26-2.26a6 6 0 0 0-4.202-1.756L9 2.96l.92.82A6.18 6.18 0 0 1 12 8.4V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5"></path>
+</svg>
+</div>
+<span class="mt-1">施工</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="me.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+<circle cx="12" cy="7" r="4"></circle>
+</svg>
+</div>
+<span class="mt-1">我的</span>
+</a>
+</div>
+</nav>
+<!-- iPhone 16 Home Indicator -->
+<div class="h-[34px] flex items-center justify-center">
+<div class="w-[134px] h-[5px] bg-black rounded-full"></div>
+</div>
+</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 联系方式弹窗 -->
+    <div id="contactPopup" class="contact-popup">
+        <div class="contact-card">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold" id="contactName">联系信息</h3>
+                <button onclick="hideContactInfo()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-3 flex items-center justify-center" id="contactAvatar">
+                    <i class="fas fa-user text-gray-500 text-xl"></i>
+                </div>
+                <div class="text-lg font-medium" id="contactNameDisplay">张先生</div>
+                <div class="text-sm text-gray-500" id="contactRole">业主</div>
+                <div class="text-xs text-gray-400 mt-1" id="contactDescription">您</div>
+            </div>
+
+            <div class="space-y-3">
+                <!-- 电话联系 -->
+                <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                        <i class="fas fa-phone text-green-600"></i>
+                    </div>
+                    <div class="flex-grow">
+                        <div class="text-sm font-medium">电话联系</div>
+                        <div class="text-sm text-gray-600" id="contactPhone">13636669666</div>
+                    </div>
+                    <button onclick="callContact()" class="text-green-600 hover:text-green-700">
+                        <i class="fas fa-phone-alt"></i>
+                    </button>
+                </div>
+
+                <!-- 微信联系 -->
+                <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                        <i class="fab fa-weixin text-green-600"></i>
+                    </div>
+                    <div class="flex-grow">
+                        <div class="text-sm font-medium">微信联系</div>
+                        <div class="text-sm text-gray-600">点击添加微信</div>
+                    </div>
+                    <button onclick="addWechat()" class="text-green-600 hover:text-green-700">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+
+                <!-- 发送消息 -->
+                <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                        <i class="fas fa-comment text-blue-600"></i>
+                    </div>
+                    <div class="flex-grow">
+                        <div class="text-sm font-medium">发送消息</div>
+                        <div class="text-sm text-gray-600">项目内部沟通</div>
+                    </div>
+                    <button onclick="sendMessage()" class="text-blue-600 hover:text-blue-700">
+                        <i class="fas fa-share"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-gray-100">
+                <button onclick="hideContactInfo()" class="w-full py-2 text-gray-500 hover:text-gray-700 text-sm">
+                    关闭
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 显示联系信息弹窗
+        function showContactInfo(name, role, phone, description) {
+            document.getElementById('contactNameDisplay').textContent = name;
+            document.getElementById('contactRole').textContent = role;
+            document.getElementById('contactPhone').textContent = phone;
+            document.getElementById('contactDescription').textContent = description;
+
+            // 根据角色设置头像图标
+            const avatar = document.getElementById('contactAvatar');
+            avatar.innerHTML = '';
+
+            if (role === '业主') {
+                avatar.className = 'w-16 h-16 bg-gray-100 rounded-full mx-auto mb-3 flex items-center justify-center';
+                avatar.innerHTML = '<i class="fas fa-user text-gray-500 text-xl"></i>';
+            } else if (role === '设计师') {
+                avatar.className = 'w-16 h-16 bg-blue-100 rounded-full mx-auto mb-3 flex items-center justify-center';
+                avatar.innerHTML = '<i class="fas fa-palette text-blue-600 text-xl"></i>';
+            } else if (role === '施工师傅') {
+                avatar.className = 'w-16 h-16 bg-orange-100 rounded-full mx-auto mb-3 flex items-center justify-center';
+                avatar.innerHTML = '<i class="fas fa-hammer text-orange-600 text-xl"></i>';
+            }
+
+            document.getElementById('contactPopup').classList.add('show');
+        }
+
+        // 隐藏联系信息弹窗
+        function hideContactInfo() {
+            document.getElementById('contactPopup').classList.remove('show');
+        }
+
+        // 拨打电话
+        function callContact() {
+            const phone = document.getElementById('contactPhone').textContent;
+            window.location.href = `tel:${phone}`;
+        }
+
+        // 添加微信
+        function addWechat() {
+            alert('正在跳转到微信添加联系人...');
+            // 这里可以集成微信SDK或跳转到微信
+        }
+
+        // 发送消息
+        function sendMessage() {
+            alert('正在打开项目内部聊天...');
+            // 这里可以跳转到聊天页面
+        }
+
+        // 点击弹窗背景关闭
+        document.getElementById('contactPopup').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideContactInfo();
+            }
+        });
+
+        // 空间切换功能
+        function switchSpace(spaceId) {
+            // 移除所有tab的激活状态
+            document.querySelectorAll('.space-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // 激活选中的tab
+            const selectedTab = document.getElementById('space-tab-' + spaceId);
+            if (selectedTab) {
+                selectedTab.classList.add('active');
+                // 滚动到选中的tab
+                scrollToActiveTab(selectedTab);
+            }
+
+            // 这里可以根据选中的空间更新页面内容
+            console.log('切换到空间:', spaceId);
+
+            // 可以在这里添加根据空间显示不同内容的逻辑
+            updateSpaceContent(spaceId);
+        }
+
+        // 滚动到激活的tab
+        function scrollToActiveTab(activeTab) {
+            const container = document.getElementById('spaceTabContainer');
+            const containerRect = container.getBoundingClientRect();
+            const tabRect = activeTab.getBoundingClientRect();
+
+            // 计算需要滚动的距离
+            const scrollLeft = container.scrollLeft;
+            const tabLeft = tabRect.left - containerRect.left + scrollLeft;
+            const tabWidth = tabRect.width;
+            const containerWidth = containerRect.width;
+
+            // 如果tab在视窗外，滚动到合适位置
+            if (tabLeft < scrollLeft) {
+                container.scrollTo({
+                    left: tabLeft - 20,
+                    behavior: 'smooth'
+                });
+            } else if (tabLeft + tabWidth > scrollLeft + containerWidth) {
+                container.scrollTo({
+                    left: tabLeft + tabWidth - containerWidth + 20,
+                    behavior: 'smooth'
+                });
+            }
+
+            // 更新滚动指示器
+            updateScrollIndicators();
+        }
+
+        // 横向滚动tab
+        function scrollSpaceTabs(direction) {
+            const container = document.getElementById('spaceTabContainer');
+            const scrollAmount = 120; // 每次滚动的距离
+
+            if (direction === 'left') {
+                container.scrollBy({
+                    left: -scrollAmount,
+                    behavior: 'smooth'
+                });
+            } else {
+                container.scrollBy({
+                    left: scrollAmount,
+                    behavior: 'smooth'
+                });
+            }
+
+            // 延迟更新指示器，等待滚动完成
+            setTimeout(updateScrollIndicators, 300);
+        }
+
+        // 更新滚动指示器显示状态
+        function updateScrollIndicators() {
+            const container = document.getElementById('spaceTabContainer');
+            const leftIndicator = document.getElementById('scrollLeft');
+            const rightIndicator = document.getElementById('scrollRight');
+
+            if (!container || !leftIndicator || !rightIndicator) return;
+
+            const scrollLeft = container.scrollLeft;
+            const maxScrollLeft = container.scrollWidth - container.clientWidth;
+
+            // 左指示器：当可以向左滚动时显示
+            if (scrollLeft > 10) {
+                leftIndicator.classList.remove('hidden');
+            } else {
+                leftIndicator.classList.add('hidden');
+            }
+
+            // 右指示器：当可以向右滚动时显示
+            if (scrollLeft < maxScrollLeft - 10) {
+                rightIndicator.classList.remove('hidden');
+            } else {
+                rightIndicator.classList.add('hidden');
+            }
+        }
+
+        // 更新空间内容
+        function updateSpaceContent(spaceId) {
+            const spaceData = {
+                'living': { name: '客厅', progress: 75, status: '进行中', area: '35㎡' },
+                'bedroom': { name: '主卧', progress: 0, status: '待开始', area: '20㎡' },
+                'kitchen': { name: '厨房', progress: 100, status: '已完成', area: '12㎡' },
+                'bathroom': { name: '卫生间', progress: 30, status: '设计中', area: '8㎡' }
+            };
+
+            const space = spaceData[spaceId];
+            if (space) {
+                // 可以在这里更新页面中与空间相关的内容
+                console.log('当前空间信息:', space);
+            }
+        }
+
+        // 显示添加空间对话框
+        function showAddSpaceDialog() {
+            const spaceName = prompt('请输入新空间名称:');
+            if (spaceName && spaceName.trim()) {
+                addNewSpace(spaceName.trim());
+            }
+        }
+
+        // 添加新空间
+        function addNewSpace(spaceName) {
+            const container = document.getElementById('spaceTabContainer');
+            const spaceId = 'space-' + Date.now();
+
+            const newTab = document.createElement('button');
+            newTab.onclick = () => switchSpace(spaceId);
+            newTab.id = 'space-tab-' + spaceId;
+            newTab.className = 'space-tab px-2 py-1.5 text-xs font-medium rounded-full';
+            newTab.innerHTML = `
+                <i class="fas fa-home mr-1 text-xs"></i>
+                <span class="text-xs">${spaceName}</span>
+                <span class="ml-1 text-xs bg-gray-100 text-gray-600 px-1 rounded">0%</span>
+            `;
+
+            // 添加到容器末尾
+            container.appendChild(newTab);
+
+            // 更新滚动指示器
+            setTimeout(() => {
+                updateScrollIndicators();
+                // 自动切换到新添加的空间
+                switchSpace(spaceId);
+            }, 100);
+        }
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 默认选择客厅
+            switchSpace('living');
+
+            // 初始化滚动指示器
+            setTimeout(updateScrollIndicators, 100);
+
+            // 监听滚动事件，实时更新指示器
+            const container = document.getElementById('spaceTabContainer');
+            if (container) {
+                container.addEventListener('scroll', updateScrollIndicators);
+
+                // 监听窗口大小变化
+                window.addEventListener('resize', updateScrollIndicators);
+            }
+        });
+    </script>
+</body>
+</html>

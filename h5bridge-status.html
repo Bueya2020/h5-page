@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>H5Bridge集成状态检查 - 智能设计与施工平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .status-card {
+            transition: all 0.3s ease;
+        }
+        .status-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        .status-integrated { background: #10b981; }
+        .status-partial { background: #f59e0b; }
+        .status-pending { background: #ef4444; }
+        
+        .feature-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            margin: 1px;
+        }
+        .feature-payment { background: #fee2e2; color: #dc2626; }
+        .feature-share { background: #dbeafe; color: #2563eb; }
+        .feature-userinfo { background: #d1fae5; color: #059669; }
+        .feature-location { background: #fef3c7; color: #d97706; }
+        .feature-navigation { background: #e0e7ff; color: #5b21b6; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8">
+        <!-- 标题 -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold mb-4">H5Bridge集成状态检查</h1>
+            <p class="text-gray-600">检查所有页面的小程序通信功能集成状态</p>
+        </div>
+
+        <!-- 总体统计 -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg p-6 text-center shadow-sm">
+                <div class="text-3xl font-bold text-blue-600" id="totalPages">57</div>
+                <div class="text-sm text-gray-500">总页面数</div>
+            </div>
+            <div class="bg-white rounded-lg p-6 text-center shadow-sm">
+                <div class="text-3xl font-bold text-green-600" id="integratedPages">0</div>
+                <div class="text-sm text-gray-500">已集成</div>
+            </div>
+            <div class="bg-white rounded-lg p-6 text-center shadow-sm">
+                <div class="text-3xl font-bold text-yellow-600" id="partialPages">0</div>
+                <div class="text-sm text-gray-500">部分集成</div>
+            </div>
+            <div class="bg-white rounded-lg p-6 text-center shadow-sm">
+                <div class="text-3xl font-bold text-red-600" id="pendingPages">57</div>
+                <div class="text-sm text-gray-500">待集成</div>
+            </div>
+        </div>
+
+        <!-- 功能统计 -->
+        <div class="bg-white rounded-lg p-6 mb-8 shadow-sm">
+            <h3 class="text-lg font-semibold mb-4">功能集成统计</h3>
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-purple-600" id="navigationCount">0</div>
+                    <div class="text-sm text-gray-500">页面导航</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-red-600" id="paymentCount">0</div>
+                    <div class="text-sm text-gray-500">支付功能</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-blue-600" id="shareCount">0</div>
+                    <div class="text-sm text-gray-500">分享功能</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-green-600" id="userInfoCount">0</div>
+                    <div class="text-sm text-gray-500">用户信息</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-yellow-600" id="locationCount">0</div>
+                    <div class="text-sm text-gray-500">位置服务</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="text-center mb-8">
+            <div class="space-x-4">
+                <button onclick="checkAllPages()" class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors">
+                    🔍 检查集成状态
+                </button>
+                <button onclick="testMiniProgramFeatures()" class="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors">
+                    📱 测试小程序功能
+                </button>
+                <button onclick="generateIntegrationReport()" class="bg-purple-500 text-white px-6 py-3 rounded-lg hover:bg-purple-600 transition-colors">
+                    📊 生成集成报告
+                </button>
+            </div>
+        </div>
+
+        <!-- 页面列表 -->
+        <div class="bg-white rounded-lg shadow-sm">
+            <div class="p-6 border-b border-gray-200">
+                <h3 class="text-lg font-semibold">页面集成状态详情</h3>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="pagesList">
+                    <!-- 页面卡片将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 集成指南 -->
+        <div class="mt-8 bg-white rounded-lg p-6 shadow-sm">
+            <h3 class="text-lg font-semibold mb-4">集成状态说明</h3>
+            <div class="space-y-3 text-sm">
+                <div class="flex items-start">
+                    <span class="status-indicator status-integrated mr-2 mt-1"></span>
+                    <div>
+                        <strong>已完全集成</strong> - 包含H5Bridge脚本，支持页面导航、用户信息等基础功能
+                    </div>
+                </div>
+                <div class="flex items-start">
+                    <span class="status-indicator status-partial mr-2 mt-1"></span>
+                    <div>
+                        <strong>部分集成</strong> - 包含部分小程序功能，但可能缺少某些特定功能
+                    </div>
+                </div>
+                <div class="flex items-start">
+                    <span class="status-indicator status-pending mr-2 mt-1"></span>
+                    <div>
+                        <strong>待集成</strong> - 尚未集成H5Bridge通信功能
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-6">
+                <h4 class="font-semibold mb-2">功能标识说明</h4>
+                <div class="flex flex-wrap gap-2">
+                    <span class="feature-badge feature-navigation">导航</span>
+                    <span class="feature-badge feature-payment">支付</span>
+                    <span class="feature-badge feature-share">分享</span>
+                    <span class="feature-badge feature-userinfo">用户信息</span>
+                    <span class="feature-badge feature-location">位置</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 页面配置
+        const pageConfigs = {
+            'home.html': { name: '首页', priority: 'high', expectedFeatures: ['navigation', 'share', 'userinfo'] },
+            'mall.html': { name: '商城', priority: 'high', expectedFeatures: ['navigation', 'userinfo', 'location'] },
+            'design-result.html': { name: '设计结果', priority: 'high', expectedFeatures: ['navigation', 'share'] },
+            'spaces.html': { name: '施工空间', priority: 'high', expectedFeatures: ['navigation', 'userinfo'] },
+            'me.html': { name: '个人中心', priority: 'high', expectedFeatures: ['navigation', 'userinfo', 'share'] },
+            'design-payment.html': { name: '设计付款', priority: 'high', expectedFeatures: ['navigation', 'payment', 'userinfo'] },
+            'mall-cart.html': { name: '购物车', priority: 'high', expectedFeatures: ['navigation', 'payment', 'userinfo'] },
+            'order-confirm.html': { name: '订单确认', priority: 'high', expectedFeatures: ['navigation', 'payment', 'userinfo'] },
+            'login.html': { name: '登录', priority: 'medium', expectedFeatures: ['navigation', 'userinfo'] },
+            'register.html': { name: '注册', priority: 'medium', expectedFeatures: ['navigation', 'userinfo'] }
+        };
+
+        let integrationStatus = {};
+        let featureCounts = {
+            navigation: 0,
+            payment: 0,
+            share: 0,
+            userinfo: 0,
+            location: 0
+        };
+
+        // 初始化页面
+        function initializePage() {
+            generatePagesList();
+            checkAllPages();
+        }
+
+        // 生成页面列表
+        function generatePagesList() {
+            const container = document.getElementById('pagesList');
+            
+            // 获取所有HTML文件
+            const allPages = [
+                'home.html', 'design-result.html', 'mall.html', 'spaces.html', 'me.html',
+                'design-payment.html', 'mall-cart.html', 'order-confirm.html', 'login.html', 'register.html',
+                'design-service-detail.html', 'design-project-detail.html', 'design-history.html', 'design-budget.html',
+                'mall-detail.html', 'mall-search.html', 'mall-order.html', 'construction-projects.html',
+                'my-projects.html', 'optimized_knowledge.html', 'ai-assistant.html', 'messages.html'
+                // ... 其他页面
+            ];
+            
+            allPages.forEach(page => {
+                const config = pageConfigs[page] || { 
+                    name: page.replace('.html', '').replace(/-/g, ' '), 
+                    priority: 'low', 
+                    expectedFeatures: ['navigation'] 
+                };
+                
+                const card = document.createElement('div');
+                card.className = 'status-card border border-gray-200 rounded-lg p-4';
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-medium">${config.name}</span>
+                        <span class="status-indicator status-pending" id="status-${page}"></span>
+                    </div>
+                    <div class="text-xs text-gray-500 mb-2">${page}</div>
+                    <div class="text-xs mb-2">
+                        <span class="px-2 py-1 rounded ${config.priority === 'high' ? 'bg-red-100 text-red-800' : config.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}">
+                            ${config.priority === 'high' ? '高优先级' : config.priority === 'medium' ? '中优先级' : '低优先级'}
+                        </span>
+                    </div>
+                    <div class="features" id="features-${page}">
+                        ${config.expectedFeatures.map(feature => 
+                            `<span class="feature-badge feature-${feature}">${getFeatureName(feature)}</span>`
+                        ).join('')}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // 获取功能名称
+        function getFeatureName(feature) {
+            const names = {
+                navigation: '导航',
+                payment: '支付',
+                share: '分享',
+                userinfo: '用户信息',
+                location: '位置'
+            };
+            return names[feature] || feature;
+        }
+
+        // 检查所有页面
+        async function checkAllPages() {
+            let integrated = 0;
+            let partial = 0;
+            let pending = 0;
+            
+            // 重置功能计数
+            featureCounts = {
+                navigation: 0,
+                payment: 0,
+                share: 0,
+                userinfo: 0,
+                location: 0
+            };
+
+            const allPages = Object.keys(pageConfigs);
+            
+            for (const page of allPages) {
+                try {
+                    const response = await fetch(page);
+                    const content = await response.text();
+                    
+                    let status = 'pending';
+                    let features = [];
+                    let score = 0;
+                    
+                    // 检查H5Bridge集成
+                    if (content.includes('js/h5-bridge.js')) {
+                        score += 2;
+                        features.push('navigation');
+                        featureCounts.navigation++;
+                    }
+                    
+                    // 检查各项功能
+                    if (content.includes('handleMiniProgramPayment') || content.includes('requestPayment')) {
+                        score += 1;
+                        features.push('payment');
+                        featureCounts.payment++;
+                    }
+                    
+                    if (content.includes('handleMiniProgramShare') || content.includes('share')) {
+                        score += 1;
+                        features.push('share');
+                        featureCounts.share++;
+                    }
+                    
+                    if (content.includes('getUserInfo') || content.includes('updateUserDisplay')) {
+                        score += 1;
+                        features.push('userinfo');
+                        featureCounts.userinfo++;
+                    }
+                    
+                    if (content.includes('getLocation') || content.includes('location')) {
+                        score += 1;
+                        features.push('location');
+                        featureCounts.location++;
+                    }
+                    
+                    // 确定状态
+                    if (score >= 3) {
+                        status = 'integrated';
+                        integrated++;
+                    } else if (score >= 1) {
+                        status = 'partial';
+                        partial++;
+                    } else {
+                        pending++;
+                    }
+                    
+                    integrationStatus[page] = { status, score, features };
+                    updatePageStatus(page, status);
+                    
+                } catch (error) {
+                    pending++;
+                    integrationStatus[page] = { status: 'pending', score: 0, features: [] };
+                    updatePageStatus(page, 'pending');
+                }
+            }
+
+            // 更新统计
+            document.getElementById('integratedPages').textContent = integrated;
+            document.getElementById('partialPages').textContent = partial;
+            document.getElementById('pendingPages').textContent = pending;
+            
+            // 更新功能统计
+            document.getElementById('navigationCount').textContent = featureCounts.navigation;
+            document.getElementById('paymentCount').textContent = featureCounts.payment;
+            document.getElementById('shareCount').textContent = featureCounts.share;
+            document.getElementById('userInfoCount').textContent = featureCounts.userinfo;
+            document.getElementById('locationCount').textContent = featureCounts.location;
+        }
+
+        // 更新页面状态
+        function updatePageStatus(filename, status) {
+            const indicator = document.getElementById(`status-${filename}`);
+            if (indicator) {
+                indicator.className = `status-indicator status-${status}`;
+            }
+        }
+
+        // 测试小程序功能
+        function testMiniProgramFeatures() {
+            if (window.H5Bridge) {
+                alert(`小程序环境检测：${window.H5Bridge.isInMiniProgram ? '✅ 在小程序中' : '❌ 在浏览器中'}\n\n可用功能测试：\n- 页面导航：${window.H5Bridge.isSupported('navigate') ? '✅' : '❌'}\n- 支付功能：${window.H5Bridge.isSupported('payment') ? '✅' : '❌'}\n- 分享功能：${window.H5Bridge.isSupported('share') ? '✅' : '❌'}\n- 用户信息：${window.H5Bridge.isSupported('userInfo') ? '✅' : '❌'}`);
+            } else {
+                alert('❌ H5Bridge未加载，请确保当前页面已集成H5Bridge');
+            }
+        }
+
+        // 生成集成报告
+        function generateIntegrationReport() {
+            let report = "# H5Bridge集成状态报告\n\n";
+            
+            report += `## 总体统计\n`;
+            report += `- 总页面数: ${Object.keys(pageConfigs).length}\n`;
+            report += `- 已完全集成: ${document.getElementById('integratedPages').textContent}\n`;
+            report += `- 部分集成: ${document.getElementById('partialPages').textContent}\n`;
+            report += `- 待集成: ${document.getElementById('pendingPages').textContent}\n\n`;
+            
+            report += `## 功能统计\n`;
+            report += `- 页面导航: ${featureCounts.navigation}\n`;
+            report += `- 支付功能: ${featureCounts.payment}\n`;
+            report += `- 分享功能: ${featureCounts.share}\n`;
+            report += `- 用户信息: ${featureCounts.userinfo}\n`;
+            report += `- 位置服务: ${featureCounts.location}\n\n`;
+            
+            report += `## 页面详情\n`;
+            for (const [page, status] of Object.entries(integrationStatus)) {
+                const config = pageConfigs[page];
+                const statusText = {
+                    'integrated': '✅ 已完全集成',
+                    'partial': '⚠️ 部分集成',
+                    'pending': '❌ 待集成'
+                }[status.status];
+                
+                report += `### ${config.name} (${page})\n`;
+                report += `- 状态: ${statusText}\n`;
+                report += `- 集成分数: ${status.score}/5\n`;
+                report += `- 已集成功能: ${status.features.join(', ')}\n\n`;
+            }
+            
+            // 下载报告
+            const blob = new Blob([report], { type: 'text/markdown' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'h5bridge-integration-report.md';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', initializePage);
+    </script>
+    
+    <!-- H5Bridge小程序通信 -->
+    <script src="js/h5-bridge.js"></script>
+</body>
+</html>

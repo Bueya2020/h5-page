@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>绑定手机号 - 智能家居</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'system': ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', '"SF Pro Icons"', '"Helvetica Neue"', 'Helvetica', 'Arial', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/iphone16_fix.css">
+
+    <style>
+        /* 基础样式重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            -webkit-text-size-adjust: 100%;
+            -moz-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+            -webkit-overflow-scrolling: touch;
+            margin: 0;
+            padding: 0;
+            background: #F5F5F5;
+            color: #000;
+        }
+
+        /* 隐藏滚动条 */
+        .scrollbar-none {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .scrollbar-none::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* 输入框样式 */
+        input[type="tel"], input[type="text"] {
+            width: 100%;
+            height: 48px;
+            padding: 0 16px;
+            border: 1px solid #CCCCCC;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            background: #FFFFFF;
+            color: #000;
+        }
+
+        input[type="tel"]:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #000;
+        }
+
+        input[type="tel"]::placeholder, input[type="text"]::placeholder {
+            color: #999999;
+        }
+
+        /* 按钮样式 */
+        button {
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+        }
+
+        /* 工具类样式 */
+        .max-w-\[393px\] { max-width: 393px; }
+        .h-\[852px\] { height: 852px; }
+        .h-\[47px\] { height: 47px; }
+        .h-\[37\.5px\] { height: 37.5px; }
+        .h-\[49px\] { height: 49px; }
+        .h-\[34px\] { height: 34px; }
+        .h-\[22px\] { height: 22px; }
+        .w-\[126px\] { width: 126px; }
+        .w-\[134px\] { width: 134px; }
+        .w-\[22px\] { width: 22px; }
+        .rounded-\[54px\] { border-radius: 54px; }
+        .rounded-\[24px\] { border-radius: 24px; }
+        .-top-0\.5 { top: -2px; }
+        .stroke-\[1\.5\] { stroke-width: 1.5; }
+
+        /* 布局类 */
+        .mx-auto { margin-left: auto; margin-right: auto; }
+        .relative { position: relative; }
+        .absolute { position: absolute; }
+        .top-0 { top: 0; }
+        .left-0 { left: 0; }
+        .right-0 { right: 0; }
+        .bottom-0 { bottom: 0; }
+        .left-1\/2 { left: 50%; }
+        .top-1\/2 { top: 50%; }
+        .-translate-x-1\/2 { transform: translateX(-50%); }
+        .-translate-y-1\/2 { transform: translateY(-50%); }
+        .transform { transform: translateX(var(--tw-translate-x)) translateY(var(--tw-translate-y)); }
+        .overflow-hidden { overflow: hidden; }
+        .overflow-y-auto { overflow-y: auto; }
+        .z-50 { z-index: 50; }
+
+        .skip-btn {
+            width: 100%;
+            background: transparent;
+            color: #6b7280;
+            border: 1px solid #d1d5db;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: all 0.2s ease;
+            height: 48px;
+        }
+
+        .skip-btn:hover {
+            background: #f9fafb;
+            border-color: #9ca3af;
+        }
+
+        .error-message {
+            color: #dc2626;
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .success-message {
+            color: #059669;
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .wechat-info {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .wechat-icon {
+            color: #07c160;
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+
+        /* 工具类样式 */
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .items-center { align-items: center; }
+        .justify-center { justify-content: center; }
+        .justify-between { justify-content: space-between; }
+        .justify-around { justify-content: space-around; }
+        .space-x-1 > * + * { margin-left: 4px; }
+        .space-y-6 > * + * { margin-top: 24px; }
+        .w-full { width: 100%; }
+        .w-20 { width: 80px; }
+        .h-12 { height: 48px; }
+        .h-full { height: 100%; }
+        .min-h-full { min-height: 100%; }
+        .rounded-lg { border-radius: 8px; }
+        .rounded-full { border-radius: 50%; }
+        .font-medium { font-weight: 500; }
+        .font-bold { font-weight: 700; }
+        .text-center { text-align: center; }
+        .object-cover { object-fit: cover; }
+        .transition-colors { transition: color 0.2s ease; }
+        .transition-transform { transition: transform 0.2s ease; }
+        .group:hover .group-hover\:scale-110 { transform: scale(1.1); }
+        .group:active .group-active\:scale-95 { transform: scale(0.95); }
+        .hover\:text-gray-600:hover { color: #666666; }
+        .active\:text-gray-800:active { color: #333333; }
+        .disabled\:bg-gray-300:disabled { background-color: #CCCCCC; }
+        .hidden { display: none; }
+        .block { display: block; }
+        .calc\(100\%-47px\) { height: calc(100% - 47px); }
+        .bottom-\[83px\] { bottom: 83px; }
+        .pr-24 { padding-right: 96px; }
+        .border-2 { border-width: 2px; }
+    </style>
+</head>
+
+<body>
+    <!-- iPhone 16 容器 -->
+    <div class="max-w-[393px] h-[852px] mx-auto bg-black rounded-[54px] overflow-hidden relative">
+        <!-- 状态栏 -->
+        <div class="absolute top-0 left-0 right-0 h-[47px] bg-black text-white text-sm font-medium flex items-center justify-between px-6 z-50">
+            <div class="flex items-center space-x-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h.01"></path>
+                    <path d="M2 8.82a15 15 0 0 1 20 0"></path>
+                    <path d="M5 12.859a10 10 0 0 1 14 0"></path>
+                    <path d="M8.5 16.429a5 5 0 0 1 7 0"></path>
+                </svg>
+            </div>
+            <div class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">9:41</div>
+            <div class="flex items-center space-x-1">
+                <span>89%</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="16" height="10" x="2" y="7" rx="2" ry="2"></rect>
+                    <line x1="22" x2="22" y1="11" y2="13"></line>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 动态岛 -->
+        <button class="absolute left-1/2 -translate-x-1/2 bg-black transition-all duration-300 ease-out w-[126px] h-[37.5px] -top-0.5 rounded-b-[24px]"></button>
+
+        <!-- 主内容区域 -->
+        <div class="w-full h-[calc(100%-47px)] bg-white overflow-hidden relative">
+            <!-- 滚动内容区域 -->
+            <div class="absolute inset-0 bottom-[83px] overflow-y-auto scrollbar-none">
+                <!-- 主内容区域 -->
+                <main class="px-8 flex flex-col min-h-full">
+                    <!-- 返回按钮 -->
+                    <div class="mt-4 mb-8">
+                        <a href="login.html" class="text-black">
+                            <i class="fas fa-arrow-left"></i>
+                        </a>
+                    </div>
+
+                    <!-- 页面标题 -->
+                    <div class="mb-10">
+                        <h1 class="text-2xl font-bold">绑定手机号</h1>
+                        <p class="text-sm text-gray-500 mt-2">为了更好的服务体验，请绑定您的手机号</p>
+                    </div>
+
+                    <!-- 微信用户信息 -->
+                    <div class="text-center mb-8">
+                        <div class="w-20 h-20 mx-auto mb-4 rounded-full overflow-hidden border-2 border-gray-200">
+                            <img id="userAvatar" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&crop=face" alt="用户头像" class="w-full h-full object-cover">
+                        </div>
+                        <h2 id="userName" class="text-lg font-medium text-gray-800 mb-1">微信用户</h2>
+                        <div class="flex items-center justify-center text-sm text-gray-500">
+                            <i class="fab fa-weixin text-green-500 mr-1"></i>
+                            <span>微信授权登录</span>
+                        </div>
+                    </div>
+
+                    <!-- 绑定表单 -->
+                    <form id="bindForm" class="space-y-6">
+                        <!-- 手机号输入 -->
+                        <div>
+                            <label for="phoneInput" class="block text-sm font-medium text-gray-700 mb-1">手机号码</label>
+                            <input type="tel" id="phoneInput" placeholder="请输入手机号" maxlength="11"
+                                   class="w-full h-12 px-4 border border-gray-300 rounded-lg text-sm">
+                            <div id="phoneError" class="text-red-500 text-xs mt-1 hidden">请输入正确的手机号</div>
+                        </div>
+
+                        <!-- 验证码输入 -->
+                        <div>
+                            <label for="codeInput" class="block text-sm font-medium text-gray-700 mb-1">验证码</label>
+                            <div class="relative">
+                                <input type="text" id="codeInput" placeholder="请输入验证码" maxlength="6"
+                                       class="w-full h-12 px-4 pr-24 border border-gray-300 rounded-lg text-sm">
+                                <button type="button" id="getCodeBtn"
+                                        class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black text-white px-3 py-1 rounded text-xs">
+                                    获取验证码
+                                </button>
+                            </div>
+                            <div id="codeError" class="text-red-500 text-xs mt-1 hidden">请输入正确的验证码</div>
+                            <div id="codeSuccess" class="text-green-500 text-xs mt-1 hidden">验证码已发送</div>
+                        </div>
+
+                        <!-- 绑定按钮 -->
+                        <button type="submit" id="bindBtn" disabled
+                                class="w-full h-12 bg-black text-white rounded-lg font-medium disabled:bg-gray-300">
+                            绑定手机号
+                        </button>
+
+                        <!-- 跳过按钮 -->
+                        <button type="button" id="skipBtn"
+                                class="w-full h-12 bg-transparent text-gray-500 border border-gray-300 rounded-lg font-medium">
+                            暂时跳过
+                        </button>
+                    </form>
+
+                    <!-- 隐私说明 -->
+                    <div class="text-xs text-gray-400 text-center mt-8 mb-8">
+                        <p>绑定手机号后，您可以享受完整的服务功能</p>
+                        <p class="mt-1">我们承诺保护您的隐私信息安全</p>
+                    </div>
+                </main>
+            </div>
+
+            <!-- 底部导航栏 -->
+            <div class="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200">
+                <!-- 导航栏内容 -->
+                <nav class="h-[49px] flex items-center px-2">
+                    <div class="flex justify-around w-full text-[12px]">
+                        <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="home.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                                </svg>
+                            </div>
+                            <span class="mt-1">首页</span>
+                        </a>
+                        <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="design-result.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="13.5" cy="6.5" fill="currentColor" r=".5"></circle>
+                                    <circle cx="17.5" cy="10.5" fill="currentColor" r=".5"></circle>
+                                    <circle cx="8.5" cy="7.5" fill="currentColor" r=".5"></circle>
+                                    <circle cx="6.5" cy="12.5" fill="currentColor" r=".5"></circle>
+                                    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+                                </svg>
+                            </div>
+                            <span class="mt-1">设计</span>
+                        </a>
+                        <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="mall.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+                                    <path d="M3 6h18"></path>
+                                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                                </svg>
+                            </div>
+                            <span class="mt-1">商城</span>
+                        </a>
+                        <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="spaces.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="m15 12-8.373 8.373a1 1 0 1 1-3-3L12 9"></path>
+                                    <path d="m18 15 4-4"></path>
+                                    <path d="m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172V7l-2.26-2.26a6 6 0 0 0-4.202-1.756L9 2.96l.92.82A6.18 6.18 0 0 1 12 8.4V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5"></path>
+                                </svg>
+                            </div>
+                            <span class="mt-1">施工</span>
+                        </a>
+                        <a class="flex flex-col items-center group text-black hover:text-gray-600 active:text-gray-800 transition-colors" href="me.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                            </div>
+                            <span class="mt-1">我的</span>
+                        </a>
+                    </div>
+                </nav>
+                <!-- 安全区域底部间距 -->
+                <div class="h-[34px]"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 加载中弹窗 -->
+    <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
+        <div class="bg-white rounded-lg p-6 mx-4 max-w-sm w-full text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p class="text-gray-700">正在绑定手机号...</p>
+        </div>
+    </div>
+
+    <!-- 成功弹窗 -->
+    <div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
+        <div class="bg-white rounded-lg p-6 mx-4 max-w-sm w-full text-center">
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-check text-green-500 text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-semibold mb-2">绑定成功</h3>
+            <p class="text-gray-600 mb-4">手机号绑定成功，即将跳转到首页</p>
+            <button id="successBtn" class="w-full bg-green-500 text-white py-2 rounded-lg">确定</button>
+        </div>
+    </div>
+
+    <script src="utils/h5-bridge.js"></script>
+    <script src="js/form-validator.js"></script>
+    <script>
+        // 绑定手机号页面功能
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM元素
+            const phoneInput = document.getElementById('phoneInput');
+            const codeInput = document.getElementById('codeInput');
+            const getCodeBtn = document.getElementById('getCodeBtn');
+            const bindBtn = document.getElementById('bindBtn');
+            const skipBtn = document.getElementById('skipBtn');
+            const bindForm = document.getElementById('bindForm');
+            const loadingModal = document.getElementById('loadingModal');
+            const successModal = document.getElementById('successModal');
+            const successBtn = document.getElementById('successBtn');
+
+            // 用户信息
+            let wechatUserInfo = null;
+            let countdownTimer = null;
+            let countdown = 0;
+
+            // 初始化页面
+            initPage();
+
+            // 初始化页面数据
+            function initPage() {
+                // 获取微信用户信息
+                loadWechatUserInfo();
+                
+                // 绑定事件
+                bindEvents();
+                
+                // 检查是否在小程序环境
+                if (window.H5Bridge && window.H5Bridge.isInMiniProgram) {
+                    addMiniProgramPhoneButton();
+                }
+            }
+
+            // 加载微信用户信息
+            function loadWechatUserInfo() {
+                // 从localStorage获取微信用户信息
+                const userInfo = localStorage.getItem('wechatUserInfo');
+                if (userInfo) {
+                    try {
+                        wechatUserInfo = JSON.parse(userInfo);
+                        displayUserInfo(wechatUserInfo);
+                    } catch (error) {
+                        // 解析用户信息失败，使用默认信息
+                    }
+                }
+
+                // 从URL参数获取用户信息
+                const urlParams = new URLSearchParams(window.location.search);
+                const userParam = urlParams.get('user');
+                if (userParam) {
+                    try {
+                        wechatUserInfo = JSON.parse(decodeURIComponent(userParam));
+                        displayUserInfo(wechatUserInfo);
+                    } catch (error) {
+                        // 解析URL用户信息失败，使用默认信息
+                    }
+                }
+            }
+
+            // 显示用户信息
+            function displayUserInfo(userInfo) {
+                if (userInfo.avatarUrl) {
+                    document.getElementById('userAvatar').src = userInfo.avatarUrl;
+                }
+                if (userInfo.nickName) {
+                    document.getElementById('userName').textContent = userInfo.nickName;
+                }
+            }
+
+            // 添加小程序原生获取手机号按钮
+            function addMiniProgramPhoneButton() {
+                const phoneGroup = phoneInput.parentElement;
+                const nativeBtn = document.createElement('button');
+                nativeBtn.type = 'button';
+                nativeBtn.className = 'w-full bg-green-500 text-white py-3 rounded-lg mb-4 flex items-center justify-center';
+                nativeBtn.innerHTML = '<i class="fab fa-weixin mr-2"></i>使用微信授权获取手机号';
+                nativeBtn.onclick = getMiniProgramPhone;
+                
+                phoneGroup.parentElement.insertBefore(nativeBtn, phoneGroup);
+            }
+
+            // 获取小程序手机号
+            function getMiniProgramPhone() {
+                if (window.H5Bridge && window.H5Bridge.getPhoneNumber) {
+                    window.H5Bridge.getPhoneNumber()
+                        .then(result => {
+                            if (result.phoneNumber) {
+                                phoneInput.value = result.phoneNumber;
+                                validatePhone();
+                                // 直接绑定，无需验证码
+                                bindPhoneDirectly(result.phoneNumber);
+                            }
+                        })
+                        .catch(error => {
+                            showToast('获取手机号失败，请手动输入');
+                        });
+                } else {
+                    showToast('当前环境不支持微信授权');
+                }
+            }
+
+            // 直接绑定手机号（微信授权）
+            function bindPhoneDirectly(phone) {
+                showLoading();
+                
+                // 模拟绑定过程
+                setTimeout(() => {
+                    hideLoading();
+                    
+                    // 保存绑定信息
+                    const bindData = {
+                        ...wechatUserInfo,
+                        phone: phone,
+                        bindTime: new Date().toISOString(),
+                        bindMethod: 'wechat_auth'
+                    };
+                    
+                    localStorage.setItem('userInfo', JSON.stringify(bindData));
+                    localStorage.setItem('isLoggedIn', 'true');
+                    
+                    showSuccessModal();
+                }, 2000);
+            }
+
+            // 绑定事件
+            function bindEvents() {
+                // 手机号输入验证
+                phoneInput.addEventListener('input', validatePhone);
+                
+                // 验证码输入验证
+                codeInput.addEventListener('input', validateCode);
+                
+                // 获取验证码
+                getCodeBtn.addEventListener('click', getVerificationCode);
+                
+                // 表单提交
+                bindForm.addEventListener('submit', handleBind);
+                
+                // 跳过绑定
+                skipBtn.addEventListener('click', skipBinding);
+                
+                // 成功确认
+                successBtn.addEventListener('click', goToHome);
+            }
+
+            // 验证手机号
+            function validatePhone() {
+                const phone = phoneInput.value.trim();
+                const phoneError = document.getElementById('phoneError');
+                
+                if (phone.length === 0) {
+                    phoneError.style.display = 'none';
+                    updateBindButton();
+                    return false;
+                }
+                
+                const isValid = /^1[3-9]\d{9}$/.test(phone);
+                
+                if (isValid) {
+                    phoneError.style.display = 'none';
+                    phoneInput.style.borderColor = '#38a169';
+                } else {
+                    phoneError.style.display = 'block';
+                    phoneInput.style.borderColor = '#e53e3e';
+                }
+                
+                updateBindButton();
+                return isValid;
+            }
+
+            // 验证验证码
+            function validateCode() {
+                const code = codeInput.value.trim();
+                const codeError = document.getElementById('codeError');
+                
+                if (code.length === 0) {
+                    codeError.style.display = 'none';
+                    updateBindButton();
+                    return false;
+                }
+                
+                const isValid = /^\d{6}$/.test(code);
+                
+                if (isValid) {
+                    codeError.style.display = 'none';
+                    codeInput.style.borderColor = '#38a169';
+                } else {
+                    codeError.style.display = 'block';
+                    codeInput.style.borderColor = '#e53e3e';
+                }
+                
+                updateBindButton();
+                return isValid;
+            }
+
+            // 更新绑定按钮状态
+            function updateBindButton() {
+                const phoneValid = validatePhone();
+                const codeValid = validateCode();
+                
+                bindBtn.disabled = !(phoneValid && codeValid);
+            }
+
+            // 获取验证码
+            function getVerificationCode() {
+                if (!validatePhone()) {
+                    showToast('请输入正确的手机号');
+                    return;
+                }
+                
+                const phone = phoneInput.value.trim();
+                
+                // 开始倒计时
+                startCountdown();
+                
+                // 模拟发送验证码
+                setTimeout(() => {
+                    document.getElementById('codeSuccess').style.display = 'block';
+                    setTimeout(() => {
+                        document.getElementById('codeSuccess').style.display = 'none';
+                    }, 3000);
+                }, 500);
+                
+                console.log('发送验证码到:', phone);
+            }
+
+            // 开始倒计时
+            function startCountdown() {
+                countdown = 60;
+                getCodeBtn.disabled = true;
+                updateCountdownText();
+                
+                countdownTimer = setInterval(() => {
+                    countdown--;
+                    updateCountdownText();
+                    
+                    if (countdown <= 0) {
+                        clearInterval(countdownTimer);
+                        getCodeBtn.disabled = false;
+                        getCodeBtn.textContent = '获取验证码';
+                    }
+                }, 1000);
+            }
+
+            // 更新倒计时文本
+            function updateCountdownText() {
+                getCodeBtn.textContent = `${countdown}秒后重试`;
+            }
+
+            // 处理绑定
+            function handleBind(e) {
+                e.preventDefault();
+                
+                if (!validatePhone() || !validateCode()) {
+                    showToast('请检查输入信息');
+                    return;
+                }
+                
+                const phone = phoneInput.value.trim();
+                const code = codeInput.value.trim();
+                
+                showLoading();
+                
+                // 模拟绑定过程
+                setTimeout(() => {
+                    hideLoading();
+                    
+                    // 保存绑定信息
+                    const bindData = {
+                        ...wechatUserInfo,
+                        phone: phone,
+                        bindTime: new Date().toISOString(),
+                        bindMethod: 'manual'
+                    };
+                    
+                    localStorage.setItem('userInfo', JSON.stringify(bindData));
+                    localStorage.setItem('isLoggedIn', 'true');
+                    
+                    showSuccessModal();
+                }, 2000);
+            }
+
+            // 跳过绑定
+            function skipBinding() {
+                if (confirm('跳过绑定后，部分功能可能无法使用，确定要跳过吗？')) {
+                    // 保存未绑定的用户信息
+                    const userData = {
+                        ...wechatUserInfo,
+                        phone: '',
+                        bindTime: null,
+                        bindMethod: 'skipped'
+                    };
+                    
+                    localStorage.setItem('userInfo', JSON.stringify(userData));
+                    localStorage.setItem('isLoggedIn', 'true');
+                    
+                    goToHome();
+                }
+            }
+
+            // 显示加载中
+            function showLoading() {
+                loadingModal.classList.remove('hidden');
+                loadingModal.classList.add('flex');
+            }
+
+            // 隐藏加载中
+            function hideLoading() {
+                loadingModal.classList.add('hidden');
+                loadingModal.classList.remove('flex');
+            }
+
+            // 显示成功弹窗
+            function showSuccessModal() {
+                successModal.classList.remove('hidden');
+                successModal.classList.add('flex');
+            }
+
+            // 跳转到首页
+            function goToHome() {
+                window.location.href = 'home.html';
+            }
+
+            // 显示提示
+            function showToast(message) {
+                const toast = document.createElement('div');
+                toast.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-black text-white px-4 py-2 rounded z-50';
+                toast.textContent = message;
+                document.body.appendChild(toast);
+                
+                setTimeout(() => {
+                    if (document.body.contains(toast)) {
+                        document.body.removeChild(toast);
+                    }
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>

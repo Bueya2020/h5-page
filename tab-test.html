@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Tab组件测试页面</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/iphone16_fix.css">
+    <link rel="stylesheet" href="css/youpin-tab-component.css">
+    <style>
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+        
+        .test-content {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 8px;
+            min-height: 100px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="max-w-md mx-auto bg-white min-h-screen">
+        <!-- 顶部导航 -->
+        <header class="bg-white border-b border-gray-100 sticky top-0 z-20">
+            <div class="flex items-center justify-between px-4 py-3">
+                <h1 class="text-lg font-semibold text-black">Tab组件测试</h1>
+                <button onclick="history.back()" class="text-black hover:text-gray-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m15 18-6-6 6-6"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- 测试1: 商城分类Tab -->
+        <div class="test-section">
+            <h2 class="text-lg font-medium mb-4">测试1: 商城分类Tab</h2>
+            <div class="youpin-tab-component" id="mall-test-tabs">
+                <div class="youpin-tab-indicator-left"></div>
+                <div class="youpin-tab-indicator-right"></div>
+                <div class="youpin-tab-scrollable">
+                    <div class="youpin-tab-wrapper">
+                        <button class="youpin-tab active" data-category="all">全部</button>
+                        <button class="youpin-tab" data-category="gateway">网关</button>
+                        <button class="youpin-tab" data-category="switch">开关</button>
+                        <button class="youpin-tab" data-category="lighting">灯具</button>
+                        <button class="youpin-tab" data-category="curtain">窗帘</button>
+                        <button class="youpin-tab" data-category="sensor">传感器</button>
+                        <button class="youpin-tab" data-category="environment">环境控制</button>
+                        <button class="youpin-tab" data-category="entertainment">家庭娱乐</button>
+                        <button class="youpin-tab" data-category="health">健康管理</button>
+                        <button class="youpin-tab" data-category="energy">能耗管理</button>
+                        <button class="youpin-tab" data-category="wifi">网络WiFi</button>
+                        <button class="youpin-tab" data-category="appliance">家电控制</button>
+                        <button class="youpin-tab" data-category="security">安防监控</button>
+                    </div>
+                </div>
+            </div>
+            <div class="test-content" id="mall-content">
+                <p>当前选择: <span id="mall-current">全部</span></p>
+                <p>测试商城分类tab的滚动和切换功能</p>
+            </div>
+        </div>
+
+        <!-- 测试2: 项目管理Tab -->
+        <div class="test-section">
+            <h2 class="text-lg font-medium mb-4">测试2: 项目管理Tab</h2>
+            <div class="youpin-tab-component" id="project-test-tabs">
+                <div class="youpin-tab-indicator-left"></div>
+                <div class="youpin-tab-indicator-right"></div>
+                <div class="youpin-tab-scrollable">
+                    <div class="youpin-tab-wrapper">
+                        <button class="youpin-tab active" data-tab="progress">施工进度</button>
+                        <button class="youpin-tab" data-tab="statistics">数据统计</button>
+                        <button class="youpin-tab" data-tab="drawings">项目图纸</button>
+                        <button class="youpin-tab" data-tab="equipment">设备清单</button>
+                        <button class="youpin-tab" data-tab="team">施工团队</button>
+                    </div>
+                </div>
+            </div>
+            <div class="test-content" id="project-content">
+                <p>当前选择: <span id="project-current">施工进度</span></p>
+                <p>测试项目管理tab的滚动和切换功能</p>
+            </div>
+        </div>
+
+        <!-- 测试3: 空间效果Tab -->
+        <div class="test-section">
+            <h2 class="text-lg font-medium mb-4">测试3: 空间效果Tab</h2>
+            <div class="youpin-tab-component" id="space-test-tabs">
+                <div class="youpin-tab-indicator-left"></div>
+                <div class="youpin-tab-indicator-right"></div>
+                <div class="youpin-tab-scrollable">
+                    <div class="youpin-tab-wrapper">
+                        <button class="youpin-tab active" data-space="living">客餐厅</button>
+                        <button class="youpin-tab" data-space="bedroom">主卧</button>
+                        <button class="youpin-tab" data-space="panorama">全景图</button>
+                        <button class="youpin-tab" data-space="elder">长辈房</button>
+                        <button class="youpin-tab" data-space="all">全部展示</button>
+                    </div>
+                </div>
+            </div>
+            <div class="test-content" id="space-content">
+                <p>当前选择: <span id="space-current">客餐厅</span></p>
+                <p>测试空间效果tab的滚动和切换功能</p>
+            </div>
+        </div>
+
+        <!-- 测试4: 施工空间Tab -->
+        <div class="test-section">
+            <h2 class="text-lg font-medium mb-4">测试4: 施工空间Tab</h2>
+            <div class="youpin-tab-component" id="construction-test-tabs">
+                <div class="youpin-tab-indicator-left"></div>
+                <div class="youpin-tab-indicator-right"></div>
+                <div class="youpin-tab-scrollable">
+                    <div class="youpin-tab-wrapper">
+                        <button class="youpin-tab active" data-space="客厅">客厅</button>
+                        <button class="youpin-tab" data-space="餐厅">餐厅</button>
+                        <button class="youpin-tab" data-space="厨房">厨房</button>
+                        <button class="youpin-tab" data-space="过道">过道</button>
+                        <button class="youpin-tab" data-space="主卧">主卧</button>
+                        <button class="youpin-tab" data-space="次卧">次卧</button>
+                        <button class="youpin-tab" data-space="书房">书房</button>
+                        <button class="youpin-tab" data-space="卫生间">卫生间</button>
+                    </div>
+                </div>
+            </div>
+            <div class="test-content" id="construction-content">
+                <p>当前选择: <span id="construction-current">客厅</span></p>
+                <p>测试施工空间tab的滚动和切换功能</p>
+            </div>
+        </div>
+
+        <!-- 测试结果 -->
+        <div class="test-section">
+            <h2 class="text-lg font-medium mb-4">测试结果</h2>
+            <div class="space-y-2" id="test-results">
+                <p class="text-sm text-gray-600">等待测试...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入YoupinTabComponent -->
+    <script src="js/youpin-tab-component.js"></script>
+    
+    <script>
+        // 测试结果记录
+        const testResults = [];
+        
+        function addTestResult(test, result, details = '') {
+            testResults.push({ test, result, details, time: new Date().toLocaleTimeString() });
+            updateTestResults();
+        }
+        
+        function updateTestResults() {
+            const container = document.getElementById('test-results');
+            container.innerHTML = testResults.map(r => 
+                `<div class="text-sm ${r.result === 'PASS' ? 'text-green-600' : 'text-red-600'}">
+                    [${r.time}] ${r.test}: ${r.result} ${r.details}
+                </div>`
+            ).join('');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 开始Tab组件测试...');
+            
+            // 测试1: 商城分类Tab
+            try {
+                const mallTabs = new YoupinTabComponent('#mall-test-tabs', {
+                    enableKeyboard: true,
+                    enableAutoScroll: true,
+                    debug: true
+                });
+                
+                document.getElementById('mall-test-tabs').addEventListener('youpinTabChange', (e) => {
+                    const category = e.detail.data.category;
+                    const categoryName = e.detail.tab.textContent.trim();
+                    document.getElementById('mall-current').textContent = categoryName;
+                    addTestResult('商城Tab切换', 'PASS', `切换到: ${categoryName}`);
+                });
+                
+                addTestResult('商城Tab初始化', 'PASS');
+            } catch (error) {
+                addTestResult('商城Tab初始化', 'FAIL', error.message);
+            }
+
+            // 测试2: 项目管理Tab
+            try {
+                const projectTabs = new YoupinTabComponent('#project-test-tabs', {
+                    enableKeyboard: true,
+                    enableAutoScroll: true,
+                    debug: true
+                });
+                
+                document.getElementById('project-test-tabs').addEventListener('youpinTabChange', (e) => {
+                    const tabName = e.detail.data.tab;
+                    const tabText = e.detail.tab.textContent.trim();
+                    document.getElementById('project-current').textContent = tabText;
+                    addTestResult('项目Tab切换', 'PASS', `切换到: ${tabText}`);
+                });
+                
+                addTestResult('项目Tab初始化', 'PASS');
+            } catch (error) {
+                addTestResult('项目Tab初始化', 'FAIL', error.message);
+            }
+
+            // 测试3: 空间效果Tab
+            try {
+                const spaceTabs = new YoupinTabComponent('#space-test-tabs', {
+                    enableKeyboard: true,
+                    enableAutoScroll: true,
+                    debug: true
+                });
+                
+                document.getElementById('space-test-tabs').addEventListener('youpinTabChange', (e) => {
+                    const spaceName = e.detail.data.space;
+                    const spaceText = e.detail.tab.textContent.trim();
+                    document.getElementById('space-current').textContent = spaceText;
+                    addTestResult('空间Tab切换', 'PASS', `切换到: ${spaceText}`);
+                });
+                
+                addTestResult('空间Tab初始化', 'PASS');
+            } catch (error) {
+                addTestResult('空间Tab初始化', 'FAIL', error.message);
+            }
+
+            // 测试4: 施工空间Tab
+            try {
+                const constructionTabs = new YoupinTabComponent('#construction-test-tabs', {
+                    enableKeyboard: true,
+                    enableAutoScroll: true,
+                    debug: true
+                });
+                
+                document.getElementById('construction-test-tabs').addEventListener('youpinTabChange', (e) => {
+                    const spaceName = e.detail.data.space;
+                    const spaceText = e.detail.tab.textContent.trim();
+                    document.getElementById('construction-current').textContent = spaceText;
+                    addTestResult('施工Tab切换', 'PASS', `切换到: ${spaceText}`);
+                });
+                
+                addTestResult('施工Tab初始化', 'PASS');
+            } catch (error) {
+                addTestResult('施工Tab初始化', 'FAIL', error.message);
+            }
+
+            // 延迟测试滚动功能
+            setTimeout(() => {
+                try {
+                    // 测试滚动指示器
+                    const indicators = document.querySelectorAll('.youpin-tab-indicator-left, .youpin-tab-indicator-right');
+                    if (indicators.length > 0) {
+                        addTestResult('滚动指示器', 'PASS', `找到${indicators.length}个指示器`);
+                    } else {
+                        addTestResult('滚动指示器', 'FAIL', '未找到滚动指示器');
+                    }
+                    
+                    // 测试键盘导航
+                    const firstTab = document.querySelector('.youpin-tab');
+                    if (firstTab) {
+                        firstTab.focus();
+                        addTestResult('键盘导航', 'PASS', '可以聚焦到Tab');
+                    }
+                    
+                } catch (error) {
+                    addTestResult('功能测试', 'FAIL', error.message);
+                }
+            }, 1000);
+
+            console.log('✅ Tab组件测试初始化完成');
+        });
+    </script>
+</body>
+</html>

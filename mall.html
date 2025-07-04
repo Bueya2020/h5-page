@@ -1,0 +1,1466 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>商城页</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/iphone16_fix.css">
+    <link rel="stylesheet" href="css/youpin-tab-component.css">
+    <style>
+        .product-card {
+            transition: transform 0.2s;
+        }
+
+        .product-card:active {
+            transform: scale(0.98);
+        }
+
+        /* 旧的category-item样式已移除，使用YoupinTabComponent样式 */
+
+        .sort-btn.active {
+            color: #000;
+            font-weight: 600;
+        }
+
+        .sort-btn:hover:not(.active) {
+            color: #374151;
+        }
+
+        .filter-btn:hover {
+            background-color: #f3f4f6;
+            border-color: #d1d5db;
+        }
+
+        .scrollbar-none::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-none {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* 搜索栏动画 */
+        .search-input:focus {
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 分类导航滑动指示器 */
+        .category-nav-container {
+            position: relative;
+        }
+
+        .category-nav-container::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 20px;
+            background: linear-gradient(to left, rgba(255,255,255,1), rgba(255,255,255,0));
+            pointer-events: none;
+        }
+    </style>
+
+    <!-- 全局错误处理和兜底方案 -->
+    <script>
+        (function() {
+            'use strict';
+            
+            // 创建 Trace 对象的兜底实现
+            window.Trace = window.Trace || {
+                init: function() { console.log('Trace initialized (fallback)'); },
+                log: function() { console.log.apply(console, arguments); },
+                error: function() { console.error.apply(console, arguments); },
+                warn: function() { console.warn.apply(console, arguments); },
+                info: function() { console.info.apply(console, arguments); }
+            };
+
+            // 防止其他可能的调试工具错误
+            window.wx = window.wx || {};
+            window.my = window.my || {};
+            
+            // 防止 chartId 未定义错误
+            window.chartId = window.chartId || 'default-chart-id';
+            
+            // 全局错误处理
+            window.addEventListener('error', function(e) {
+                console.error('Global error caught:', e.error);
+                return true; // 阻止默认错误处理
+            });
+            
+            window.addEventListener('unhandledrejection', function(e) {
+                console.error('Unhandled promise rejection:', e.reason);
+                e.preventDefault(); // 阻止默认处理
+            });
+            
+            console.log('✅ 全局错误处理已初始化');
+        })();
+    </script>
+</head>
+<body class="min-h-screen w-full bg-[#000000] flex items-center justify-center font-system">
+    <!-- iPhone 容器 -->
+    <div class="w-full max-w-[393px] h-[852px] bg-[#1E1E1E] shadow-2xl overflow-hidden relative mx-auto rounded-[54px]">
+        <!-- iPhone 状态栏 -->
+        <div class="w-full h-[47px] bg-black px-5 flex items-center justify-between text-white text-[14px] font-medium">
+            <div class="flex items-center space-x-1">
+                <!-- 信号图标 -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 20h.01"></path>
+                    <path d="M7 20v-4"></path>
+                    <path d="M12 20v-8"></path>
+                    <path d="M17 20V8"></path>
+                    <path d="M22 4v16"></path>
+                </svg>
+                <span>中国移动</span>
+                <!-- WiFi图标 -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h.01"></path>
+                    <path d="M2 8.82a15 15 0 0 1 20 0"></path>
+                    <path d="M5 12.859a10 10 0 0 1 14 0"></path>
+                    <path d="M8.5 16.429a5 5 0 0 1 7 0"></path>
+                </svg>
+            </div>
+            <div class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">9:41</div>
+            <div class="flex items-center space-x-1">
+                <span>89%</span>
+                <!-- 电池图标 -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="16" height="10" x="2" y="7" rx="2" ry="2"></rect>
+                    <line x1="22" x2="22" y1="11" y2="13"></line>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 动态岛 -->
+        <button class="absolute left-1/2 -translate-x-1/2 bg-black transition-all duration-300 ease-out w-[126px] h-[37.5px] -top-0.5 rounded-b-[24px]"></button>
+
+        <!-- 主内容区域 -->
+        <div class="w-full h-[calc(100%-47px)] bg-white overflow-hidden relative">
+            <!-- 滚动内容区域 -->
+            <div class="absolute inset-0 bottom-[84px] overflow-y-auto scrollbar-none">
+
+                <!-- 顶部导航栏 -->
+                <header class="bg-white border-b border-gray-100 sticky top-0 z-20">
+                    <div class="flex items-center justify-between px-4 py-3">
+                        <h1 class="text-lg font-semibold text-black">智能商城</h1>
+                        <div class="flex items-center space-x-3">
+                            <a href="mall-search.html" class="text-black hover:text-gray-600 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <path d="m21 21-4.3-4.3"></path>
+                                </svg>
+                            </a>
+                            <a href="#" class="text-black hover:text-gray-600 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+                                    <path d="M3 6h18"></path>
+                                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- 搜索栏 -->
+                <section class="px-4 py-3 bg-white">
+                    <div class="relative">
+                        <input type="search"
+                               id="mallSearchInput"
+                               name="search"
+                               placeholder="搜索智能产品、品牌、型号"
+                               class="w-full h-11 pl-12 pr-16 rounded-full text-sm bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all"
+                               autocomplete="off">
+                        <div class="absolute left-4 top-1/2 transform -translate-y-1/2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <path d="m21 21-4.3-4.3"></path>
+                            </svg>
+                        </div>
+                        <button id="mallSearchBtn" class="absolute right-3 top-1/2 transform -translate-y-1/2 bg-black text-white px-3 py-1.5 rounded-full text-xs font-medium">
+                            搜索
+                        </button>
+
+                        <!-- 搜索建议下拉框 -->
+                        <div id="searchSuggestions" class="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg mt-1 shadow-lg z-50 hidden">
+                            <div class="p-2">
+                                <div class="text-xs text-gray-500 mb-2">搜索建议</div>
+                                <div id="suggestionsList" class="space-y-1">
+                                    <!-- 动态生成的建议项 -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 热门搜索标签 -->
+                    <div class="mt-3">
+                        <div class="flex items-center mb-2">
+                            <span class="text-xs text-gray-500 mr-2">热门搜索:</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2" id="hotSearchTags">
+                            <button class="hot-search-tag px-2 py-1 bg-gray-100 rounded-full text-xs text-gray-600 hover:bg-gray-200 transition-colors" data-keyword="智能门锁">智能门锁</button>
+                            <button class="hot-search-tag px-2 py-1 bg-gray-100 rounded-full text-xs text-gray-600 hover:bg-gray-200 transition-colors" data-keyword="智能摄像头">智能摄像头</button>
+                            <button class="hot-search-tag px-2 py-1 bg-gray-100 rounded-full text-xs text-gray-600 hover:bg-gray-200 transition-colors" data-keyword="智能开关">智能开关</button>
+                            <button class="hot-search-tag px-2 py-1 bg-gray-100 rounded-full text-xs text-gray-600 hover:bg-gray-200 transition-colors" data-keyword="智能音箱">智能音箱</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 分类导航栏 - 使用YoupinTabComponent -->
+                <section class="bg-white border-t border-gray-100 sticky top-[60px] z-10">
+                    <div class="youpin-tab-component" id="mall-category-tabs">
+                        <!-- 滚动指示器 -->
+                        <div class="youpin-tab-indicator-left"></div>
+                        <div class="youpin-tab-indicator-right"></div>
+
+                        <!-- 滚动容器 -->
+                        <div class="youpin-tab-scrollable">
+                            <div class="youpin-tab-wrapper">
+                                <button class="youpin-tab active" data-category="all">全部</button>
+                                <button class="youpin-tab" data-category="gateway">网关</button>
+                                <button class="youpin-tab" data-category="switch">开关</button>
+                                <button class="youpin-tab" data-category="lighting">灯具</button>
+                                <button class="youpin-tab" data-category="curtain">窗帘</button>
+                                <button class="youpin-tab" data-category="sensor">传感器</button>
+                                <button class="youpin-tab" data-category="environment">环境控制</button>
+                                <button class="youpin-tab" data-category="entertainment">家庭娱乐</button>
+                                <button class="youpin-tab" data-category="health">健康管理</button>
+                                <button class="youpin-tab" data-category="energy">能耗管理</button>
+                                <button class="youpin-tab" data-category="wifi">网络WiFi</button>
+                                <button class="youpin-tab" data-category="appliance">家电控制</button>
+                                <button class="youpin-tab" data-category="security">安防监控</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 商品导航栏 -->
+                <section class="bg-white px-4 py-3 border-t border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-6">
+                            <button class="sort-btn active text-sm font-medium flex items-center" data-sort="comprehensive">
+                                综合
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-1 text-gray-400">
+                                    <path d="m7 15 5 5 5-5"></path>
+                                    <path d="m7 9 5-5 5 5"></path>
+                                </svg>
+                            </button>
+                            <button class="sort-btn text-sm text-gray-600 flex items-center" data-sort="sales">
+                                销量
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-1 text-gray-400">
+                                    <path d="m7 15 5 5 5-5"></path>
+                                    <path d="m7 9 5-5 5 5"></path>
+                                </svg>
+                            </button>
+                            <button class="sort-btn text-sm text-gray-600 flex items-center" data-sort="price">
+                                价格
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-1 text-gray-400">
+                                    <path d="m7 15 5 5 5-5"></path>
+                                    <path d="m7 9 5-5 5 5"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <button id="filterBtn" class="filter-btn flex items-center text-sm text-gray-600 border border-gray-200 rounded-full px-3 py-1.5 relative">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
+                                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                            </svg>
+                            筛选
+                            <span id="filterCount" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">0</span>
+                        </button>
+                    </div>
+                </section>
+
+        <!-- 商品列表 -->
+        <section class="px-4 py-4 grid grid-cols-2 gap-3">
+            <!-- 商品1 - 多图轮播 -->
+            <a href="mall-detail.html?source=mall" class="product-card bg-white rounded-lg overflow-hidden shadow-sm" data-category="gateway">
+                <div class="relative h-36 overflow-hidden">
+                    <div class="product-carousel w-full h-full">
+                        <div class="carousel-container relative w-full h-full">
+                            <div class="carousel-track flex transition-transform duration-300 ease-in-out" style="transform: translateX(0%)">
+                                <img src="https://images.unsplash.com/photo-1558089687-f282ffcbc0d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=180&h=180&q=80" alt="智能网关主机" class="w-full h-full object-cover flex-shrink-0" loading="lazy">
+                                <img src="https://images.unsplash.com/photo-1556656793-08538906a9f8?ixlib=rb-4.0.3&auto=format&fit=crop&w=180&h=180&q=80" alt="智能网关主机细节" class="w-full h-full object-cover flex-shrink-0" loading="lazy">
+                                <img src="https://images.unsplash.com/photo-1544256718-3bcf237f3974?ixlib=rb-4.0.3&auto=format&fit=crop&w=180&h=180&q=80" alt="智能网关主机包装" class="w-full h-full object-cover flex-shrink-0" loading="lazy">
+                            </div>
+                            <!-- 轮播指示器 -->
+                            <div class="carousel-indicators absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1">
+                                <div class="w-1.5 h-1.5 rounded-full bg-white bg-opacity-80"></div>
+                                <div class="w-1.5 h-1.5 rounded-full bg-white bg-opacity-40"></div>
+                                <div class="w-1.5 h-1.5 rounded-full bg-white bg-opacity-40"></div>
+                            </div>
+                            <!-- 视频标识 -->
+                            <div class="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-xs px-1.5 py-0.5 rounded hidden">
+                                <i class="fas fa-play mr-1"></i>视频
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-2">
+                    <h3 class="text-xs font-medium mb-1 line-clamp-2">智能网关主机</h3>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm font-bold">¥299</span>
+                        <span class="text-xxs text-gray-500">已售120+</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- 商品2 - 多图轮播 -->
+            <a href="mall-detail.html?source=mall" class="product-card bg-white rounded-lg overflow-hidden shadow-sm" data-category="security">
+                <div class="relative h-36 overflow-hidden">
+                    <div class="product-carousel w-full h-full">
+                        <div class="carousel-container relative w-full h-full">
+                            <div class="carousel-track flex transition-transform duration-300 ease-in-out" style="transform: translateX(0%)">
+                                <img src="https://images.unsplash.com/photo-1546054454-aa26e2b734c7?ixlib=rb-4.0.3&auto=format&fit=crop&w=180&h=180&q=80" alt="智能门锁" class="w-full h-full object-cover flex-shrink-0" loading="lazy">
+                                <img src="https://images.unsplash.com/photo-1573770012830-7c314f4fcc99?ixlib=rb-4.0.3&auto=format&fit=crop&w=180&h=180&q=80" alt="智能门锁安装" class="w-full h-full object-cover flex-shrink-0" loading="lazy">
+                                <img src="https://images.unsplash.com/photo-1551651653-c5186a1fbba2?ixlib=rb-4.0.3&auto=format&fit=crop&w=180&h=180&q=80" alt="智能门锁功能" class="w-full h-full object-cover flex-shrink-0" loading="lazy">
+                                <img src="https://images.unsplash.com/photo-1544256718-3bcf237f3974?ixlib=rb-4.0.3&auto=format&fit=crop&w=180&h=180&q=80" alt="智能门锁APP" class="w-full h-full object-cover flex-shrink-0" loading="lazy">
+                            </div>
+                            <!-- 轮播指示器 -->
+                            <div class="carousel-indicators absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1">
+                                <div class="w-1.5 h-1.5 rounded-full bg-white bg-opacity-80"></div>
+                                <div class="w-1.5 h-1.5 rounded-full bg-white bg-opacity-40"></div>
+                                <div class="w-1.5 h-1.5 rounded-full bg-white bg-opacity-40"></div>
+                                <div class="w-1.5 h-1.5 rounded-full bg-white bg-opacity-40"></div>
+                            </div>
+                            <!-- 视频标识 -->
+                            <div class="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-xs px-1.5 py-0.5 rounded">
+                                <i class="fas fa-play mr-1"></i>视频
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-2">
+                    <h3 class="text-xs font-medium mb-1 line-clamp-2">智能门锁 指纹/密码/NFC多种解锁方式</h3>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm font-bold">¥1299</span>
+                        <span class="text-xxs text-gray-500">已售85+</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- 商品3 - 多图轮播 -->
+            <a href="mall-detail.html?source=mall" class="product-card bg-white rounded-lg overflow-hidden shadow-sm" data-category="security">
+                <div class="relative h-36 overflow-hidden">
+                    <div class="product-carousel w-full h-full">
+                        <div class="carousel-container relative w-full h-full">
+                            <div class="carousel-track flex transition-transform duration-300 ease-in-out" style="transform: translateX(0%)">
+                                <img src="https://images.unsplash.com/photo-1573770012830-7c314f4fcc99?ixlib=rb-4.0.3&auto=format&fit=crop&w=180&h=180&q=80" alt="智能摄像头" class="w-full h-full object-cover flex-shrink-0" loading="lazy">
+                                <img src="https://images.unsplash.com/photo-1558089687-f282ffcbc0d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=180&h=180&q=80" alt="智能摄像头夜视" class="w-full h-full object-cover flex-shrink-0" loading="lazy">
+                                <img src="https://images.unsplash.com/photo-1556656793-08538906a9f8?ixlib=rb-4.0.3&auto=format&fit=crop&w=180&h=180&q=80" alt="智能摄像头APP" class="w-full h-full object-cover flex-shrink-0" loading="lazy">
+                            </div>
+                            <!-- 轮播指示器 -->
+                            <div class="carousel-indicators absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1">
+                                <div class="w-1.5 h-1.5 rounded-full bg-white bg-opacity-80"></div>
+                                <div class="w-1.5 h-1.5 rounded-full bg-white bg-opacity-40"></div>
+                                <div class="w-1.5 h-1.5 rounded-full bg-white bg-opacity-40"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-2">
+                    <h3 class="text-xs font-medium mb-1 line-clamp-2">智能摄像头 360°旋转 AI人形检测</h3>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm font-bold">¥199</span>
+                        <span class="text-xxs text-gray-500">已售230+</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- 商品4 - 多图轮播 -->
+            <a href="mall-detail.html?source=mall" class="product-card bg-white rounded-lg overflow-hidden shadow-sm" data-category="lighting">
+                <div class="relative h-36 overflow-hidden">
+                    <div class="product-carousel w-full h-full">
+                        <div class="carousel-container relative w-full h-full">
+                            <div class="carousel-track flex transition-transform duration-300 ease-in-out" style="transform: translateX(0%)">
+                                <img src="https://images.unsplash.com/photo-1544256718-3bcf237f3974?ixlib=rb-4.0.3&auto=format&fit=crop&w=180&h=180&q=80" alt="智能灯带" class="w-full h-full object-cover flex-shrink-0" loading="lazy">
+                                <img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=180&h=180&q=80" alt="智能灯带效果" class="w-full h-full object-cover flex-shrink-0" loading="lazy">
+                                <img src="https://images.unsplash.com/photo-1615529182904-14819c35db37?ixlib=rb-4.0.3&auto=format&fit=crop&w=180&h=180&q=80" alt="智能灯带安装" class="w-full h-full object-cover flex-shrink-0" loading="lazy">
+                            </div>
+                            <!-- 轮播指示器 -->
+                            <div class="carousel-indicators absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1">
+                                <div class="w-1.5 h-1.5 rounded-full bg-white bg-opacity-80"></div>
+                                <div class="w-1.5 h-1.5 rounded-full bg-white bg-opacity-40"></div>
+                                <div class="w-1.5 h-1.5 rounded-full bg-white bg-opacity-40"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-2">
+                    <h3 class="text-xs font-medium mb-1 line-clamp-2">智能灯带 RGB全彩 语音控制</h3>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm font-bold">¥129</span>
+                        <span class="text-xxs text-gray-500">已售156+</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- 商品5 - 多图轮播 -->
+            <a href="mall-detail.html?source=mall" class="product-card bg-white rounded-lg overflow-hidden shadow-sm" data-category="switch">
+                <div class="relative h-36 overflow-hidden">
+                    <div class="product-carousel w-full h-full">
+                        <div class="carousel-container relative w-full h-full">
+                            <div class="carousel-track flex transition-transform duration-300 ease-in-out" style="transform: translateX(0%)">
+                                <img src="https://images.unsplash.com/photo-1556656793-08538906a9f8?ixlib=rb-4.0.3&auto=format&fit=crop&w=180&h=180&q=80" alt="智能插座" class="w-full h-full object-cover flex-shrink-0" loading="lazy">
+                                <img src="https://images.unsplash.com/photo-1558089687-f282ffcbc0d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=180&h=180&q=80" alt="智能插座功能" class="w-full h-full object-cover flex-shrink-0" loading="lazy">
+                            </div>
+                            <!-- 轮播指示器 -->
+                            <div class="carousel-indicators absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1">
+                                <div class="w-1.5 h-1.5 rounded-full bg-white bg-opacity-80"></div>
+                                <div class="w-1.5 h-1.5 rounded-full bg-white bg-opacity-40"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-2">
+                    <h3 class="text-xs font-medium mb-1 line-clamp-2">智能插座 远程控制 定时开关</h3>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm font-bold">¥59</span>
+                        <span class="text-xxs text-gray-500">已售320+</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- 商品6 - 多图轮播 -->
+            <a href="mall-detail.html?source=mall" class="product-card bg-white rounded-lg overflow-hidden shadow-sm" data-category="curtain">
+                <div class="relative h-36 overflow-hidden">
+                    <div class="product-carousel w-full h-full">
+                        <div class="carousel-container relative w-full h-full">
+                            <div class="carousel-track flex transition-transform duration-300 ease-in-out" style="transform: translateX(0%)">
+                                <img src="https://images.unsplash.com/photo-1551651653-c5186a1fbba2?ixlib=rb-4.0.3&auto=format&fit=crop&w=180&h=180&q=80" alt="智能窗帘" class="w-full h-full object-cover flex-shrink-0" loading="lazy">
+                                <img src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?ixlib=rb-4.0.3&auto=format&fit=crop&w=180&h=180&q=80" alt="智能窗帘安装" class="w-full h-full object-cover flex-shrink-0" loading="lazy">
+                                <img src="https://images.unsplash.com/photo-1573770012830-7c314f4fcc99?ixlib=rb-4.0.3&auto=format&fit=crop&w=180&h=180&q=80" alt="智能窗帘控制" class="w-full h-full object-cover flex-shrink-0" loading="lazy">
+                            </div>
+                            <!-- 轮播指示器 -->
+                            <div class="carousel-indicators absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1">
+                                <div class="w-1.5 h-1.5 rounded-full bg-white bg-opacity-80"></div>
+                                <div class="w-1.5 h-1.5 rounded-full bg-white bg-opacity-40"></div>
+                                <div class="w-1.5 h-1.5 rounded-full bg-white bg-opacity-40"></div>
+                            </div>
+                            <!-- 视频标识 -->
+                            <div class="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-xs px-1.5 py-0.5 rounded">
+                                <i class="fas fa-play mr-1"></i>演示
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-2">
+                    <h3 class="text-xs font-medium mb-1 line-clamp-2">智能窗帘电机 静音设计 手机控制</h3>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm font-bold">¥399</span>
+                        <span class="text-xxs text-gray-500">已售75+</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- 商品7 - 传感器 -->
+            <a href="mall-detail.html?source=mall" class="product-card bg-white rounded-lg overflow-hidden shadow-sm" data-category="sensor">
+                <div class="relative h-36 overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1558089687-f282ffcbc0d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=180&h=180&q=80" alt="温湿度传感器" class="w-full h-full object-cover" loading="lazy">
+                </div>
+                <div class="p-2">
+                    <h3 class="text-xs font-medium mb-1 line-clamp-2">温湿度传感器 实时监测</h3>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm font-bold">¥89</span>
+                        <span class="text-xxs text-gray-500">已售200+</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- 商品8 - 环境控制 -->
+            <a href="mall-detail.html?source=mall" class="product-card bg-white rounded-lg overflow-hidden shadow-sm" data-category="environment">
+                <div class="relative h-36 overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1556656793-08538906a9f8?ixlib=rb-4.0.3&auto=format&fit=crop&w=180&h=180&q=80" alt="智能空调控制器" class="w-full h-full object-cover" loading="lazy">
+                </div>
+                <div class="p-2">
+                    <h3 class="text-xs font-medium mb-1 line-clamp-2">智能空调控制器 红外遥控</h3>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm font-bold">¥159</span>
+                        <span class="text-xxs text-gray-500">已售95+</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- 商品9 - 网络WiFi -->
+            <a href="mall-detail.html?source=mall" class="product-card bg-white rounded-lg overflow-hidden shadow-sm" data-category="wifi">
+                <div class="relative h-36 overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1544256718-3bcf237f3974?ixlib=rb-4.0.3&auto=format&fit=crop&w=180&h=180&q=80" alt="智能路由器" class="w-full h-full object-cover" loading="lazy">
+                </div>
+                <div class="p-2">
+                    <h3 class="text-xs font-medium mb-1 line-clamp-2">智能路由器 WiFi6 全屋覆盖</h3>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm font-bold">¥599</span>
+                        <span class="text-xxs text-gray-500">已售150+</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- 商品10 - 家电控制 -->
+            <a href="mall-detail.html?source=mall" class="product-card bg-white rounded-lg overflow-hidden shadow-sm" data-category="appliance">
+                <div class="relative h-36 overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1573770012830-7c314f4fcc99?ixlib=rb-4.0.3&auto=format&fit=crop&w=180&h=180&q=80" alt="智能电视盒子" class="w-full h-full object-cover" loading="lazy">
+                </div>
+                <div class="p-2">
+                    <h3 class="text-xs font-medium mb-1 line-clamp-2">智能电视盒子 语音控制</h3>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm font-bold">¥299</span>
+                        <span class="text-xxs text-gray-500">已售180+</span>
+                    </div>
+                </div>
+            </a>
+            </section>
+            </div>
+
+            <!-- 筛选弹窗 -->
+            <div id="filterModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+                <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl max-h-[80vh] overflow-hidden">
+                    <!-- 筛选头部 -->
+                    <div class="flex items-center justify-between p-4 border-b border-gray-100">
+                        <h3 class="text-lg font-semibold">筛选条件</h3>
+                        <div class="flex items-center space-x-3">
+                            <button id="resetFilters" class="text-sm text-gray-500">重置</button>
+                            <button id="closeFilter" class="text-gray-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 筛选内容 -->
+                    <div class="overflow-y-auto max-h-[60vh] p-4">
+                        <!-- 价格区间 -->
+                        <div class="mb-6">
+                            <h4 class="text-sm font-medium mb-3">价格区间</h4>
+                            <div class="grid grid-cols-3 gap-2">
+                                <button class="price-filter px-3 py-2 border border-gray-200 rounded-lg text-sm text-center" data-price="0-100">¥0-100</button>
+                                <button class="price-filter px-3 py-2 border border-gray-200 rounded-lg text-sm text-center" data-price="100-500">¥100-500</button>
+                                <button class="price-filter px-3 py-2 border border-gray-200 rounded-lg text-sm text-center" data-price="500-1000">¥500-1000</button>
+                                <button class="price-filter px-3 py-2 border border-gray-200 rounded-lg text-sm text-center" data-price="1000-2000">¥1000-2000</button>
+                                <button class="price-filter px-3 py-2 border border-gray-200 rounded-lg text-sm text-center" data-price="2000+">¥2000+</button>
+                                <button class="price-filter px-3 py-2 border border-gray-200 rounded-lg text-sm text-center" data-price="custom">自定义</button>
+                            </div>
+                            <!-- 自定义价格输入 -->
+                            <div id="customPriceRange" class="mt-3 hidden">
+                                <div class="flex items-center space-x-2">
+                                    <input type="number" id="minPrice" placeholder="最低价" class="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm">
+                                    <span class="text-gray-400">-</span>
+                                    <input type="number" id="maxPrice" placeholder="最高价" class="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 品牌筛选 -->
+                        <div class="mb-6">
+                            <h4 class="text-sm font-medium mb-3">品牌</h4>
+                            <div class="grid grid-cols-2 gap-2">
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" class="brand-filter" data-brand="xiaomi">
+                                    <span class="text-sm">小米</span>
+                                </label>
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" class="brand-filter" data-brand="huawei">
+                                    <span class="text-sm">华为</span>
+                                </label>
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" class="brand-filter" data-brand="aqara">
+                                    <span class="text-sm">Aqara</span>
+                                </label>
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" class="brand-filter" data-brand="yeelight">
+                                    <span class="text-sm">Yeelight</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- 功能特性 -->
+                        <div class="mb-6">
+                            <h4 class="text-sm font-medium mb-3">功能特性</h4>
+                            <div class="space-y-2">
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" class="feature-filter" data-feature="voice-control">
+                                    <span class="text-sm">语音控制</span>
+                                </label>
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" class="feature-filter" data-feature="app-control">
+                                    <span class="text-sm">手机控制</span>
+                                </label>
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" class="feature-filter" data-feature="timing">
+                                    <span class="text-sm">定时功能</span>
+                                </label>
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" class="feature-filter" data-feature="scene-mode">
+                                    <span class="text-sm">场景模式</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- 评分筛选 -->
+                        <div class="mb-6">
+                            <h4 class="text-sm font-medium mb-3">用户评分</h4>
+                            <div class="space-y-2">
+                                <label class="flex items-center space-x-2">
+                                    <input type="radio" name="rating" class="rating-filter" data-rating="4.5+">
+                                    <span class="text-sm flex items-center">
+                                        <span class="text-yellow-400 mr-1">★★★★★</span>
+                                        4.5分以上
+                                    </span>
+                                </label>
+                                <label class="flex items-center space-x-2">
+                                    <input type="radio" name="rating" class="rating-filter" data-rating="4.0+">
+                                    <span class="text-sm flex items-center">
+                                        <span class="text-yellow-400 mr-1">★★★★☆</span>
+                                        4.0分以上
+                                    </span>
+                                </label>
+                                <label class="flex items-center space-x-2">
+                                    <input type="radio" name="rating" class="rating-filter" data-rating="3.5+">
+                                    <span class="text-sm flex items-center">
+                                        <span class="text-yellow-400 mr-1">★★★☆☆</span>
+                                        3.5分以上
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 筛选底部按钮 -->
+                    <div class="p-4 border-t border-gray-100 bg-white">
+                        <div class="flex space-x-3">
+                            <button id="clearFilters" class="flex-1 py-3 border border-gray-200 rounded-lg text-sm font-medium">清空筛选</button>
+                            <button id="applyFilters" class="flex-1 py-3 bg-black text-white rounded-lg text-sm font-medium">确定筛选</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 底部导航栏 -->
+<div class="absolute bottom-0 left-0 right-0 h-[84px] bg-white/80 backdrop-blur-xl border-t border-white/20">
+<!-- 导航栏内容 -->
+<nav class="h-[49px] flex items-center px-2">
+<div class="flex justify-around w-full text-[12px]">
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="home.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+<polyline points="9 22 9 12 15 12 15 22"></polyline>
+</svg>
+</div>
+<span class="mt-1">首页</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="design-result.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<circle cx="13.5" cy="6.5" fill="currentColor" r=".5"></circle>
+<circle cx="17.5" cy="10.5" fill="currentColor" r=".5"></circle>
+<circle cx="8.5" cy="7.5" fill="currentColor" r=".5"></circle>
+<circle cx="6.5" cy="12.5" fill="currentColor" r=".5"></circle>
+<path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+</svg>
+</div>
+<span class="mt-1">设计</span>
+</a>
+<a class="flex flex-col items-center group text-black transition-colors" href="mall.html" class="flex flex-col items-center group text-black transition-colors">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+<path d="M3 6h18"></path>
+<path d="M16 10a4 4 0 0 1-8 0"></path>
+</svg>
+</div>
+<span class="mt-1">商城</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="spaces.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="m15 12-8.373 8.373a1 1 0 1 1-3-3L12 9"></path>
+<path d="m18 15 4-4"></path>
+<path d="m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172V7l-2.26-2.26a6 6 0 0 0-4.202-1.756L9 2.96l.92.82A6.18 6.18 0 0 1 12 8.4V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5"></path>
+</svg>
+</div>
+<span class="mt-1">施工</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="me.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+<circle cx="12" cy="7" r="4"></circle>
+</svg>
+</div>
+<span class="mt-1">我的</span>
+</a>
+</div>
+</nav>
+<!-- iPhone 16 Home Indicator -->
+<div class="h-[34px] flex items-center justify-center">
+<div class="w-[134px] h-[5px] bg-black rounded-full"></div>
+</div>
+</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 搜索和筛选功能管理器
+        class MallSearchManager {
+            constructor() {
+                this.searchHistory = this.getSearchHistory();
+                this.hotSearches = ['智能门锁', '智能摄像头', '智能开关', '智能音箱', '智能灯泡', '传感器'];
+                this.searchSuggestions = [
+                    '智能门锁', '智能摄像头', '智能开关', '智能音箱', '智能灯泡',
+                    '智能插座', '智能窗帘', '传感器', '智能网关', '智能面板',
+                    '小米智能', '华为智能', 'Aqara', 'Yeelight', '指纹锁',
+                    '人脸识别', '语音控制', '手机控制', '定时开关', '场景模式'
+                ];
+                this.currentFilters = {
+                    price: null,
+                    brands: [],
+                    features: [],
+                    rating: null,
+                    customPrice: { min: null, max: null }
+                };
+                this.debounceTimer = null;
+                this.init();
+            }
+
+            init() {
+                this.initSearchInput();
+                this.initHotSearchTags();
+                this.initFilterModal();
+                this.initCategoryNavigation();
+                this.initSortButtons();
+            }
+
+            // 初始化搜索输入框
+            initSearchInput() {
+                const searchInput = document.getElementById('mallSearchInput');
+                const searchBtn = document.getElementById('mallSearchBtn');
+                const suggestionsBox = document.getElementById('searchSuggestions');
+
+                if (!searchInput || !searchBtn) return;
+
+                // 搜索按钮点击
+                searchBtn.addEventListener('click', () => {
+                    this.performSearch(searchInput.value.trim());
+                });
+
+                // 回车搜索
+                searchInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.performSearch(searchInput.value.trim());
+                    }
+                });
+
+                // 实时搜索建议
+                searchInput.addEventListener('input', (e) => {
+                    clearTimeout(this.debounceTimer);
+                    this.debounceTimer = setTimeout(() => {
+                        this.showSearchSuggestions(e.target.value.trim());
+                    }, 300);
+                });
+
+                // 获得焦点时显示建议
+                searchInput.addEventListener('focus', () => {
+                    if (searchInput.value.trim()) {
+                        this.showSearchSuggestions(searchInput.value.trim());
+                    } else {
+                        this.showRecentSearches();
+                    }
+                });
+
+                // 失去焦点时隐藏建议（延迟以允许点击建议）
+                searchInput.addEventListener('blur', () => {
+                    setTimeout(() => {
+                        suggestionsBox.classList.add('hidden');
+                    }, 200);
+                });
+            }
+
+            // 显示搜索建议
+            showSearchSuggestions(query) {
+                const suggestionsBox = document.getElementById('searchSuggestions');
+                const suggestionsList = document.getElementById('suggestionsList');
+
+                if (!query) {
+                    suggestionsBox.classList.add('hidden');
+                    return;
+                }
+
+                // 过滤匹配的建议
+                const matches = this.searchSuggestions.filter(item =>
+                    item.toLowerCase().includes(query.toLowerCase())
+                ).slice(0, 5);
+
+                if (matches.length === 0) {
+                    suggestionsBox.classList.add('hidden');
+                    return;
+                }
+
+                // 生成建议列表
+                suggestionsList.innerHTML = matches.map(item => `
+                    <div class="suggestion-item px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm rounded" data-suggestion="${item}">
+                        <i class="fas fa-search text-gray-400 mr-2"></i>
+                        ${this.highlightMatch(item, query)}
+                    </div>
+                `).join('');
+
+                // 添加建议点击事件
+                suggestionsList.querySelectorAll('.suggestion-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const suggestion = item.dataset.suggestion;
+                        document.getElementById('mallSearchInput').value = suggestion;
+                        this.performSearch(suggestion);
+                    });
+                });
+
+                suggestionsBox.classList.remove('hidden');
+            }
+
+            // 显示最近搜索
+            showRecentSearches() {
+                const suggestionsBox = document.getElementById('searchSuggestions');
+                const suggestionsList = document.getElementById('suggestionsList');
+
+                if (this.searchHistory.length === 0) {
+                    suggestionsBox.classList.add('hidden');
+                    return;
+                }
+
+                suggestionsList.innerHTML = this.searchHistory.slice(0, 5).map(item => `
+                    <div class="suggestion-item px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm rounded flex items-center justify-between" data-suggestion="${item}">
+                        <span><i class="fas fa-history text-gray-400 mr-2"></i>${item}</span>
+                        <button class="remove-history text-gray-400 hover:text-red-500" data-item="${item}">
+                            <i class="fas fa-times text-xs"></i>
+                        </button>
+                    </div>
+                `).join('');
+
+                // 添加点击事件
+                suggestionsList.querySelectorAll('.suggestion-item').forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        if (!e.target.closest('.remove-history')) {
+                            const suggestion = item.dataset.suggestion;
+                            document.getElementById('mallSearchInput').value = suggestion;
+                            this.performSearch(suggestion);
+                        }
+                    });
+                });
+
+                // 添加删除历史记录事件
+                suggestionsList.querySelectorAll('.remove-history').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.removeSearchHistory(btn.dataset.item);
+                        this.showRecentSearches();
+                    });
+                });
+
+                suggestionsBox.classList.remove('hidden');
+            }
+
+            // 高亮匹配文本
+            highlightMatch(text, query) {
+                const regex = new RegExp(`(${query})`, 'gi');
+                return text.replace(regex, '<strong>$1</strong>');
+            }
+
+            // 执行搜索
+            performSearch(query) {
+                if (!query) return;
+
+                // 保存搜索历史
+                this.saveSearchHistory(query);
+
+                // 跳转到搜索页面
+                window.location.href = `mall-search.html?q=${encodeURIComponent(query)}`;
+            }
+
+            // 初始化热门搜索标签
+            initHotSearchTags() {
+                const hotSearchTags = document.querySelectorAll('.hot-search-tag');
+                hotSearchTags.forEach(tag => {
+                    tag.addEventListener('click', () => {
+                        const keyword = tag.dataset.keyword;
+                        document.getElementById('mallSearchInput').value = keyword;
+                        this.performSearch(keyword);
+                    });
+                });
+            }
+
+            // 搜索历史管理
+            getSearchHistory() {
+                return JSON.parse(localStorage.getItem('mallSearchHistory') || '[]');
+            }
+
+            saveSearchHistory(query) {
+                let history = this.getSearchHistory();
+                // 移除重复项
+                history = history.filter(item => item !== query);
+                // 添加到开头
+                history.unshift(query);
+                // 限制历史记录数量
+                history = history.slice(0, 10);
+                localStorage.setItem('mallSearchHistory', JSON.stringify(history));
+                this.searchHistory = history;
+            }
+
+            removeSearchHistory(query) {
+                let history = this.getSearchHistory();
+                history = history.filter(item => item !== query);
+                localStorage.setItem('mallSearchHistory', JSON.stringify(history));
+                this.searchHistory = history;
+            }
+
+            // 初始化筛选弹窗
+            initFilterModal() {
+                const filterBtn = document.getElementById('filterBtn');
+                const filterModal = document.getElementById('filterModal');
+                const closeFilter = document.getElementById('closeFilter');
+                const resetFilters = document.getElementById('resetFilters');
+                const clearFilters = document.getElementById('clearFilters');
+                const applyFilters = document.getElementById('applyFilters');
+
+                // 打开筛选弹窗
+                filterBtn?.addEventListener('click', () => {
+                    filterModal.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                });
+
+                // 关闭筛选弹窗
+                const closeModal = () => {
+                    filterModal.classList.add('hidden');
+                    document.body.style.overflow = '';
+                };
+
+                closeFilter?.addEventListener('click', closeModal);
+                filterModal?.addEventListener('click', (e) => {
+                    if (e.target === filterModal) closeModal();
+                });
+
+                // 重置筛选
+                resetFilters?.addEventListener('click', () => {
+                    this.resetAllFilters();
+                });
+
+                // 清空筛选
+                clearFilters?.addEventListener('click', () => {
+                    this.resetAllFilters();
+                });
+
+                // 应用筛选
+                applyFilters?.addEventListener('click', () => {
+                    this.applyCurrentFilters();
+                    closeModal();
+                });
+
+                this.initFilterControls();
+            }
+
+            // 初始化筛选控件
+            initFilterControls() {
+                // 价格筛选
+                document.querySelectorAll('.price-filter').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.price-filter').forEach(b => b.classList.remove('bg-black', 'text-white'));
+                        btn.classList.add('bg-black', 'text-white');
+                        this.currentFilters.price = btn.dataset.price;
+
+                        // 显示/隐藏自定义价格输入
+                        const customPriceRange = document.getElementById('customPriceRange');
+                        if (btn.dataset.price === 'custom') {
+                            customPriceRange.classList.remove('hidden');
+                        } else {
+                            customPriceRange.classList.add('hidden');
+                        }
+                    });
+                });
+
+                // 品牌筛选
+                document.querySelectorAll('.brand-filter').forEach(checkbox => {
+                    checkbox.addEventListener('change', () => {
+                        const brand = checkbox.dataset.brand;
+                        if (checkbox.checked) {
+                            if (!this.currentFilters.brands.includes(brand)) {
+                                this.currentFilters.brands.push(brand);
+                            }
+                        } else {
+                            this.currentFilters.brands = this.currentFilters.brands.filter(b => b !== brand);
+                        }
+                    });
+                });
+
+                // 功能特性筛选
+                document.querySelectorAll('.feature-filter').forEach(checkbox => {
+                    checkbox.addEventListener('change', () => {
+                        const feature = checkbox.dataset.feature;
+                        if (checkbox.checked) {
+                            if (!this.currentFilters.features.includes(feature)) {
+                                this.currentFilters.features.push(feature);
+                            }
+                        } else {
+                            this.currentFilters.features = this.currentFilters.features.filter(f => f !== feature);
+                        }
+                    });
+                });
+
+                // 评分筛选
+                document.querySelectorAll('.rating-filter').forEach(radio => {
+                    radio.addEventListener('change', () => {
+                        if (radio.checked) {
+                            this.currentFilters.rating = radio.dataset.rating;
+                        }
+                    });
+                });
+
+                // 自定义价格输入
+                const minPrice = document.getElementById('minPrice');
+                const maxPrice = document.getElementById('maxPrice');
+
+                minPrice?.addEventListener('input', () => {
+                    this.currentFilters.customPrice.min = minPrice.value;
+                });
+
+                maxPrice?.addEventListener('input', () => {
+                    this.currentFilters.customPrice.max = maxPrice.value;
+                });
+            }
+
+            // 重置所有筛选
+            resetAllFilters() {
+                // 重置数据
+                this.currentFilters = {
+                    price: null,
+                    brands: [],
+                    features: [],
+                    rating: null,
+                    customPrice: { min: null, max: null }
+                };
+
+                // 重置UI
+                document.querySelectorAll('.price-filter').forEach(btn => {
+                    btn.classList.remove('bg-black', 'text-white');
+                });
+                document.querySelectorAll('.brand-filter, .feature-filter').forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+                document.querySelectorAll('.rating-filter').forEach(radio => {
+                    radio.checked = false;
+                });
+                document.getElementById('minPrice').value = '';
+                document.getElementById('maxPrice').value = '';
+                document.getElementById('customPriceRange').classList.add('hidden');
+
+                this.updateFilterCount();
+            }
+
+            // 应用当前筛选
+            applyCurrentFilters() {
+                // 计算筛选条件数量
+                this.updateFilterCount();
+
+                // 这里可以添加实际的筛选逻辑
+                console.log('应用筛选条件:', this.currentFilters);
+
+                // 模拟筛选结果
+                alert('筛选已应用！\n' + JSON.stringify(this.currentFilters, null, 2));
+            }
+
+            // 更新筛选计数
+            updateFilterCount() {
+                let count = 0;
+                if (this.currentFilters.price) count++;
+                count += this.currentFilters.brands.length;
+                count += this.currentFilters.features.length;
+                if (this.currentFilters.rating) count++;
+                if (this.currentFilters.customPrice.min || this.currentFilters.customPrice.max) count++;
+
+                const filterCount = document.getElementById('filterCount');
+                if (count > 0) {
+                    filterCount.textContent = count;
+                    filterCount.classList.remove('hidden');
+                } else {
+                    filterCount.classList.add('hidden');
+                }
+            }
+
+            // 初始化分类导航 - 使用YoupinTabComponent
+            initCategoryNavigation() {
+                // 初始化YoupinTabComponent
+                this.mallTabs = new YoupinTabComponent('#mall-category-tabs', {
+                    enableKeyboard: true,
+                    enableAutoScroll: true,
+                    debug: false
+                });
+
+                // 监听Tab切换事件
+                document.getElementById('mall-category-tabs').addEventListener('youpinTabChange', (e) => {
+                    const category = e.detail.data.category;
+                    const categoryName = e.detail.tab.textContent.trim();
+
+                    console.log('分类切换:', { category, categoryName, index: e.detail.index });
+
+                    if (category === 'all') {
+                        // "全部"分类：跳转到分类页面
+                        const categoryUrl = `mall-category-enhanced.html?category=${encodeURIComponent(category)}&name=${encodeURIComponent(categoryName)}`;
+
+                        if (window.H5Bridge && window.H5Bridge.isInMiniProgram) {
+                            window.H5Bridge.navigateTo(`/pages/webview/index?page=mall-category-enhanced&category=${encodeURIComponent(category)}&name=${encodeURIComponent(categoryName)}`);
+                        } else {
+                            window.location.href = categoryUrl;
+                        }
+                        return;
+                    }
+
+                    // 其他分类：页面内切换，实现水平滚动筛选
+                    this.filterProductsByCategory(category);
+                });
+            }
+
+            // 分类筛选功能
+            filterProductsByCategory(category) {
+                const productCards = document.querySelectorAll('.product-card');
+
+                productCards.forEach(card => {
+                    const cardCategory = card.getAttribute('data-category');
+
+                    if (category === 'all' || cardCategory === category) {
+                        // 显示匹配的商品
+                        card.style.display = 'block';
+                        card.classList.remove('hidden');
+                    } else {
+                        // 隐藏不匹配的商品
+                        card.style.display = 'none';
+                        card.classList.add('hidden');
+                    }
+                });
+
+                // 更新显示的商品数量
+                const visibleProducts = document.querySelectorAll('.product-card:not(.hidden)');
+                console.log(`筛选结果: ${category} 分类显示 ${visibleProducts.length} 个商品`);
+            }
+
+            // 初始化排序按钮
+            initSortButtons() {
+                const sortButtons = document.querySelectorAll('.sort-btn');
+
+                sortButtons.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        sortButtons.forEach(sort => sort.classList.remove('active'));
+                        this.classList.add('active');
+
+                        const sortType = this.dataset.sort;
+                        console.log('切换排序:', sortType);
+                        // 这里可以添加实际的排序逻辑
+                    });
+                });
+            }
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            new MallSearchManager();
+            initializeProductCarousels();
+
+            // 设置订单来源为商城
+            localStorage.setItem('orderSource', 'mall');
+            console.log('商城页面：订单来源已设置为 mall');
+        });
+
+        // 产品轮播功能
+        function initializeProductCarousels() {
+            const productCards = document.querySelectorAll('.product-card');
+
+            productCards.forEach(card => {
+                const carousel = card.querySelector('.product-carousel');
+                if (!carousel) return;
+
+                const track = carousel.querySelector('.carousel-track');
+                const indicators = carousel.querySelectorAll('.carousel-indicators > div');
+                const images = track.querySelectorAll('img');
+
+                if (images.length <= 1) return; // 只有一张图片时不需要轮播
+
+                let currentIndex = 0;
+                let autoPlayTimer = null;
+                let isHovering = false;
+
+                // 更新轮播位置
+                function updateCarousel() {
+                    const translateX = -currentIndex * 100;
+                    track.style.transform = `translateX(${translateX}%)`;
+
+                    // 更新指示器
+                    indicators.forEach((indicator, index) => {
+                        if (index === currentIndex) {
+                            indicator.classList.remove('bg-opacity-40');
+                            indicator.classList.add('bg-opacity-80');
+                        } else {
+                            indicator.classList.remove('bg-opacity-80');
+                            indicator.classList.add('bg-opacity-40');
+                        }
+                    });
+                }
+
+                // 下一张图片
+                function nextImage() {
+                    currentIndex = (currentIndex + 1) % images.length;
+                    updateCarousel();
+                }
+
+                // 上一张图片
+                function prevImage() {
+                    currentIndex = (currentIndex - 1 + images.length) % images.length;
+                    updateCarousel();
+                }
+
+                // 跳转到指定图片
+                function goToImage(index) {
+                    currentIndex = index;
+                    updateCarousel();
+                }
+
+                // 开始自动播放
+                function startAutoPlay() {
+                    if (autoPlayTimer) clearInterval(autoPlayTimer);
+                    autoPlayTimer = setInterval(() => {
+                        if (!isHovering) {
+                            nextImage();
+                        }
+                    }, 3000); // 3秒切换一次
+                }
+
+                // 停止自动播放
+                function stopAutoPlay() {
+                    if (autoPlayTimer) {
+                        clearInterval(autoPlayTimer);
+                        autoPlayTimer = null;
+                    }
+                }
+
+                // 鼠标悬停事件
+                card.addEventListener('mouseenter', () => {
+                    isHovering = true;
+                    startAutoPlay(); // 悬停时开始自动播放
+                });
+
+                card.addEventListener('mouseleave', () => {
+                    isHovering = false;
+                    stopAutoPlay(); // 离开时停止自动播放
+                });
+
+                // 触摸滑动支持
+                let startX = 0;
+                let startY = 0;
+                let isDragging = false;
+
+                carousel.addEventListener('touchstart', (e) => {
+                    startX = e.touches[0].clientX;
+                    startY = e.touches[0].clientY;
+                    isDragging = true;
+                    stopAutoPlay();
+                }, { passive: true });
+
+                carousel.addEventListener('touchmove', (e) => {
+                    if (!isDragging) return;
+
+                    const currentX = e.touches[0].clientX;
+                    const currentY = e.touches[0].clientY;
+                    const diffX = startX - currentX;
+                    const diffY = startY - currentY;
+
+                    // 如果垂直滑动距离大于水平滑动，不处理轮播
+                    if (Math.abs(diffY) > Math.abs(diffX)) {
+                        isDragging = false;
+                        return;
+                    }
+
+                    // 阻止默认滚动行为
+                    e.preventDefault();
+                }, { passive: false });
+
+                carousel.addEventListener('touchend', (e) => {
+                    if (!isDragging) return;
+
+                    const endX = e.changedTouches[0].clientX;
+                    const diffX = startX - endX;
+
+                    // 滑动距离超过30px才切换
+                    if (Math.abs(diffX) > 30) {
+                        if (diffX > 0) {
+                            nextImage(); // 向左滑动，显示下一张
+                        } else {
+                            prevImage(); // 向右滑动，显示上一张
+                        }
+                    }
+
+                    isDragging = false;
+                }, { passive: true });
+
+                // 指示器点击事件
+                indicators.forEach((indicator, index) => {
+                    indicator.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        goToImage(index);
+                    });
+                });
+
+                // 阻止轮播区域的链接跳转（当用户在滑动时）
+                carousel.addEventListener('click', (e) => {
+                    if (isDragging) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                });
+            });
+        }
+    </script>
+
+    <!-- 引入H5与小程序通信桥接工具 -->
+    <script src="../utils/h5-bridge.js"></script>
+
+    <!-- 引入YoupinTabComponent -->
+    <script src="js/youpin-tab-component.js"></script>
+    
+    <script>
+        // 小程序环境初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检查小程序环境并初始化通信
+            if (window.H5Bridge) {
+                console.log('H5Bridge已加载，当前环境:', window.H5Bridge.isInMiniProgram ? '小程序' : '浏览器');
+                
+                if (window.H5Bridge.isInMiniProgram) {
+                    initMiniProgramFeatures();
+                }
+            }
+        });
+
+        // 初始化小程序特有功能
+        function initMiniProgramFeatures() {
+            console.log('初始化小程序特有功能');
+            
+            // 替换所有页面跳转为小程序导航
+            replacePageNavigation();
+            
+            // 替换alert为小程序toast
+            replaceAlertWithToast();
+            
+            // 监听支付结果（如果页面有支付功能）
+            if (typeof handlePaymentSuccess === 'function') {
+                window.H5Bridge.on('paymentSuccess', handlePaymentSuccess);
+                window.H5Bridge.on('paymentFail', handlePaymentFailure || function(error) {
+                    window.H5Bridge.showToast('支付失败，请重试', 'error');
+                });
+            }
+            
+            // 监听用户信息获取结果（如果页面需要用户信息）
+            if (typeof handleUserInfoSuccess === 'function') {
+                window.H5Bridge.on('userInfoSuccess', handleUserInfoSuccess);
+                window.H5Bridge.on('userInfoFail', handleUserInfoFailure || function(error) {
+                    window.H5Bridge.showToast('获取用户信息失败', 'error');
+                });
+            }
+        }
+
+        // 替换页面跳转为小程序导航
+        function replacePageNavigation() {
+            // 处理所有HTML页面链接
+            document.querySelectorAll('a[href$=".html"]').forEach(link => {
+                const originalHref = link.getAttribute('href');
+                
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // 解析目标页面
+                    const pageName = originalHref.replace('.html', '').replace(/^.*//, '');
+                    
+                    // 特殊页面映射到小程序原生页面
+                    const nativePageMap = {
+                        'home': '/pages/home/index',
+                        'design-result': '/pages/design/index',
+                        'mall': '/pages/mall/index',
+                        'spaces': '/pages/construction/index',
+                        'me': '/pages/profile/index'
+                    };
+                    
+                    if (nativePageMap[pageName]) {
+                        // 跳转到小程序原生页面
+                        window.H5Bridge.navigateTo(nativePageMap[pageName]);
+                    } else {
+                        // 跳转到web-view页面
+                        window.H5Bridge.navigateTo(`/pages/webview/index?page=${pageName}`);
+                    }
+                });
+            });
+            
+            // 处理返回按钮
+            document.querySelectorAll('[onclick*="history.back"], [onclick*="window.history.back"]').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    window.H5Bridge.navigateBack();
+                });
+            });
+        }
+
+        // 替换alert为小程序toast
+        function replaceAlertWithToast() {
+            // 重写全局alert函数
+            if (window.H5Bridge && window.H5Bridge.isInMiniProgram) {
+                window.alert = function(message) {
+                    window.H5Bridge.showToast(message);
+                };
+                
+                window.confirm = function(message) {
+                    // 小程序中的confirm需要特殊处理
+                    window.H5Bridge.showToast(message);
+                    return true; // 简化处理，实际项目中可能需要更复杂的逻辑
+                };
+            }
+        }
+
+        // 通用分享功能
+        function shareToWechat(shareData) {
+            if (window.H5Bridge && window.H5Bridge.isInMiniProgram) {
+                // 在小程序中使用原生分享
+                window.H5Bridge.share(shareData || {
+                    title: document.title,
+                    desc: '智能家居设计与施工服务',
+                    path: `/pages/webview/index?page=${getCurrentPageName()}`
+                });
+            } else {
+                // 在浏览器中使用Web Share API或降级处理
+                if (navigator.share) {
+                    navigator.share({
+                        title: document.title,
+                        text: '智能家居设计与施工服务',
+                        url: window.location.href
+                    });
+                } else {
+                    alert('分享功能需要在支持的浏览器中使用');
+                }
+            }
+        }
+
+        // 获取当前页面名称
+        function getCurrentPageName() {
+            const pathname = window.location.pathname;
+            return pathname.substring(pathname.lastIndexOf('/') + 1).replace('.html', '');
+        }
+
+        // 通用错误处理
+        function handleError(error, context = '') {
+            console.error(`错误[${context}]:`, error);
+            
+            if (window.H5Bridge && window.H5Bridge.isInMiniProgram) {
+                window.H5Bridge.showToast('操作失败，请重试', 'error');
+            } else {
+                alert('操作失败：' + (error.message || '未知错误'));
+            }
+        }
+    </script>
+</body>
+</html>

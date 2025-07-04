@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>登录页</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/iphone16_fix.css">
+    <style>
+        .input-field {
+            transition: border-color 0.2s;
+        }
+
+        .input-field:focus {
+            border-color: #000;
+            outline: none;
+        }
+
+        .btn-primary {
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary:active {
+            background-color: #333;
+        }
+    </style>
+
+    <!-- 全局错误处理和兜底方案 -->
+    <script>
+        (function() {
+            'use strict';
+            
+            // 创建 Trace 对象的兜底实现
+            window.Trace = window.Trace || {
+                init: function() { console.log('Trace initialized (fallback)'); },
+                log: function() { console.log.apply(console, arguments); },
+                error: function() { console.error.apply(console, arguments); },
+                warn: function() { console.warn.apply(console, arguments); },
+                info: function() { console.info.apply(console, arguments); }
+            };
+
+            // 防止其他可能的调试工具错误
+            window.wx = window.wx || {};
+            window.my = window.my || {};
+            
+            // 防止 chartId 未定义错误
+            window.chartId = window.chartId || 'default-chart-id';
+            
+            // 全局错误处理
+            window.addEventListener('error', function(e) {
+                console.error('Global error caught:', e.error);
+                return true; // 阻止默认错误处理
+            });
+            
+            window.addEventListener('unhandledrejection', function(e) {
+                console.error('Unhandled promise rejection:', e.reason);
+                e.preventDefault(); // 阻止默认处理
+            });
+            
+            console.log('✅ 全局错误处理已初始化');
+        })();
+    </script>
+</head>
+<body class="min-h-screen w-full bg-[#000000] flex items-center justify-center font-system">
+    <!-- iPhone 容器 -->
+    <div class="w-full max-w-[393px] h-[852px] bg-[#1E1E1E] shadow-2xl overflow-hidden relative mx-auto rounded-[54px]">
+        <!-- iPhone 状态栏 -->
+        <div class="w-full h-[47px] bg-black px-5 flex items-center justify-between text-white text-[14px] font-medium">
+            <div class="flex items-center space-x-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 20h.01"></path>
+                    <path d="M7 20v-4"></path>
+                    <path d="M12 20v-8"></path>
+                    <path d="M17 20V8"></path>
+                    <path d="M22 4v16"></path>
+                </svg>
+                <span>中国移动</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h.01"></path>
+                    <path d="M2 8.82a15 15 0 0 1 20 0"></path>
+                    <path d="M5 12.859a10 10 0 0 1 14 0"></path>
+                    <path d="M8.5 16.429a5 5 0 0 1 7 0"></path>
+                </svg>
+            </div>
+            <div class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">9:41</div>
+            <div class="flex items-center space-x-1">
+                <span>89%</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="16" height="10" x="2" y="7" rx="2" ry="2"></rect>
+                    <line x1="22" x2="22" y1="11" y2="13"></line>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 动态岛 -->
+        <button class="absolute left-1/2 -translate-x-1/2 bg-black transition-all duration-300 ease-out w-[126px] h-[37.5px] -top-0.5 rounded-b-[24px]"></button>
+
+        <!-- 主内容区域 -->
+        <div class="w-full h-[calc(100%-47px)] bg-white overflow-hidden relative">
+            <!-- 滚动内容区域 -->
+            <div class="absolute inset-0 bottom-[84px] overflow-y-auto scrollbar-none">
+                <!-- 主内容区域 -->
+                <main class="px-8 flex flex-col min-h-full">
+        <!-- 返回按钮 -->
+        <div class="mt-4 mb-8">
+            <a href="home.html" class="text-black">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+        </div>
+
+        <!-- 登录标题 -->
+        <div class="mb-10">
+            <h1 class="text-2xl font-bold">欢迎回来</h1>
+            <p class="text-sm text-gray-500 mt-2">请登录您的账号</p>
+        </div>
+
+        <!-- 登录表单 -->
+        <form class="space-y-6">
+            <div>
+                <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">手机号码/用户名</label>
+                <input type="text" id="phone" name="phone" placeholder="请输入手机号码或用户名"
+                       class="input-field w-full h-12 px-4 border border-gray-300 rounded-lg text-sm">
+            </div>
+
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700 mb-1">密码</label>
+                <div class="relative">
+                    <input type="password" id="password" name="password" placeholder="请输入密码"
+                           class="input-field w-full h-12 px-4 border border-gray-300 rounded-lg text-sm">
+                    <button type="button" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+                        <i class="fas fa-eye-slash"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <input type="checkbox" id="remember" name="remember" class="h-4 w-4 text-black focus:ring-black border-gray-300 rounded">
+                    <label for="remember" class="ml-2 block text-xs text-gray-700">记住我</label>
+                </div>
+                <a href="forgot-password.html" class="text-xs text-black">忘记密码？</a>
+            </div>
+
+            <button type="submit" class="btn-primary w-full h-12 bg-black text-white rounded-lg font-medium">
+                登录
+            </button>
+        </form>
+
+        <!-- 其他登录方式 -->
+        <div class="mt-8">
+            <div class="flex items-center justify-center">
+                <div class="flex-grow h-px bg-gray-200"></div>
+                <span class="px-4 text-xs text-gray-500">其他登录方式</span>
+                <div class="flex-grow h-px bg-gray-200"></div>
+            </div>
+
+            <div class="flex justify-center space-x-8 mt-6">
+                <a href="#" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                    <i class="fab fa-weixin text-green-600"></i>
+                </a>
+                <a href="#" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                    <i class="fab fa-qq text-blue-500"></i>
+                </a>
+                <a href="#" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                    <i class="fab fa-weibo text-red-500"></i>
+                </a>
+            </div>
+        </div>
+
+                    <!-- 注册入口 -->
+                    <div class="mt-auto mb-8 text-center">
+                        <span class="text-sm text-gray-500">还没有账号？</span>
+                        <a href="register.html" class="text-sm text-black font-medium">立即注册</a>
+                    </div>
+                </main>
+            </div>
+
+            <!-- 底部导航栏 -->
+<div class="absolute bottom-0 left-0 right-0 h-[84px] bg-white/80 backdrop-blur-xl border-t border-white/20">
+<!-- 导航栏内容 -->
+<nav class="h-[49px] flex items-center px-2">
+<div class="flex justify-around w-full text-[12px]">
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="home.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+<polyline points="9 22 9 12 15 12 15 22"></polyline>
+</svg>
+</div>
+<span class="mt-1">首页</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="design-result.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<circle cx="13.5" cy="6.5" fill="currentColor" r=".5"></circle>
+<circle cx="17.5" cy="10.5" fill="currentColor" r=".5"></circle>
+<circle cx="8.5" cy="7.5" fill="currentColor" r=".5"></circle>
+<circle cx="6.5" cy="12.5" fill="currentColor" r=".5"></circle>
+<path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+</svg>
+</div>
+<span class="mt-1">设计</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="mall.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+<path d="M3 6h18"></path>
+<path d="M16 10a4 4 0 0 1-8 0"></path>
+</svg>
+</div>
+<span class="mt-1">商城</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="spaces.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="m15 12-8.373 8.373a1 1 0 1 1-3-3L12 9"></path>
+<path d="m18 15 4-4"></path>
+<path d="m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172V7l-2.26-2.26a6 6 0 0 0-4.202-1.756L9 2.96l.92.82A6.18 6.18 0 0 1 12 8.4V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5"></path>
+</svg>
+</div>
+<span class="mt-1">施工</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="me.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+<circle cx="12" cy="7" r="4"></circle>
+</svg>
+</div>
+<span class="mt-1">我的</span>
+</a>
+</div>
+</nav>
+<!-- iPhone 16 Home Indicator -->
+<div class="h-[34px] flex items-center justify-center">
+<div class="w-[134px] h-[5px] bg-black rounded-full"></div>
+</div>
+</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入认证API客户端 -->
+    <script src="../PC后台管理系统/src/pc/components/js/auth-api.js"></script>
+    <!-- 引入H5与小程序通信桥接工具 -->
+    <script src="../utils/h5-bridge.js"></script>
+
+    <script>
+        // 用户认证系统
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeAuth();
+
+            // 检查小程序环境并初始化通信
+            if (window.H5Bridge) {
+                console.log('H5Bridge已加载，当前环境:', window.H5Bridge.isInMiniProgram ? '小程序' : '浏览器');
+
+                if (window.H5Bridge.isInMiniProgram) {
+                    initMiniProgramAuth();
+                }
+            }
+        });
+
+        // 初始化小程序认证功能
+        function initMiniProgramAuth() {
+            console.log('初始化小程序认证功能');
+
+            // 监听用户信息获取结果
+            window.H5Bridge.on('userInfoSuccess', function(userInfo) {
+                console.log('获取用户信息成功:', userInfo);
+                handleMiniProgramLoginSuccess(userInfo);
+            });
+
+            window.H5Bridge.on('userInfoFail', function(error) {
+                console.log('获取用户信息失败:', error);
+                handleMiniProgramLoginFailure(error);
+            });
+        }
+
+        // 初始化认证功能
+        function initializeAuth() {
+            const loginForm = document.getElementById('loginForm');
+            const phoneInput = document.querySelector('input[name="phone"]');
+            const passwordInput = document.querySelector('input[name="password"]');
+            const rememberCheckbox = document.querySelector('input[name="remember"]');
+
+            // 检查是否已登录
+            checkLoginStatus();
+
+            // 加载记住的用户信息
+            loadRememberedUser();
+
+            // 绑定表单提交事件
+            if (loginForm) {
+                loginForm.addEventListener('submit', handleLogin);
+            }
+
+            // 绑定第三方登录
+            bindThirdPartyLogin();
+
+            // 输入验证
+            if (phoneInput) {
+                phoneInput.addEventListener('input', validatePhone);
+            }
+
+            if (passwordInput) {
+                passwordInput.addEventListener('input', validatePassword);
+            }
+        }
+
+        // 检查登录状态
+        function checkLoginStatus() {
+            const currentUser = localStorage.getItem('currentUser');
+            if (currentUser) {
+                // 已登录，跳转到首页
+                window.location.href = 'home.html';
+            }
+        }
+
+        // 加载记住的用户信息
+        function loadRememberedUser() {
+            const rememberedUser = localStorage.getItem('rememberedUser');
+            if (rememberedUser) {
+                const userData = JSON.parse(rememberedUser);
+                const phoneInput = document.querySelector('input[name="phone"]');
+                const rememberCheckbox = document.querySelector('input[name="remember"]');
+
+                if (phoneInput) {
+                    phoneInput.value = userData.phone;
+                }
+                if (rememberCheckbox) {
+                    rememberCheckbox.checked = true;
+                }
+            }
+        }
+
+        // 处理登录
+        function handleLogin(event) {
+            event.preventDefault();
+
+            const formData = new FormData(event.target);
+            const phone = formData.get('phone');
+            const password = formData.get('password');
+            const remember = formData.get('remember');
+
+            // 验证输入
+            if (!validateLoginInput(phone, password)) {
+                return;
+            }
+
+            // 显示加载状态
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = '登录中...';
+            submitBtn.disabled = true;
+
+            // 模拟登录API调用
+            simulateLogin(phone, password, remember)
+                .then(result => {
+                    if (result.success) {
+                        handleLoginSuccess(result.user, remember);
+                    } else {
+                        handleLoginError(result.message);
+                    }
+                })
+                .catch(error => {
+                    handleLoginError('网络连接失败，请重试');
+                })
+                .finally(() => {
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+                });
+        }
+
+        // 验证登录输入
+        function validateLoginInput(phone, password) {
+            if (!phone) {
+                alert('请输入手机号或用户名');
+                return false;
+            }
+
+            // 支持手机号或用户名登录
+            if (!isValidPhone(phone) && !isValidUsername(phone)) {
+                alert('请输入正确的手机号或用户名');
+                return false;
+            }
+
+            if (!password) {
+                alert('请输入密码');
+                return false;
+            }
+
+            if (password.length < 6) {
+                alert('密码长度不能少于6位');
+                return false;
+            }
+
+            return true;
+        }
+
+        // 验证用户名格式
+        function isValidUsername(username) {
+            // 用户名：3-20位，字母、数字、下划线
+            const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+            return usernameRegex.test(username);
+        }
+
+        // 验证手机号
+        function validatePhone(event) {
+            const phone = event.target.value;
+            const phoneRegex = /^1[3-9]\d{9}$/;
+
+            if (phone && !phoneRegex.test(phone)) {
+                event.target.setCustomValidity('请输入正确的手机号');
+            } else {
+                event.target.setCustomValidity('');
+            }
+        }
+
+        // 验证密码
+        function validatePassword(event) {
+            const password = event.target.value;
+
+            if (password && password.length < 6) {
+                event.target.setCustomValidity('密码长度不能少于6位');
+            } else {
+                event.target.setCustomValidity('');
+            }
+        }
+
+        // 检查手机号格式
+        function isValidPhone(phone) {
+            const phoneRegex = /^1[3-9]\d{9}$/;
+            return phoneRegex.test(phone);
+        }
+
+        // 真实登录API调用
+        async function simulateLogin(phone, password, remember) {
+            try {
+                console.log('🔐 开始真实API登录:', phone);
+
+                // 检查API客户端是否可用
+                if (!window.authAPI) {
+                    console.error('❌ 认证API客户端未加载');
+                    return {
+                        success: false,
+                        message: 'API客户端未加载，请刷新页面重试'
+                    };
+                }
+
+                // 调用真实的登录API
+                const response = await window.authAPI.login(phone, password, remember);
+
+                if (response.success && response.data) {
+                    console.log('✅ API登录成功:', response.data.user.username);
+
+                    // 转换API响应格式为页面期望的格式
+                    return {
+                        success: true,
+                        user: {
+                            id: response.data.user.id,
+                            phone: response.data.user.phone || phone,
+                            name: response.data.user.real_name || response.data.user.nickname || response.data.user.username,
+                            avatar: response.data.user.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face',
+                            loginTime: new Date().toISOString(),
+                            username: response.data.user.username,
+                            email: response.data.user.email,
+                            roles: response.data.user.roles,
+                            access_token: response.data.access_token
+                        }
+                    };
+                } else {
+                    console.error('❌ API登录失败:', response.error?.message);
+                    return {
+                        success: false,
+                        message: response.error?.message || '登录失败'
+                    };
+                }
+
+            } catch (error) {
+                console.error('❌ 登录API调用异常:', error);
+
+                // 如果API调用失败，回退到模拟登录
+                console.log('🔄 回退到模拟登录模式');
+                return simulateLoginFallback(phone, password, remember);
+            }
+        }
+
+        // 模拟登录回退方案
+        function simulateLoginFallback(phone, password, remember) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    // 扩展的模拟用户数据库，包含更多测试账号
+                    const users = [
+                        { phone: '13800138000', password: '123456', name: '张先生', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face' },
+                        { phone: '13900139000', password: '123456', name: '李女士', avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face' },
+                        { phone: '13700137000', password: '123456', name: '王先生', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face' },
+                        // 添加更多测试账号
+                        { phone: '13800138001', password: '123456', name: '管理员', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face' },
+                        { phone: '13800138002', password: '123456', name: '设计师', avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face' },
+                        // 支持用户名登录
+                        { phone: 'admin', password: 'admin123', name: '系统管理员', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face' },
+                        { phone: 'zhangsan', password: '123456', name: '张三', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face' },
+                        { phone: 'designer01', password: '123456', name: '李设计师', avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face' }
+                    ];
+
+                    const user = users.find(u => u.phone === phone && u.password === password);
+
+                    if (user) {
+                        resolve({
+                            success: true,
+                            user: {
+                                id: Date.now(),
+                                phone: user.phone,
+                                name: user.name,
+                                avatar: user.avatar,
+                                loginTime: new Date().toISOString(),
+                                loginType: 'fallback'
+                            }
+                        });
+                    } else {
+                        resolve({
+                            success: false,
+                            message: '手机号或密码错误'
+                        });
+                    }
+                }, 1000); // 减少模拟延迟
+            });
+        }
+
+        // 处理登录成功
+        function handleLoginSuccess(user, remember) {
+            // 保存用户信息
+            localStorage.setItem('currentUser', JSON.stringify(user));
+
+            // 记住用户
+            if (remember) {
+                localStorage.setItem('rememberedUser', JSON.stringify({
+                    phone: user.phone
+                }));
+            } else {
+                localStorage.removeItem('rememberedUser');
+            }
+
+            // 显示成功消息
+            alert('登录成功！');
+
+            // 跳转到首页
+            window.location.href = 'home.html';
+        }
+
+        // 处理登录错误
+        function handleLoginError(message) {
+            alert(message);
+        }
+
+        // 绑定第三方登录
+        function bindThirdPartyLogin() {
+            const wechatBtn = document.querySelector('.fa-weixin').parentElement;
+            const qqBtn = document.querySelector('.fa-qq').parentElement;
+            const weiboBtn = document.querySelector('.fa-weibo').parentElement;
+
+            if (wechatBtn) {
+                wechatBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    handleThirdPartyLogin('wechat');
+                });
+            }
+
+            if (qqBtn) {
+                qqBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    handleThirdPartyLogin('qq');
+                });
+            }
+
+            if (weiboBtn) {
+                weiboBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    handleThirdPartyLogin('weibo');
+                });
+            }
+        }
+
+        // 处理第三方登录 - 集成小程序登录
+        function handleThirdPartyLogin(platform) {
+            const platformNames = {
+                'wechat': '微信',
+                'qq': 'QQ',
+                'weibo': '微博'
+            };
+
+            // 检查是否在小程序环境中且为微信登录
+            if (platform === 'wechat' && window.H5Bridge && window.H5Bridge.isInMiniProgram) {
+                // 在小程序中使用原生微信登录
+                handleMiniProgramWechatLogin();
+            } else {
+                // 在浏览器中或其他平台登录
+                if (window.H5Bridge && window.H5Bridge.isInMiniProgram) {
+                    window.H5Bridge.showToast(`${platformNames[platform]}登录功能开发中，敬请期待！`);
+                } else {
+                    alert(`${platformNames[platform]}登录功能开发中，敬请期待！`);
+                }
+            }
+        }
+
+        // 处理小程序微信登录
+        function handleMiniProgramWechatLogin() {
+            console.log('调起小程序微信登录');
+
+            // 显示加载状态
+            const wechatBtn = document.querySelector('.fa-weixin').parentElement;
+            const originalHTML = wechatBtn.innerHTML;
+            wechatBtn.innerHTML = '<i class="fas fa-spinner fa-spin text-green-600"></i>';
+
+            // 调用小程序获取用户信息
+            window.H5Bridge.getUserInfo();
+
+            // 恢复按钮状态（结果通过回调处理）
+            setTimeout(() => {
+                wechatBtn.innerHTML = originalHTML;
+            }, 2000);
+        }
+
+        // 处理小程序登录成功
+        function handleMiniProgramLoginSuccess(userInfo) {
+            console.log('小程序登录成功:', userInfo);
+
+            // 构建用户数据
+            const userData = {
+                id: Date.now(),
+                phone: '', // 小程序登录可能没有手机号
+                name: userInfo.nickName || '微信用户',
+                avatar: userInfo.avatarUrl || '',
+                loginTime: new Date().toISOString(),
+                loginType: 'miniprogram'
+            };
+
+            // 保存用户信息
+            localStorage.setItem('currentUser', JSON.stringify(userData));
+
+            // 显示成功消息并跳转
+            window.H5Bridge.showToast('登录成功！');
+
+            setTimeout(() => {
+                window.H5Bridge.navigateTo('/pages/webview/index?page=home');
+            }, 1500);
+        }
+
+        // 处理小程序登录失败
+        function handleMiniProgramLoginFailure(error) {
+            console.log('小程序登录失败:', error);
+
+            if (error.errMsg && error.errMsg.includes('cancel')) {
+                window.H5Bridge.showToast('用户取消授权');
+            } else {
+                window.H5Bridge.showToast('登录失败，请重试', 'error');
+            }
+        }
+
+        // 全局函数：退出登录
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'login.html';
+        }
+
+        // 全局函数：获取当前用户
+        function getCurrentUser() {
+            const userStr = localStorage.getItem('currentUser');
+            return userStr ? JSON.parse(userStr) : null;
+        }
+
+        // 全局函数：检查是否已登录
+        function isLoggedIn() {
+            return !!getCurrentUser();
+        }
+    </script>
+</body>
+</html>

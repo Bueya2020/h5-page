@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+    <title>智能家居控制系统选购指南 - 知识库</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'system': ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', '"SF Pro Icons"', '"Helvetica Neue"', 'Helvetica', 'Arial', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            -webkit-text-size-adjust: 100%;
+            -moz-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+            -webkit-overflow-scrolling: touch;
+        }
+        .scrollbar-none::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-none {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .blur-content {
+            filter: blur(3px);
+            pointer-events: none;
+            user-select: none;
+        }
+        .gradient-overlay {
+            background: linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.8) 70%, rgba(255,255,255,1) 100%);
+        }
+    </style>
+    <link href="css/styles.css" rel="stylesheet"/>
+    <link href="css/iphone16_fix.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <!-- 全局错误处理和兜底方案 -->
+    <script>
+        (function() {
+            'use strict';
+            
+            // 创建 Trace 对象的兜底实现
+            window.Trace = window.Trace || {
+                init: function() { console.log('Trace initialized (fallback)'); },
+                log: function() { console.log.apply(console, arguments); },
+                error: function() { console.error.apply(console, arguments); },
+                warn: function() { console.warn.apply(console, arguments); },
+                info: function() { console.info.apply(console, arguments); }
+            };
+
+            // 防止其他可能的调试工具错误
+            window.wx = window.wx || {};
+            window.my = window.my || {};
+            
+            // 防止 chartId 未定义错误
+            window.chartId = window.chartId || 'default-chart-id';
+            
+            // 全局错误处理
+            window.addEventListener('error', function(e) {
+                console.error('Global error caught:', e.error);
+                return true; // 阻止默认错误处理
+            });
+            
+            window.addEventListener('unhandledrejection', function(e) {
+                console.error('Unhandled promise rejection:', e.reason);
+                e.preventDefault(); // 阻止默认处理
+            });
+            
+            console.log('✅ 全局错误处理已初始化');
+        })();
+    </script>
+</head>
+<body class="min-h-screen w-full bg-[#000000] flex items-center justify-center font-system">
+<!-- iPhone 容器 -->
+<div class="w-full max-w-[393px] h-[852px] bg-[#1E1E1E] shadow-2xl overflow-hidden relative mx-auto rounded-[54px]">
+    <!-- iPhone 状态栏 -->
+    <div class="w-full h-[47px] bg-black px-5 flex items-center justify-between text-white text-[14px] font-medium">
+        <div class="flex items-center space-x-1">
+            <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                <path d="M2 20h.01"></path>
+                <path d="M7 20v-4"></path>
+                <path d="M12 20v-8"></path>
+                <path d="M17 20V8"></path>
+                <path d="M22 4v16"></path>
+            </svg>
+            <span>中国移动</span>
+            <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 20h.01"></path>
+                <path d="M2 8.82a15 15 0 0 1 20 0"></path>
+                <path d="M5 12.859a10 10 0 0 1 14 0"></path>
+                <path d="M8.5 16.429a5 5 0 0 1 7 0"></path>
+            </svg>
+        </div>
+        <div class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">15:52</div>
+        <div class="flex items-center space-x-1">
+            <span>89%</span>
+            <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                <rect height="10" rx="2" ry="2" width="16" x="2" y="7"></rect>
+                <line x1="22" x2="22" y1="11" y2="13"></line>
+            </svg>
+        </div>
+    </div>
+    <!-- 动态岛 -->
+    <button class="absolute left-1/2 -translate-x-1/2 bg-black transition-all duration-300 ease-out w-[126px] h-[37.5px] -top-0.5 rounded-b-[24px]"></button>
+
+    <!-- 主内容区域 -->
+    <div class="w-full h-[calc(100%-47px)] bg-white overflow-hidden relative">
+        <!-- 顶部导航栏 -->
+        <div class="absolute top-0 left-0 right-0 z-30">
+            <div class="bg-white text-black border-b border-gray-100">
+                <div class="flex items-center justify-between px-4 h-[60px]">
+                    <button onclick="history.back()" class="text-black/70 hover:text-black transition-colors">
+                        <svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg">
+                            <path d="m15 18-6-6 6-6"></path>
+                        </svg>
+                    </button>
+                    <div class="flex items-center space-x-3">
+                        <button class="text-black/70 hover:text-black transition-colors">
+                            <i class="far fa-heart text-lg"></i>
+                        </button>
+                        <button class="text-black/70 hover:text-black transition-colors">
+                            <i class="fas fa-share text-lg"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 滚动内容区域 -->
+        <div class="absolute inset-0 top-[60px] bottom-[84px] overflow-y-auto scrollbar-none">
+            <!-- 文章头部 -->
+            <div class="px-4 py-6 bg-white">
+                <h1 class="text-xl font-bold text-black leading-tight mb-3">如何选择合适的智能家居控制系统？</h1>
+                <div class="flex items-center text-sm text-gray-500 mb-4">
+                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=40&h=40&q=80" alt="作者头像" class="w-8 h-8 rounded-full mr-2">
+                    <span>张三丰</span>
+                    <span class="mx-2">·</span>
+                    <span>3天前</span>
+                    <span class="mx-2">·</span>
+                    <span>阅读 1.2k</span>
+                </div>
+                <div class="flex items-center space-x-2 mb-4">
+                    <span class="px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded-full">设计指南</span>
+                    <span class="px-2 py-1 bg-green-100 text-green-600 text-xs rounded-full">智能家居</span>
+                </div>
+            </div>
+
+            <!-- 文章内容 -->
+            <div class="px-4 pb-6">
+                <!-- 免费预览内容 -->
+                <div class="prose prose-sm max-w-none">
+                    <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="智能家居控制系统" class="w-full h-48 object-cover rounded-lg mb-4">
+
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        随着科技的发展，智能家居已经从概念走向现实。选择一套合适的智能家居控制系统，不仅能提升生活品质，还能为日常生活带来便利。本文将从多个维度为您详细解析如何选择适合的智能家居控制系统。
+                    </p>
+
+                    <h2 class="text-lg font-semibold text-black mb-3">1. 了解主流控制系统</h2>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        目前市场上主流的智能家居控制系统包括：Apple HomeKit、Google Home、Amazon Alexa、小米米家、华为HiLink等。每个系统都有其独特的优势和适用场景。
+                    </p>
+                </div>
+
+                <!-- 付费内容区域 -->
+                <div id="paid-content" class="relative">
+                    <!-- 模糊内容 -->
+                    <div class="blur-content">
+                        <h2 class="text-lg font-semibold text-black mb-3">2. 系统兼容性对比分析</h2>
+                        <p class="text-gray-700 leading-relaxed mb-4">
+                            在选择智能家居控制系统时，兼容性是最重要的考虑因素之一。不同品牌的设备支持的协议不同，包括WiFi、Zigbee、Z-Wave、蓝牙等...
+                        </p>
+
+                        <h2 class="text-lg font-semibold text-black mb-3">3. 成本效益分析</h2>
+                        <p class="text-gray-700 leading-relaxed mb-4">
+                            从初期投入到后期维护，我们需要全面考虑智能家居系统的总体成本。包括设备采购成本、安装费用、月度服务费...
+                        </p>
+
+                        <h2 class="text-lg font-semibold text-black mb-3">4. 实际案例分析</h2>
+                        <p class="text-gray-700 leading-relaxed mb-4">
+                            通过三个不同户型的实际案例，我们来看看如何根据具体需求选择最适合的智能家居控制系统...
+                        </p>
+                    </div>
+
+                    <!-- 付费提示遮罩 -->
+                    <div class="absolute inset-0 gradient-overlay flex items-end justify-center pb-8">
+                        <div class="bg-white rounded-lg shadow-lg p-6 mx-4 text-center border">
+                            <div class="mb-4">
+                                <i class="fas fa-lock text-3xl text-gray-400 mb-2"></i>
+                                <h3 class="text-lg font-semibold text-black mb-2">解锁完整内容</h3>
+                                <p class="text-sm text-gray-600 mb-4">查看详细的系统对比分析、成本效益计算和实际案例</p>
+                            </div>
+                            <div class="space-y-3">
+                                <button onclick="showPaymentModal()" class="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors">
+                                    ¥9.9 解锁阅读
+                                </button>
+                                <button onclick="showTrialContent()" class="w-full border border-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+                                    免费试读 30秒
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部导航栏 -->
+        <div class="absolute bottom-0 left-0 right-0 h-[84px] bg-white/80 backdrop-blur-xl border-t border-white/20">
+            <nav class="h-[49px] flex items-center px-2">
+                <div class="flex justify-around w-full text-[12px]">
+                    <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="home.html">
+                        <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                            <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                            </svg>
+                        </div>
+                        <span class="mt-1">首页</span>
+                    </a>
+                    <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="design-result.html">
+                        <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                            <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="13.5" cy="6.5" fill="currentColor" r=".5"></circle>
+                                <circle cx="17.5" cy="10.5" fill="currentColor" r=".5"></circle>
+                                <circle cx="8.5" cy="7.5" fill="currentColor" r=".5"></circle>
+                                <circle cx="6.5" cy="12.5" fill="currentColor" r=".5"></circle>
+                                <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+                            </svg>
+                        </div>
+                        <span class="mt-1">设计</span>
+                    </a>
+                    <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="mall.html">
+                        <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                            <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+                                <path d="M3 6h18"></path>
+                                <path d="M16 10a4 4 0 0 1-8 0"></path>
+                            </svg>
+                        </div>
+                        <span class="mt-1">商城</span>
+                    </a>
+                    <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="spaces.html">
+                        <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                            <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="m15 12-8.373 8.373a1 1 0 1 1-3-3L12 9"></path>
+                                <path d="m18 15 4-4"></path>
+                                <path d="m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172V7l-2.26-2.26a6 6 0 0 0-4.202-1.756L9 2.96l.92.82A6.18 6.18 0 0 1 12 8.4V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5"></path>
+                            </svg>
+                        </div>
+                        <span class="mt-1">施工</span>
+                    </a>
+                    <a class="flex flex-col items-center group text-black hover:text-gray-600 active:text-gray-800 transition-colors" href="me.html">
+                        <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                            <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                        </div>
+                        <span class="mt-1">我的</span>
+                    </a>
+                </div>
+            </nav>
+            <!-- iPhone 16 Home Indicator -->
+            <div class="h-[34px] flex items-center justify-center">
+                <div class="w-[134px] h-[5px] bg-black rounded-full"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 支付弹窗 -->
+<div id="payment-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+    <div class="bg-white rounded-lg mx-4 w-full max-w-sm">
+        <div class="p-6">
+            <div class="text-center mb-6">
+                <i class="fas fa-unlock text-3xl text-green-500 mb-3"></i>
+                <h3 class="text-lg font-semibold text-black mb-2">解锁完整内容</h3>
+                <p class="text-sm text-gray-600">一次购买，永久阅读</p>
+            </div>
+
+            <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm text-gray-600">文章内容</span>
+                    <span class="text-lg font-bold text-black">¥9.9</span>
+                </div>
+                <div class="text-xs text-gray-500">
+                    包含：详细对比分析 + 成本计算 + 实际案例
+                </div>
+            </div>
+
+            <div class="space-y-3 mb-6">
+                <button onclick="selectPayment('wechat')" class="w-full flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:border-green-500 transition-colors payment-option" data-method="wechat">
+                    <div class="flex items-center">
+                        <i class="fab fa-weixin text-green-500 text-xl mr-3"></i>
+                        <span class="font-medium">微信支付</span>
+                    </div>
+                    <div class="w-4 h-4 border-2 border-gray-300 rounded-full payment-radio"></div>
+                </button>
+
+                <button onclick="selectPayment('alipay')" class="w-full flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:border-blue-500 transition-colors payment-option" data-method="alipay">
+                    <div class="flex items-center">
+                        <i class="fab fa-credit-card text-blue-500 text-xl mr-3"></i>
+                        <span class="font-medium">支付宝</span>
+                    </div>
+                    <div class="w-4 h-4 border-2 border-gray-300 rounded-full payment-radio"></div>
+                </button>
+            </div>
+
+            <div class="space-y-3">
+                <button onclick="processPurchase()" class="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors" id="purchase-btn" disabled>
+                    立即支付 ¥9.9
+                </button>
+                <button onclick="closePaymentModal()" class="w-full border border-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+                    取消
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 试读弹窗 -->
+<div id="trial-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+    <div class="bg-white rounded-lg mx-4 w-full max-w-sm">
+        <div class="p-6 text-center">
+            <i class="fas fa-clock text-3xl text-orange-500 mb-3"></i>
+            <h3 class="text-lg font-semibold text-black mb-2">免费试读</h3>
+            <p class="text-sm text-gray-600 mb-4">您可以免费试读 30 秒</p>
+            <div class="text-2xl font-bold text-orange-500 mb-6" id="trial-countdown">30</div>
+            <div class="space-y-3">
+                <button onclick="startTrial()" class="w-full bg-orange-500 text-white py-3 rounded-lg font-medium hover:bg-orange-600 transition-colors">
+                    开始试读
+                </button>
+                <button onclick="closeTrialModal()" class="w-full border border-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+                    取消
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let selectedPaymentMethod = null;
+let trialTimer = null;
+let trialTimeLeft = 30;
+
+// 显示支付弹窗
+function showPaymentModal() {
+    document.getElementById('payment-modal').classList.remove('hidden');
+}
+
+// 关闭支付弹窗
+function closePaymentModal() {
+    document.getElementById('payment-modal').classList.add('hidden');
+    selectedPaymentMethod = null;
+    updatePaymentUI();
+}
+
+// 选择支付方式
+function selectPayment(method) {
+    selectedPaymentMethod = method;
+    updatePaymentUI();
+}
+
+// 更新支付UI
+function updatePaymentUI() {
+    const options = document.querySelectorAll('.payment-option');
+    const purchaseBtn = document.getElementById('purchase-btn');
+
+    options.forEach(option => {
+        const radio = option.querySelector('.payment-radio');
+        const method = option.dataset.method;
+
+        if (method === selectedPaymentMethod) {
+            option.classList.add('border-green-500', 'bg-green-50');
+            radio.classList.add('bg-green-500', 'border-green-500');
+            radio.innerHTML = '<i class="fas fa-check text-white text-xs"></i>';
+        } else {
+            option.classList.remove('border-green-500', 'bg-green-50', 'border-blue-500', 'bg-blue-50');
+            radio.classList.remove('bg-green-500', 'border-green-500', 'bg-blue-500', 'border-blue-500');
+            radio.innerHTML = '';
+        }
+    });
+
+    purchaseBtn.disabled = !selectedPaymentMethod;
+    if (selectedPaymentMethod) {
+        purchaseBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    } else {
+        purchaseBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    }
+}
+
+// 处理购买
+function processPurchase() {
+    if (!selectedPaymentMethod) return;
+
+    // 模拟支付处理
+    const purchaseBtn = document.getElementById('purchase-btn');
+    purchaseBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>处理中...';
+    purchaseBtn.disabled = true;
+
+    setTimeout(() => {
+        closePaymentModal();
+        unlockContent();
+        showSuccessMessage();
+    }, 2000);
+}
+
+// 解锁内容
+function unlockContent() {
+    const paidContent = document.getElementById('paid-content');
+    const blurContent = paidContent.querySelector('.blur-content');
+    const overlay = paidContent.querySelector('.gradient-overlay');
+
+    blurContent.classList.remove('blur-content');
+    overlay.style.display = 'none';
+}
+
+// 显示成功消息
+function showSuccessMessage() {
+    const message = document.createElement('div');
+    message.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-lg z-50';
+    message.innerHTML = '<i class="fas fa-check mr-2"></i>购买成功，内容已解锁！';
+    document.body.appendChild(message);
+
+    setTimeout(() => {
+        message.remove();
+    }, 3000);
+}
+
+// 显示试读弹窗
+function showTrialContent() {
+    document.getElementById('trial-modal').classList.remove('hidden');
+    trialTimeLeft = 30;
+    document.getElementById('trial-countdown').textContent = trialTimeLeft;
+}
+
+// 关闭试读弹窗
+function closeTrialModal() {
+    document.getElementById('trial-modal').classList.add('hidden');
+    if (trialTimer) {
+        clearInterval(trialTimer);
+        trialTimer = null;
+    }
+    endTrial();
+}
+
+// 开始试读
+function startTrial() {
+    document.getElementById('trial-modal').classList.add('hidden');
+
+    // 临时解锁内容
+    const paidContent = document.getElementById('paid-content');
+    const blurContent = paidContent.querySelector('.blur-content');
+    const overlay = paidContent.querySelector('.gradient-overlay');
+
+    blurContent.classList.remove('blur-content');
+    overlay.style.display = 'none';
+
+    // 显示倒计时提示
+    const trialNotice = document.createElement('div');
+    trialNotice.id = 'trial-notice';
+    trialNotice.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-orange-500 text-white px-4 py-2 rounded-lg z-50';
+    trialNotice.innerHTML = `<i class="fas fa-clock mr-2"></i>试读剩余时间: <span id="trial-time">${trialTimeLeft}</span>秒`;
+    document.body.appendChild(trialNotice);
+
+    // 开始倒计时
+    trialTimer = setInterval(() => {
+        trialTimeLeft--;
+        document.getElementById('trial-time').textContent = trialTimeLeft;
+
+        if (trialTimeLeft <= 0) {
+            clearInterval(trialTimer);
+            endTrial();
+        }
+    }, 1000);
+}
+
+// 结束试读
+function endTrial() {
+    const trialNotice = document.getElementById('trial-notice');
+    if (trialNotice) {
+        trialNotice.remove();
+    }
+
+    // 重新锁定内容
+    const paidContent = document.getElementById('paid-content');
+    const blurContent = paidContent.querySelector('.blur-content');
+    const overlay = paidContent.querySelector('.gradient-overlay');
+
+    if (blurContent && overlay) {
+        blurContent.classList.add('blur-content');
+        overlay.style.display = 'flex';
+    }
+}
+
+// 初始化
+document.addEventListener('DOMContentLoaded', function() {
+    updatePaymentUI();
+});
+</script>
+</body>
+</html>

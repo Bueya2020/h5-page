@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>我的 - 智能设计与施工</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'system': ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', '"SF Pro Icons"', '"Helvetica Neue"', 'Helvetica', 'Arial', 'sans-serif']
+                    },
+                    colors: {
+                        'primary-text': '#1A1A1A',
+                        'main-bg': '#F8F9FA'
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            -webkit-text-size-adjust: 100%;
+            -moz-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .scrollbar-none::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-none {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        :root {
+            --safe-area-inset-top: env(safe-area-inset-top);
+            --safe-area-inset-bottom: env(safe-area-inset-bottom);
+        }
+
+        .order-badge {
+            position: absolute;
+            top: 0px;
+            right: 4px;
+            background-color: #000000;
+            color: white;
+            border-radius: 50%;
+            min-width: 14px;
+            height: 14px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4px;
+            line-height: 1;
+        }
+
+        .text-shadow {
+            text-shadow: 0 1px 0 rgb(0 0 0 / 40%);
+        }
+
+        /* 分享和邀请弹窗样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 3000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 320px;
+            width: 85%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            position: relative;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 20px;
+            margin-top: 8px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #000;
+            margin-bottom: 8px;
+        }
+
+        .modal-subtitle {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 28px;
+            height: 28px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+
+        .modal-close:hover {
+            background: #555;
+            transform: scale(1.1);
+        }
+
+        /* 文件选择样式 */
+        .file-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .file-option {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 2px solid #f0f0f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .file-option:hover {
+            border-color: #ddd;
+            background: #f9f9f9;
+        }
+
+        .file-option.selected {
+            border-color: #000;
+            background: #f8f8f8;
+        }
+
+        .file-option input[type="checkbox"] {
+            margin-right: 12px;
+            width: 18px;
+            height: 18px;
+        }
+
+        .file-option-content {
+            flex: 1;
+        }
+
+        .file-option-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #000;
+            margin-bottom: 2px;
+        }
+
+        .file-option-desc {
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* 角色选择样式 */
+        .role-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .role-option {
+            display: flex;
+            align-items: flex-start;
+            padding: 16px;
+            border: 2px solid #f0f0f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .role-option:hover {
+            border-color: #ddd;
+            background: #f9f9f9;
+        }
+
+        .role-option.selected {
+            border-color: #000;
+            background: #f8f8f8;
+        }
+
+        .role-option input[type="radio"] {
+            margin-right: 12px;
+            margin-top: 2px;
+            width: 18px;
+            height: 18px;
+        }
+
+        .role-option-content {
+            flex: 1;
+        }
+
+        .role-option-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #000;
+            margin-bottom: 4px;
+        }
+
+        .role-option-desc {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        /* 按钮样式 */
+        .modal-button {
+            width: 100%;
+            padding: 12px;
+            background: #000;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .modal-button:hover {
+            background: #333;
+        }
+
+        .modal-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* 二维码样式 */
+        .qr-code-container {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* 防止页面滚动 */
+        .popup-open {
+            overflow: hidden;
+        }
+    </style>
+<link href="css/styles.css" rel="stylesheet"/><link href="css/iphone16_fix.css" rel="stylesheet"/>
+    <!-- 全局错误处理和兜底方案 -->
+    <script>
+        (function() {
+            'use strict';
+            
+            // 创建 Trace 对象的兜底实现
+            window.Trace = window.Trace || {
+                init: function() { console.log('Trace initialized (fallback)'); },
+                log: function() { console.log.apply(console, arguments); },
+                error: function() { console.error.apply(console, arguments); },
+                warn: function() { console.warn.apply(console, arguments); },
+                info: function() { console.info.apply(console, arguments); }
+            };
+
+            // 防止其他可能的调试工具错误
+            window.wx = window.wx || {};
+            window.my = window.my || {};
+            
+            // 防止 chartId 未定义错误
+            window.chartId = window.chartId || 'default-chart-id';
+            
+            // 全局错误处理
+            window.addEventListener('error', function(e) {
+                console.error('Global error caught:', e.error);
+                return true; // 阻止默认错误处理
+            });
+            
+            window.addEventListener('unhandledrejection', function(e) {
+                console.error('Unhandled promise rejection:', e.reason);
+                e.preventDefault(); // 阻止默认处理
+            });
+            
+            console.log('✅ 全局错误处理已初始化');
+        })();
+    </script>
+</head>
+<body class="min-h-screen w-full bg-[#000000] flex items-center justify-center font-system">
+<!-- iPhone 容器 -->
+<div class="w-full max-w-[393px] h-[852px] bg-[#1E1E1E] shadow-2xl overflow-hidden relative mx-auto rounded-[54px]">
+<!-- iPhone 状态栏 -->
+<div class="w-full h-[47px] bg-black px-5 flex items-center justify-between text-white text-[14px] font-medium">
+<div class="flex items-center space-x-1">
+<!-- 信号图标 -->
+<svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+<path d="M2 20h.01"></path>
+<path d="M7 20v-4"></path>
+<path d="M12 20v-8"></path>
+<path d="M17 20V8"></path>
+<path d="M22 4v16"></path>
+</svg>
+<span>中国移动</span>
+<!-- WiFi图标 -->
+<svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 20h.01"></path>
+<path d="M2 8.82a15 15 0 0 1 20 0"></path>
+<path d="M5 12.859a10 10 0 0 1 14 0"></path>
+<path d="M8.5 16.429a5 5 0 0 1 7 0"></path>
+</svg>
+</div>
+<div class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">15:52</div>
+<div class="flex items-center space-x-1">
+<span>89%</span>
+<!-- 电池图标 -->
+<svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+<rect height="10" rx="2" ry="2" width="16" x="2" y="7"></rect>
+<line x1="22" x2="22" y1="11" y2="13"></line>
+</svg>
+</div>
+</div>
+<!-- 动态岛 -->
+<button class="absolute left-1/2 -translate-x-1/2 bg-black transition-all duration-300 ease-out w-[126px] h-[37.5px] -top-0.5 rounded-b-[24px]"></button>
+<!-- 主内容区域 -->
+<div class="w-full h-[calc(100%-47px)] bg-white overflow-hidden relative">
+<!-- 顶部白色导航区域 -->
+<div class="absolute top-0 left-0 right-0 z-30">
+<div class="bg-white text-black border-b border-gray-100">
+<!-- 顶部操作按钮 -->
+<div class="flex items-center justify-center px-4 relative h-[75px]">
+<!-- 设置按钮 -->
+<button class="absolute left-4 top-1/2 -translate-y-1/2 text-black/70 hover:text-black transition-colors">
+<svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg">
+<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+<circle cx="12" cy="12" r="3"></circle>
+</svg>
+</button>
+<!-- 右侧按钮组 -->
+<div class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center space-x-3">
+<!-- 分享按钮 -->
+<button onclick="showShareModal()" class="text-black/70 hover:text-black transition-colors">
+<svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg">
+<circle cx="18" cy="5" r="3"></circle>
+<circle cx="6" cy="12" r="3"></circle>
+<circle cx="18" cy="19" r="3"></circle>
+<line x1="8.59" x2="15.42" y1="13.51" y2="17.49"></line>
+<line x1="15.41" x2="8.59" y1="6.51" y2="10.49"></line>
+</svg>
+</button>
+<!-- 邀请按钮 -->
+<button onclick="showInviteModal()" class="text-black/70 hover:text-black transition-colors">
+<svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg">
+<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+<circle cx="9" cy="7" r="4"></circle>
+<path d="m19 8 2 2-2 2"></path>
+<path d="m21 10-7.5-7.5L9 7"></path>
+</svg>
+</button>
+</div>
+</div>
+<!-- 用户信息 -->
+<div class="px-4 py-3 flex items-center">
+<img alt="用户头像" class="w-12 h-12 rounded-full object-cover border-2 border-gray-200" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&amp;h=100&amp;fit=crop&amp;crop=face"/>
+<div class="flex-grow ml-4">
+<h2 class="text-base font-semibold text-black">用户名示例</h2>
+<div class="flex items-center mt-1">
+<span class="text-xs text-gray-600">尊享会员</span>
+<span class="text-xs text-gray-500 ml-2">ID: 1234567</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- 滚动内容区域 -->
+<div class="absolute inset-0 top-[140px] bottom-[84px] overflow-y-auto scrollbar-none">
+<!-- 快捷功能网格 -->
+<div class="grid grid-cols-3 gap-2 px-3 mt-8">
+<a class="flex flex-col items-center justify-center bg-white py-2.5 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:bg-gray-50 active:bg-gray-100 transition-all group" href="design-project-detail.html">
+<div class="w-9 h-9 mb-1 flex items-center justify-center bg-[#F8F9FA] rounded-lg group-hover:bg-white transition-colors">
+<svg class="w-5 h-5 stroke-[1.5] text-black transform transition-transform group-hover:scale-110 group-active:scale-95" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+</svg>
+</div>
+<span class="text-[11px] text-[#1A1A1A] group-hover:text-black transition-colors">我的方案</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-white py-2.5 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:bg-gray-50 active:bg-gray-100 transition-all group" href="spaces.html">
+<div class="w-9 h-9 mb-1 flex items-center justify-center bg-[#F8F9FA] rounded-lg group-hover:bg-white transition-colors">
+<svg class="w-5 h-5 stroke-[1.5] text-black transform transition-transform group-hover:scale-110 group-active:scale-95" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<rect height="7" rx="1" width="7" x="3" y="3"></rect>
+<rect height="7" rx="1" width="7" x="14" y="3"></rect>
+<rect height="7" rx="1" width="7" x="14" y="14"></rect>
+<rect height="7" rx="1" width="7" x="3" y="14"></rect>
+</svg>
+</div>
+<span class="text-[11px] text-[#1A1A1A] group-hover:text-black transition-colors">项目空间</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-white py-2.5 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:bg-gray-50 active:bg-gray-100 transition-all group relative" href="messages.html">
+<div class="w-9 h-9 mb-1 flex items-center justify-center bg-[#F8F9FA] rounded-lg group-hover:bg-white transition-colors">
+<svg class="w-5 h-5 stroke-[1.5] text-black transform transition-transform group-hover:scale-110 group-active:scale-95" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path>
+<path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+</svg>
+</div>
+<span class="text-[11px] text-[#1A1A1A] group-hover:text-black transition-colors">消息中心</span>
+<!-- 未读消息徽章 -->
+<span id="messagesBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full min-w-[16px] h-[16px] flex items-center justify-center px-1 leading-none hidden">0</span>
+</a>
+</div>
+
+<!-- 第二行快捷功能 -->
+<div class="grid grid-cols-3 gap-2 px-3 mt-2">
+<a class="flex flex-col items-center justify-center bg-white py-2.5 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:bg-gray-50 active:bg-gray-100 transition-all group" href="todo.html">
+<div class="w-9 h-9 mb-1 flex items-center justify-center bg-[#F8F9FA] rounded-lg group-hover:bg-white transition-colors">
+<svg class="w-5 h-5 stroke-[1.5] text-black transform transition-transform group-hover:scale-110 group-active:scale-95" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="m9 11 3 3L22 4"></path>
+<path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+</svg>
+</div>
+<span class="text-[11px] text-[#1A1A1A] group-hover:text-black transition-colors">我的代办</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-white py-2.5 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:bg-gray-50 active:bg-gray-100 transition-all group" href="profile-help.html">
+<div class="w-9 h-9 mb-1 flex items-center justify-center bg-[#F8F9FA] rounded-lg group-hover:bg-white transition-colors">
+<svg class="w-5 h-5 stroke-[1.5] text-black transform transition-transform group-hover:scale-110 group-active:scale-95" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<circle cx="12" cy="12" r="10"></circle>
+<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+<path d="M12 17h.01"></path>
+</svg>
+</div>
+<span class="text-[11px] text-[#1A1A1A] group-hover:text-black transition-colors">帮助中心</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-white py-2.5 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:bg-gray-50 active:bg-gray-100 transition-all group" href="profile-edit.html">
+<div class="w-9 h-9 mb-1 flex items-center justify-center bg-[#F8F9FA] rounded-lg group-hover:bg-white transition-colors">
+<svg class="w-5 h-5 stroke-[1.5] text-black transform transition-transform group-hover:scale-110 group-active:scale-95" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+<circle cx="12" cy="12" r="3"></circle>
+</svg>
+</div>
+<span class="text-[11px] text-[#1A1A1A] group-hover:text-black transition-colors">账户设置</span>
+</a>
+</div>
+<!-- 我的订单 -->
+<div class="px-3 mt-4">
+<div class="bg-white rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all">
+<div class="flex justify-between items-center px-4 py-2.5 border-b border-gray-50">
+<h3 class="text-[13px] font-medium text-gray-900 pl-2">我的订单</h3>
+<a class="text-[11px] text-gray-500 flex items-center hover:text-black active:text-gray-700 transition-colors" href="mall-order.html">
+                                查看全部订单
+                                <svg class="ml-0.5" fill="none" height="12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="12" xmlns="http://www.w3.org/2000/svg">
+<path d="m9 18 6-6-6-6"></path>
+</svg>
+</a>
+</div>
+<div class="grid grid-cols-5 px-1.5 py-2">
+<a class="flex flex-col items-center relative p-1.5 rounded-lg hover:bg-gray-50 active:bg-gray-100 transition-colors" href="mall-order.html?status=pending">
+<div class="w-8 h-8 mb-1 flex items-center justify-center transform transition-transform group-hover:scale-110">
+<svg class="w-5 h-5 stroke-[1.5] text-black" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<rect height="14" rx="2" width="20" x="2" y="5"></rect>
+<line x1="2" x2="22" y1="10" y2="10"></line>
+</svg>
+</div>
+<p class="text-[11px] text-gray-600 leading-none whitespace-nowrap">待付款</p>
+<span class="absolute top-0 right-1 bg-black text-white text-[11px] rounded-full min-w-[14px] h-[14px] flex items-center justify-center px-1 leading-none">2</span>
+</a>
+<a class="flex flex-col items-center relative p-1.5 rounded-lg hover:bg-gray-50 active:bg-gray-100 transition-colors" href="mall-order.html?status=service">
+<div class="w-8 h-8 mb-1 flex items-center justify-center transform transition-transform group-hover:scale-110">
+<svg class="w-5 h-5 stroke-[1.5] text-black" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="m7.5 4.27 9 5.15"></path>
+<path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path>
+<path d="m3.3 7 8.7 5 8.7-5"></path>
+<path d="M12 22V12"></path>
+</svg>
+</div>
+<p class="text-[11px] text-gray-600 leading-none whitespace-nowrap">待服务</p>
+</a>
+<a class="flex flex-col items-center relative p-1.5 rounded-lg hover:bg-gray-50 active:bg-gray-100 transition-colors" href="mall-order.html?status=processing">
+<div class="w-8 h-8 mb-1 flex items-center justify-center transform transition-transform group-hover:scale-110">
+<svg class="w-5 h-5 stroke-[1.5] text-black" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"></path>
+<path d="M15 18H9"></path>
+<path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"></path>
+<circle cx="17" cy="18" r="2"></circle>
+<circle cx="7" cy="18" r="2"></circle>
+</svg>
+</div>
+<p class="text-[11px] text-gray-600 leading-none whitespace-nowrap">进行中</p>
+<span class="absolute top-0 right-1 bg-black text-white text-[11px] rounded-full min-w-[14px] h-[14px] flex items-center justify-center px-1 leading-none">1</span>
+</a>
+<a class="flex flex-col items-center relative p-1.5 rounded-lg hover:bg-gray-50 active:bg-gray-100 transition-colors" href="mall-order.html?status=review">
+<div class="w-8 h-8 mb-1 flex items-center justify-center transform transition-transform group-hover:scale-110">
+<svg class="w-5 h-5 stroke-[1.5] text-black" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+</svg>
+</div>
+<p class="text-[11px] text-gray-600 leading-none whitespace-nowrap">待评价</p>
+<span class="absolute top-0 right-1 bg-black text-white text-[11px] rounded-full min-w-[14px] h-[14px] flex items-center justify-center px-1 leading-none">3</span>
+</a>
+<a class="flex flex-col items-center relative p-1.5 rounded-lg hover:bg-gray-50 active:bg-gray-100 transition-colors" href="mall-order.html?status=refund">
+<div class="w-8 h-8 mb-1 flex items-center justify-center transform transition-transform group-hover:scale-110">
+<svg class="w-5 h-5 stroke-[1.5] text-black" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"></path>
+</svg>
+</div>
+<p class="text-[11px] text-gray-600 leading-none whitespace-nowrap">退款/售后</p>
+</a>
+</div>
+</div>
+</div>
+<!-- 专业知识库 -->
+<div class="px-3 mt-4">
+<div class="bg-white rounded-xl p-3 shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all">
+<div class="flex justify-between items-center mb-2.5 px-1.5">
+<h3 class="text-black text-[12px] font-medium pl-2">专业知识库</h3>
+<a class="text-gray-500 text-[11px] flex items-center group hover:text-black active:text-gray-700 transition-colors" href="optimized_knowledge.html">
+                                更多
+                                <svg class="ml-0.5 transform transition-transform group-hover:translate-x-0.5" fill="none" height="12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="12" xmlns="http://www.w3.org/2000/svg">
+<path d="m9 18 6-6-6-6"></path>
+</svg>
+</a>
+</div>
+<div class="grid grid-cols-5 gap-1.5">
+<a class="flex flex-col items-center group hover:bg-gray-50 active:bg-gray-100 rounded-lg py-1.5 transition-all" href="optimized_knowledge.html">
+<div class="mb-1 transform transition-transform group-hover:scale-110 group-active:scale-95 w-8 h-8 flex items-center justify-center">
+<svg class="w-5 h-5 stroke-[1.5] text-black" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+<path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+</svg>
+</div>
+<span class="text-[11px] text-gray-700 group-hover:text-black transition-colors leading-none">方案知识</span>
+</a>
+<a class="flex flex-col items-center group hover:bg-gray-50 active:bg-gray-100 rounded-lg py-1.5 transition-all" href="optimized_knowledge.html">
+<div class="mb-1 transform transition-transform group-hover:scale-110 group-active:scale-95 w-8 h-8 flex items-center justify-center">
+<svg class="w-5 h-5 stroke-[1.5] text-black" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path>
+<path d="M14 2v4a2 2 0 0 0 2 2h4"></path>
+<path d="M10 9H8"></path>
+<path d="M16 13H8"></path>
+<path d="M16 17H8"></path>
+</svg>
+</div>
+<span class="text-[11px] text-gray-700 group-hover:text-black transition-colors leading-none">交底知识</span>
+</a>
+<a class="flex flex-col items-center group hover:bg-gray-50 active:bg-gray-100 rounded-lg py-1.5 transition-all" href="optimized_knowledge.html">
+<div class="mb-1 transform transition-transform group-hover:scale-110 group-active:scale-95 w-8 h-8 flex items-center justify-center">
+<svg class="w-5 h-5 stroke-[1.5] text-black" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 9a2 2 0 0 1-2-2V5h6v2a2 2 0 0 1-2 2Z"></path>
+<path d="M3 5V3"></path>
+<path d="M7 5V3"></path>
+<path d="M19 15V6.5a3.5 3.5 0 0 0-7 0v11a3.5 3.5 0 0 1-7 0V9"></path>
+<path d="M17 21v-2"></path>
+<path d="M21 21v-2"></path>
+<path d="M22 19h-6v-2a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2Z"></path>
+</svg>
+</div>
+<span class="text-[11px] text-gray-700 group-hover:text-black transition-colors leading-none">布线知识</span>
+</a>
+<a class="flex flex-col items-center group hover:bg-gray-50 active:bg-gray-100 rounded-lg py-1.5 transition-all" href="optimized_knowledge.html">
+<div class="mb-1 transform transition-transform group-hover:scale-110 group-active:scale-95 w-8 h-8 flex items-center justify-center">
+<svg class="w-5 h-5 stroke-[1.5] text-black" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+</svg>
+</div>
+<span class="text-[11px] text-gray-700 group-hover:text-black transition-colors leading-none">安装知识</span>
+</a>
+<a class="flex flex-col items-center group hover:bg-gray-50 active:bg-gray-100 rounded-lg py-1.5 transition-all" href="optimized_knowledge.html">
+<div class="mb-1 transform transition-transform group-hover:scale-110 group-active:scale-95 w-8 h-8 flex items-center justify-center">
+<svg class="w-5 h-5 stroke-[1.5] text-black" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<circle cx="11" cy="11" r="8"></circle>
+<path d="m21 21-4.3-4.3"></path>
+</svg>
+</div>
+<span class="text-[11px] text-gray-700 group-hover:text-black transition-colors leading-none">调试知识</span>
+</a>
+</div>
+</div>
+</div>
+<!-- 功能列表 -->
+<div class="px-4 mt-6">
+<div class="bg-white rounded-xl overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all">
+<a class="flex items-center justify-between px-4 py-3 hover:bg-gray-50 active:bg-gray-100 transition-all group" href="address.html">
+<div class="flex items-center">
+<span class="mr-3 transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5] text-black" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+<circle cx="12" cy="10" r="3"></circle>
+</svg>
+</span>
+<div>
+<div class="text-sm text-gray-900 group-hover:text-black">收货地址</div>
+<div class="text-xs text-gray-400 group-hover:text-gray-500">管理收货地址</div>
+</div>
+</div>
+<svg class="text-gray-300 group-hover:text-gray-400 transform transition-transform group-hover:translate-x-0.5" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+<path d="m9 18 6-6-6-6"></path>
+</svg>
+</a>
+<a class="flex items-center justify-between px-4 py-3 hover:bg-gray-50 active:bg-gray-100 transition-all group" href="invite.html">
+<div class="flex items-center">
+<span class="mr-3 transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5] text-black" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+<circle cx="9" cy="7" r="4"></circle>
+<path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+<path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+</svg>
+</span>
+<div>
+<div class="text-sm text-gray-900 group-hover:text-black">邀请好友进空间</div>
+<div class="text-xs text-gray-400 group-hover:text-gray-500">邀请好友得奖励</div>
+</div>
+</div>
+<svg class="text-gray-300 group-hover:text-gray-400 transform transition-transform group-hover:translate-x-0.5" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+<path d="m9 18 6-6-6-6"></path>
+</svg>
+</a>
+<a class="flex items-center justify-between px-4 py-3 hover:bg-gray-50 active:bg-gray-100 transition-all group" href="share-designs.html">
+<div class="flex items-center">
+<span class="mr-3 transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5] text-black" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<circle cx="18" cy="5" r="3"></circle>
+<circle cx="6" cy="12" r="3"></circle>
+<circle cx="18" cy="19" r="3"></circle>
+<line x1="8.59" x2="15.42" y1="13.51" y2="17.49"></line>
+<line x1="15.41" x2="8.59" y1="6.51" y2="10.49"></line>
+</svg>
+</span>
+<div>
+<div class="text-sm text-gray-900 group-hover:text-black">分享我的方案</div>
+<div class="text-xs text-gray-400 group-hover:text-gray-500">已分享 3 个方案</div>
+</div>
+</div>
+<svg class="text-gray-300 group-hover:text-gray-400 transform transition-transform group-hover:translate-x-0.5" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+<path d="m9 18 6-6-6-6"></path>
+</svg>
+</a>
+<a class="flex items-center justify-between px-4 py-3 hover:bg-gray-50 active:bg-gray-100 transition-all group" href="help.html">
+<div class="flex items-center">
+<span class="mr-3 transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5] text-black" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<circle cx="12" cy="12" r="10"></circle>
+<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+<path d="M12 17h.01"></path>
+</svg>
+</span>
+<div>
+<div class="text-sm text-gray-900 group-hover:text-black">帮助与客服</div>
+<div class="text-xs text-gray-400 group-hover:text-gray-500">在线客服 9:00-22:00</div>
+</div>
+</div>
+<svg class="text-gray-300 group-hover:text-gray-400 transform transition-transform group-hover:translate-x-0.5" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+<path d="m9 18 6-6-6-6"></path>
+</svg>
+</a>
+<a class="flex items-center justify-between px-4 py-3 hover:bg-gray-50 active:bg-gray-100 transition-all group" href="about.html">
+<div class="flex items-center">
+<span class="mr-3 transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5] text-black" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<circle cx="12" cy="12" r="10"></circle>
+<path d="M12 16v-4"></path>
+<path d="M12 8h.01"></path>
+</svg>
+</span>
+<div>
+<div class="text-sm text-gray-900 group-hover:text-black">关于我们</div>
+<div class="text-xs text-gray-400 group-hover:text-gray-500">版本 2.0.1</div>
+</div>
+</div>
+<svg class="text-gray-300 group-hover:text-gray-400 transform transition-transform group-hover:translate-x-0.5" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+<path d="m9 18 6-6-6-6"></path>
+</svg>
+</a>
+</div>
+</div>
+</div>
+<!-- 底部导航栏 -->
+<div class="absolute bottom-0 left-0 right-0 h-[84px] bg-white/80 backdrop-blur-xl border-t border-white/20">
+<!-- 导航栏内容 -->
+<nav class="h-[49px] flex items-center px-2">
+<div class="flex justify-around w-full text-[12px]">
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="home.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+<polyline points="9 22 9 12 15 12 15 22"></polyline>
+</svg>
+</div>
+<span class="mt-1">首页</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="design-result.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<circle cx="13.5" cy="6.5" fill="currentColor" r=".5"></circle>
+<circle cx="17.5" cy="10.5" fill="currentColor" r=".5"></circle>
+<circle cx="8.5" cy="7.5" fill="currentColor" r=".5"></circle>
+<circle cx="6.5" cy="12.5" fill="currentColor" r=".5"></circle>
+<path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+</svg>
+</div>
+<span class="mt-1">设计</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="mall.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+<path d="M3 6h18"></path>
+<path d="M16 10a4 4 0 0 1-8 0"></path>
+</svg>
+</div>
+<span class="mt-1">商城</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="spaces.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="m15 12-8.373 8.373a1 1 0 1 1-3-3L12 9"></path>
+<path d="m18 15 4-4"></path>
+<path d="m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172V7l-2.26-2.26a6 6 0 0 0-4.202-1.756L9 2.96l.92.82A6.18 6.18 0 0 1 12 8.4V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5"></path>
+</svg>
+</div>
+<span class="mt-1">施工</span>
+</a>
+<a class="flex flex-col items-center group text-black transition-colors" href="me.html" class="flex flex-col items-center group text-black transition-colors">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+<circle cx="12" cy="7" r="4"></circle>
+</svg>
+</div>
+<span class="mt-1">我的</span>
+</a>
+</div>
+</nav>
+<!-- iPhone 16 Home Indicator -->
+<div class="h-[34px] flex items-center justify-center">
+<div class="w-[134px] h-[5px] bg-black rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- 分享弹窗 -->
+<div id="shareModal" class="modal-overlay">
+    <div class="modal-content">
+        <button class="modal-close" onclick="hideShareModal()">×</button>
+        <div class="modal-header">
+            <div class="modal-title">分享项目文件</div>
+            <div class="modal-subtitle">选择要分享的文件类型</div>
+        </div>
+
+        <div class="file-options">
+            <label class="file-option" onclick="toggleFileOption(this)">
+                <input type="checkbox" value="drawings">
+                <div class="file-option-content">
+                    <div class="file-option-title">图纸文件</div>
+                    <div class="file-option-desc">包含设计图纸、施工图等PDF文件</div>
+                </div>
+            </label>
+
+            <label class="file-option" onclick="toggleFileOption(this)">
+                <input type="checkbox" value="effects">
+                <div class="file-option-content">
+                    <div class="file-option-title">效果图</div>
+                    <div class="file-option-desc">包含3D效果图、渲染图等图片文件</div>
+                </div>
+            </label>
+        </div>
+
+        <button class="modal-button" onclick="shareToWechat()" id="shareButton" disabled>
+            分享到微信群聊
+        </button>
+    </div>
+</div>
+
+<!-- 邀请弹窗 -->
+<div id="inviteModal" class="modal-overlay">
+    <div class="modal-content">
+        <button class="modal-close" onclick="hideInviteModal()">×</button>
+        <div class="modal-header">
+            <div class="modal-title">邀请团队成员</div>
+            <div class="modal-subtitle">选择邀请角色，生成专属二维码</div>
+        </div>
+
+        <div id="roleSelection">
+            <div class="role-options">
+                <label class="role-option" onclick="selectRole(this, 'family')">
+                    <input type="radio" name="role" value="family">
+                    <div class="role-option-content">
+                        <div class="role-option-title">家人</div>
+                        <div class="role-option-desc">权限：查看设计方案和效果图，可上传文件和评论</div>
+                    </div>
+                </label>
+
+                <label class="role-option" onclick="selectRole(this, 'designer')">
+                    <input type="radio" name="role" value="designer">
+                    <div class="role-option-content">
+                        <div class="role-option-title">设计师</div>
+                        <div class="role-option-desc">权限：查看方案、清单、效果图，可上传文件和评论</div>
+                    </div>
+                </label>
+
+                <label class="role-option" onclick="selectRole(this, 'manager')">
+                    <input type="radio" name="role" value="manager">
+                    <div class="role-option-content">
+                        <div class="role-option-title">项目经理</div>
+                        <div class="role-option-desc">权限：查看所有内容，管理进度，可上传文件和评论</div>
+                    </div>
+                </label>
+
+                <label class="role-option" onclick="selectRole(this, 'constructor')">
+                    <input type="radio" name="role" value="constructor">
+                    <div class="role-option-content">
+                        <div class="role-option-title">施工师傅</div>
+                        <div class="role-option-desc">权限：查看施工文档，上传现场图片，更新进度，可上传文件和评论</div>
+                    </div>
+                </label>
+            </div>
+
+            <button class="modal-button" onclick="generateQRCode()" id="generateButton" disabled>
+                生成邀请二维码
+            </button>
+        </div>
+
+        <div id="qrCodeResult" style="display: none;">
+            <div class="qr-code-container">
+                <div class="qr-code" id="qrCodeDisplay">
+                    二维码将在这里显示
+                </div>
+                <div style="font-size: 12px; color: #666; margin-bottom: 16px;">
+                    扫码加入项目空间
+                </div>
+                <button class="modal-button" onclick="backToRoleSelection()">
+                    重新选择角色
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<script>
+    // 分享功能
+    function showShareModal() {
+        document.getElementById('shareModal').classList.add('show');
+        document.body.classList.add('popup-open');
+    }
+
+    function hideShareModal() {
+        document.getElementById('shareModal').classList.remove('show');
+        document.body.classList.remove('popup-open');
+        // 重置选择状态
+        const checkboxes = document.querySelectorAll('#shareModal input[type="checkbox"]');
+        checkboxes.forEach(cb => {
+            cb.checked = false;
+            cb.closest('.file-option').classList.remove('selected');
+        });
+        updateShareButton();
+    }
+
+    function toggleFileOption(element) {
+        const checkbox = element.querySelector('input[type="checkbox"]');
+        checkbox.checked = !checkbox.checked;
+
+        if (checkbox.checked) {
+            element.classList.add('selected');
+        } else {
+            element.classList.remove('selected');
+        }
+
+        updateShareButton();
+    }
+
+    function updateShareButton() {
+        const checkboxes = document.querySelectorAll('#shareModal input[type="checkbox"]:checked');
+        const shareButton = document.getElementById('shareButton');
+        shareButton.disabled = checkboxes.length === 0;
+    }
+
+    function shareToWechat() {
+        const selectedFiles = [];
+        const checkboxes = document.querySelectorAll('#shareModal input[type="checkbox"]:checked');
+
+        checkboxes.forEach(cb => {
+            if (cb.value === 'drawings') {
+                selectedFiles.push('图纸文件');
+            } else if (cb.value === 'effects') {
+                selectedFiles.push('效果图');
+            }
+        });
+
+        if (selectedFiles.length > 0) {
+            // 模拟分享到微信
+            alert(`正在分享 ${selectedFiles.join('、')} 到微信群聊...\n\n这里将调用微信分享API，生成可预览的文件链接。`);
+            hideShareModal();
+        }
+    }
+
+    // 邀请功能
+    function showInviteModal() {
+        document.getElementById('inviteModal').classList.add('show');
+        document.body.classList.add('popup-open');
+    }
+
+    function hideInviteModal() {
+        document.getElementById('inviteModal').classList.remove('show');
+        document.body.classList.remove('popup-open');
+        // 重置状态
+        backToRoleSelection();
+        const radios = document.querySelectorAll('#inviteModal input[type="radio"]');
+        radios.forEach(radio => {
+            radio.checked = false;
+            radio.closest('.role-option').classList.remove('selected');
+        });
+        updateGenerateButton();
+    }
+
+    function selectRole(element, roleValue) {
+        // 清除其他选择
+        const allOptions = document.querySelectorAll('.role-option');
+        allOptions.forEach(option => option.classList.remove('selected'));
+
+        // 选中当前选项
+        element.classList.add('selected');
+        const radio = element.querySelector('input[type="radio"]');
+        radio.checked = true;
+
+        updateGenerateButton();
+    }
+
+    function updateGenerateButton() {
+        const selectedRole = document.querySelector('#inviteModal input[type="radio"]:checked');
+        const generateButton = document.getElementById('generateButton');
+        generateButton.disabled = !selectedRole;
+    }
+
+    function generateQRCode() {
+        const selectedRole = document.querySelector('#inviteModal input[type="radio"]:checked');
+        if (!selectedRole) return;
+
+        const roleNames = {
+            'family': '家人',
+            'designer': '设计师',
+            'manager': '项目经理',
+            'constructor': '施工师傅'
+        };
+
+        const roleName = roleNames[selectedRole.value];
+
+        // 隐藏角色选择，显示二维码
+        document.getElementById('roleSelection').style.display = 'none';
+        document.getElementById('qrCodeResult').style.display = 'block';
+
+        // 模拟生成二维码
+        const qrDisplay = document.getElementById('qrCodeDisplay');
+        qrDisplay.innerHTML = `
+            <div style="text-align: center; padding: 20px;">
+                <div style="font-size: 48px; margin-bottom: 10px;">📱</div>
+                <div style="font-size: 12px; color: #333;">邀请码: ABC123</div>
+                <div style="font-size: 10px; color: #666; margin-top: 4px;">角色: ${roleName}</div>
+            </div>
+        `;
+    }
+
+    function backToRoleSelection() {
+        document.getElementById('roleSelection').style.display = 'block';
+        document.getElementById('qrCodeResult').style.display = 'none';
+    }
+
+    // 点击弹窗外部关闭
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('shareModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideShareModal();
+            }
+        });
+
+        document.getElementById('inviteModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideInviteModal();
+            }
+        });
+
+        // ESC键关闭弹窗
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if (document.getElementById('shareModal').classList.contains('show')) {
+                    hideShareModal();
+                } else if (document.getElementById('inviteModal').classList.contains('show')) {
+                    hideInviteModal();
+                }
+            }
+        });
+
+        // 消息徽章管理
+        updateMessagesBadge();
+
+        // 每30秒检查一次消息更新
+        setInterval(updateMessagesBadge, 30000);
+    });
+
+    // 消息徽章更新函数
+    function updateMessagesBadge() {
+        const messagesBadge = document.getElementById('messagesBadge');
+        if (!messagesBadge) return;
+
+        // 从localStorage获取消息数据
+        const savedMessages = localStorage.getItem('appMessages');
+        if (savedMessages) {
+            const messages = JSON.parse(savedMessages);
+            const unreadCount = messages.filter(msg => !msg.isRead).length;
+
+            if (unreadCount > 0) {
+                messagesBadge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                messagesBadge.classList.remove('hidden');
+            } else {
+                messagesBadge.classList.add('hidden');
+            }
+        } else {
+            // 如果没有消息数据，显示默认的未读数量
+            messagesBadge.textContent = '5';
+            messagesBadge.classList.remove('hidden');
+        }
+    }
+
+    // 监听storage事件，当其他页面更新消息时同步更新徽章
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'appMessages') {
+            updateMessagesBadge();
+        }
+    });
+</script>
+</body>
+</html>

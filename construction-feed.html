@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>交底阶段- 智能设计与施工</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/iphone16_fix.css">
+    <link rel="stylesheet" href="css/youpin-tab-component.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        .timeline-item {
+            position: relative;
+        }
+        .timeline-line {
+            position: absolute;
+            left: 15px;
+            top: 40px;
+            bottom: -20px;
+            width: 2px;
+            background-color: #e5e7eb;
+        }
+        .timeline-dot {
+            position: absolute;
+            left: 11px;
+            top: 16px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #000;
+            z-index: 10;
+        }
+        .scrollbar-none::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-none {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* 空间Tab样式 */
+        .space-tab {
+            display: flex;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding: 0 16px;
+            gap: 12px;
+        }
+
+        .space-tab::-webkit-scrollbar {
+            display: none;
+        }
+
+        .space-tab-item {
+            flex-shrink: 0;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .space-tab-item.active {
+            background: #000;
+            color: white;
+        }
+
+        .space-tab-item:not(.active) {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .space-tab-item:not(.active):hover {
+            background: #e5e7eb;
+        }
+
+        /* 交底说明按钮样式 */
+        .instruction-btn {
+            background: white;
+            border: 1px solid #ef4444;
+            color: #ef4444;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .instruction-btn:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        /* 空间管理按钮样式 */
+        .space-add-btn {
+            flex-shrink: 0;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #f3f4f6;
+            border: 2px dashed #9ca3af;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-left: 8px;
+        }
+
+        .space-add-btn:hover {
+            background: #e5e7eb;
+            border-color: #6b7280;
+        }
+
+        .space-delete-btn {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            width: 16px;
+            height: 16px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .space-tab-item {
+            position: relative;
+        }
+
+        .space-tab-item:hover .space-delete-btn {
+            display: flex;
+        }
+
+        .space-tab-item.default-space .space-delete-btn {
+            display: none !important;
+        }
+
+        /* 发布施工实况按钮样式 */
+        .publish-btn {
+            background: #ef4444;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+
+        .publish-btn:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        /* 发布表单样式 */
+        .publish-form {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 0 16px 16px 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 1px solid #f3f4f6;
+        }
+
+        .publish-form textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            resize: vertical;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .publish-form textarea:focus {
+            outline: none;
+            border-color: #ef4444;
+        }
+
+        .publish-form .form-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+        }
+
+        .publish-form .photo-upload {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #6b7280;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .publish-form .photo-upload:hover {
+            color: #ef4444;
+        }
+
+        .publish-form .submit-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .publish-form .cancel-btn {
+            padding: 6px 16px;
+            border: 1px solid #e5e7eb;
+            background: white;
+            color: #6b7280;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .publish-form .submit-btn {
+            padding: 6px 16px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .publish-form .submit-btn:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+        }
+
+        .photo-preview {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .photo-preview img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .photo-preview .remove-photo {
+            position: relative;
+        }
+
+        .photo-preview .remove-photo::after {
+            content: '×';
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            width: 16px;
+            height: 16px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            cursor: pointer;
+        }
+    </style>
+
+    <!-- 全局错误处理和兜底方案 -->
+    <script>
+        (function() {
+            'use strict';
+            
+            // 创建 Trace 对象的兜底实现
+            window.Trace = window.Trace || {
+                init: function() { console.log('Trace initialized (fallback)'); },
+                log: function() { console.log.apply(console, arguments); },
+                error: function() { console.error.apply(console, arguments); },
+                warn: function() { console.warn.apply(console, arguments); },
+                info: function() { console.info.apply(console, arguments); }
+            };
+
+            // 防止其他可能的调试工具错误
+            window.wx = window.wx || {};
+            window.my = window.my || {};
+            
+            // 防止 chartId 未定义错误
+            window.chartId = window.chartId || 'default-chart-id';
+            
+            // 全局错误处理
+            window.addEventListener('error', function(e) {
+                console.error('Global error caught:', e.error);
+                return true; // 阻止默认错误处理
+            });
+            
+            window.addEventListener('unhandledrejection', function(e) {
+                console.error('Unhandled promise rejection:', e.reason);
+                e.preventDefault(); // 阻止默认处理
+            });
+            
+            console.log('✅ 全局错误处理已初始化');
+        })();
+    </script>
+</head>
+<body class="min-h-screen w-full bg-[#000000] flex items-center justify-center font-system">
+    <!-- iPhone 容器 -->
+    <div class="w-full max-w-[393px] h-[852px] bg-[#1E1E1E] shadow-2xl overflow-hidden relative mx-auto rounded-[54px]">
+        <!-- iPhone 状态栏 -->
+        <div class="w-full h-[47px] bg-black px-5 flex items-center justify-between text-white text-[14px] font-medium">
+            <div class="flex items-center space-x-1">
+                <!-- 信号图标 -->
+                <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2 20h.01"></path>
+                    <path d="M7 20v-4"></path>
+                    <path d="M12 20v-8"></path>
+                    <path d="M17 20V8"></path>
+                    <path d="M22 4v16"></path>
+                </svg>
+                <span>中国移动</span>
+                <!-- WiFi图标 -->
+                <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 20h.01"></path>
+                    <path d="M2 8.82a15 15 0 0 1 20 0"></path>
+                    <path d="M5 12.859a10 10 0 0 1 14 0"></path>
+                    <path d="M8.5 16.429a5 5 0 0 1 7 0"></path>
+                </svg>
+            </div>
+            <div class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">9:41</div>
+            <div class="flex items-center space-x-1">
+                <span>89%</span>
+                <!-- 电池图标 -->
+                <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                    <rect height="10" rx="2" ry="2" width="16" x="2" y="7"></rect>
+                    <line x1="22" x2="22" y1="11" y2="13"></line>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 动态岛 -->
+        <button class="absolute left-1/2 -translate-x-1/2 bg-black transition-all duration-300 ease-out w-[126px] h-[37.5px] -top-0.5 rounded-b-[24px]"></button>
+
+        <!-- 主内容区域 -->
+        <div class="w-full h-[calc(100%-47px)] bg-white overflow-hidden relative">
+            <!-- 滚动内容区域 -->
+            <div class="absolute inset-0 bottom-[84px] overflow-y-auto scrollbar-none">
+        <!-- 页面标题 -->
+        <section class="px-4 py-4 bg-white border-b border-gray-100">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <button onclick="history.back()" class="mr-3">
+                        <i class="fas fa-arrow-left text-gray-600"></i>
+                    </button>
+                    <h1 class="text-lg font-semibold" id="pageTitle">交底阶段</h1>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <!-- 发布施工实况按钮 -->
+                    <button class="publish-btn" id="publishBtn" onclick="togglePublishForm()">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+                        </svg>
+                        发布实况
+                    </button>
+                    <button class="text-gray-600">
+                        <i class="fas fa-filter"></i>
+                    </button>
+                    <button class="text-gray-600">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 项目信息卡片 -->
+        <section class="px-4 py-4 bg-white mb-2">
+            <div class="flex items-center justify-between mb-3">
+                <div>
+                    <h2 class="text-sm font-semibold">智能家居改造项目</h2>
+                    <p class="text-xs text-gray-500 mt-1">北京市朝阳区 · 120㎡</p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <button class="instruction-btn" onclick="goToInstructions()">
+                        交底说明
+                    </button>
+                    <div class="text-right">
+                        <div class="text-sm font-semibold text-green-600">进行中</div>
+                        <div class="text-xs text-gray-500">完成度 65%</div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-100 rounded-full h-2">
+                <div class="bg-black h-2 rounded-full" style="width: 65%"></div>
+            </div>
+        </section>
+
+        <!-- 空间选择Tab - 使用YoupinTabComponent -->
+        <section class="bg-white border-b border-gray-100">
+            <div class="flex items-center">
+                <div class="youpin-tab-component flex-1" id="space-tabs">
+                    <!-- 滚动指示器 -->
+                    <div class="youpin-tab-indicator-left"></div>
+                    <div class="youpin-tab-indicator-right"></div>
+
+                    <!-- 滚动容器 -->
+                    <div class="youpin-tab-scrollable">
+                        <div class="youpin-tab-wrapper">
+                            <button class="youpin-tab active" data-space="客厅">客厅</button>
+                            <button class="youpin-tab" data-space="餐厅">餐厅</button>
+                            <button class="youpin-tab" data-space="厨房">厨房</button>
+                            <button class="youpin-tab" data-space="过道">过道</button>
+                            <button class="youpin-tab" data-space="主卧">主卧</button>
+                            <button class="youpin-tab" data-space="次卧">次卧</button>
+                            <button class="youpin-tab" data-space="书房">书房</button>
+                            <button class="youpin-tab" data-space="卫生间">卫生间</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="space-add-btn" onclick="showAddSpaceDialog()" title="添加空间">
+                    <i class="fas fa-plus text-gray-500 text-xs"></i>
+                </div>
+            </div>
+        </section>
+
+        <!-- 发布表单 (默认隐藏) -->
+        <div class="publish-form" id="publishForm" style="display: none;">
+            <textarea placeholder="分享当前施工进展，记录重要节点..." id="publishContent"></textarea>
+            <div class="photo-preview" id="photoPreview"></div>
+            <div class="form-actions">
+                <div class="photo-upload" onclick="selectPhotos()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                    </svg>
+                    添加照片
+                </div>
+                <div class="submit-actions">
+                    <button class="cancel-btn" onclick="cancelPublish()">取消</button>
+                    <button class="submit-btn" id="submitBtn" onclick="submitPublish()">发布</button>
+                </div>
+            </div>
+            <input type="file" id="photoInput" multiple accept="image/*" style="display: none;" onchange="handlePhotoSelect(event)">
+        </div>
+
+        <!-- 动态时间线 -->
+        <section class="px-4 py-4">
+            <h3 class="text-sm font-semibold mb-4" id="stageTitle">交底阶段</h3>
+
+            <div class="space-y-6">
+                <!-- 动态项目1 -->
+                <div class="timeline-item relative pl-8">
+                    <div class="timeline-dot bg-green-500"></div>
+                    <div class="timeline-line"></div>
+                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="text-sm font-medium">智能开关安装完成</h4>
+                            <span class="text-xs text-gray-500">刚刚</span>
+                        </div>
+                        <p class="text-xs text-gray-600 mb-3">客厅、卧室智能开关安装调试完成，系统运行正常</p>
+                        <div class="grid grid-cols-3 gap-2">
+                            <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=100&h=80&fit=crop" alt="施工照片" class="w-full h-16 object-cover rounded">
+                            <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=100&h=80&fit=crop" alt="施工照片" class="w-full h-16 object-cover rounded">
+                            <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=100&h=80&fit=crop" alt="施工照片" class="w-full h-16 object-cover rounded">
+                        </div>
+                        <div class="flex items-center justify-between mt-3 pt-2 border-t border-gray-100">
+                            <div class="flex items-center space-x-4">
+                                <button class="flex items-center space-x-1 text-gray-500">
+                                    <i class="fas fa-heart text-xs"></i>
+                                    <span class="text-xs">点赞</span>
+                                </button>
+                                <button class="flex items-center space-x-1 text-gray-500">
+                                    <i class="fas fa-comment text-xs"></i>
+                                    <span class="text-xs">评论</span>
+                                </button>
+                            </div>
+                            <span class="text-xs text-gray-400">施工师傅 张师傅</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 动态项目2 -->
+                <div class="timeline-item relative pl-8">
+                    <div class="timeline-dot bg-blue-500"></div>
+                    <div class="timeline-line"></div>
+                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="text-sm font-medium">网络布线进度更新</h4>
+                            <span class="text-xs text-gray-500">2小时前</span>
+                        </div>
+                        <p class="text-xs text-gray-600 mb-3">主卧、次卧网络布线完成，正在进行客厅区域布线</p>
+                        <div class="bg-gray-50 rounded-lg p-3 mb-3">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-xs text-gray-600">网络布线进度</span>
+                                <span class="text-xs font-medium">75%</span>
+                            </div>
+                            <div class="bg-gray-200 rounded-full h-2">
+                                <div class="bg-blue-500 h-2 rounded-full" style="width: 75%"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-2 border-t border-gray-100">
+                            <div class="flex items-center space-x-4">
+                                <button class="flex items-center space-x-1 text-gray-500">
+                                    <i class="fas fa-heart text-xs"></i>
+                                    <span class="text-xs">点赞</span>
+                                </button>
+                                <button class="flex items-center space-x-1 text-gray-500">
+                                    <i class="fas fa-comment text-xs"></i>
+                                    <span class="text-xs">评论</span>
+                                </button>
+                            </div>
+                            <span class="text-xs text-gray-400">项目经理 李工</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 动态项目3 -->
+                <div class="timeline-item relative pl-8">
+                    <div class="timeline-dot bg-orange-500"></div>
+                    <div class="timeline-line"></div>
+                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="text-sm font-medium">质量检查报告</h4>
+                            <span class="text-xs text-gray-500">昨天</span>
+                        </div>
+                        <p class="text-xs text-gray-600 mb-3">第一阶段质量检查完成，所有项目符合标准要求</p>
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-3 mb-3">
+                            <div class="flex items-center">
+                                <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                <span class="text-xs text-green-700 font-medium">质量检查通过</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-2 border-t border-gray-100">
+                            <div class="flex items-center space-x-4">
+                                <button class="flex items-center space-x-1 text-gray-500">
+                                    <i class="fas fa-heart text-xs"></i>
+                                    <span class="text-xs">点赞</span>
+                                </button>
+                                <button class="flex items-center space-x-1 text-gray-500">
+                                    <i class="fas fa-comment text-xs"></i>
+                                    <span class="text-xs">评论</span>
+                                </button>
+                            </div>
+                            <span class="text-xs text-gray-400">质检员 王师傅</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+            </div>
+
+            <!-- 底部导航栏 -->
+<div class="absolute bottom-0 left-0 right-0 h-[84px] bg-white/80 backdrop-blur-xl border-t border-white/20">
+<!-- 导航栏内容 -->
+<nav class="h-[49px] flex items-center px-2">
+<div class="flex justify-around w-full text-[12px]">
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="home.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+<polyline points="9 22 9 12 15 12 15 22"></polyline>
+</svg>
+</div>
+<span class="mt-1">首页</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="design-result.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<circle cx="13.5" cy="6.5" fill="currentColor" r=".5"></circle>
+<circle cx="17.5" cy="10.5" fill="currentColor" r=".5"></circle>
+<circle cx="8.5" cy="7.5" fill="currentColor" r=".5"></circle>
+<circle cx="6.5" cy="12.5" fill="currentColor" r=".5"></circle>
+<path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+</svg>
+</div>
+<span class="mt-1">设计</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="mall.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+<path d="M3 6h18"></path>
+<path d="M16 10a4 4 0 0 1-8 0"></path>
+</svg>
+</div>
+<span class="mt-1">商城</span>
+</a>
+<a class="flex flex-col items-center group text-black transition-colors" href="spaces.html" class="flex flex-col items-center group text-black transition-colors">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="m15 12-8.373 8.373a1 1 0 1 1-3-3L12 9"></path>
+<path d="m18 15 4-4"></path>
+<path d="m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172V7l-2.26-2.26a6 6 0 0 0-4.202-1.756L9 2.96l.92.82A6.18 6.18 0 0 1 12 8.4V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5"></path>
+</svg>
+</div>
+<span class="mt-1">施工</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="me.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+<circle cx="12" cy="7" r="4"></circle>
+</svg>
+</div>
+<span class="mt-1">我的</span>
+</a>
+</div>
+</nav>
+<!-- iPhone 16 Home Indicator -->
+<div class="h-[34px] flex items-center justify-center">
+<div class="w-[134px] h-[5px] bg-black rounded-full"></div>
+</div>
+</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加空间对话框 -->
+    <div id="addSpaceModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 mx-4 w-full max-w-sm">
+            <h3 class="text-lg font-semibold mb-4">添加新空间</h3>
+            <input type="text" id="newSpaceName" placeholder="请输入空间名称"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-black mb-4">
+            <div class="flex space-x-3">
+                <button onclick="hideAddSpaceDialog()"
+                        class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">
+                    取消
+                </button>
+                <button onclick="addNewSpace()"
+                        class="flex-1 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800">
+                    添加
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 施工阶段配置
+        const CONSTRUCTION_STAGES = {
+            '交底': '交底阶段',
+            '布线': '布线阶段',
+            '吊顶': '吊顶阶段',
+            '安装': '安装阶段',
+            '调试': '调试阶段'
+        };
+
+        // 空间切换功能
+        function switchSpace(spaceName) {
+            // 更新Tab样式
+            const tabs = document.querySelectorAll('.space-tab-item');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.textContent.trim() === spaceName) {
+                    tab.classList.add('active');
+                }
+            });
+
+            // 更新URL参数
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('space', spaceName);
+
+            // 获取当前环节参数
+            const currentStage = urlParams.get('stage') || '交底';
+
+            // 更新页面内容
+            updateContentBySpace(spaceName, currentStage);
+
+            console.log(`切换到空间: ${spaceName}, 当前环节: ${currentStage}`);
+        }
+
+        // 根据空间和环节更新内容
+        function updateContentBySpace(spaceName, stageName) {
+            // 更新页面标题
+            const pageTitle = document.getElementById('pageTitle');
+            if (pageTitle) {
+                pageTitle.textContent = CONSTRUCTION_STAGES[stageName] || '交底阶段';
+            }
+
+            // 更新阶段标题
+            const stageTitle = document.getElementById('stageTitle');
+            if (stageTitle) {
+                stageTitle.textContent = CONSTRUCTION_STAGES[stageName] || '交底阶段';
+            }
+
+            // 根据不同阶段和空间显示不同的施工动态内容
+            const stageSpaceInfo = {
+                '交底': {
+                    '客厅': '客厅交底完成，确认智能开关位置和功能需求',
+                    '餐厅': '餐厅交底完成，确认照明控制方案',
+                    '厨房': '厨房交底完成，确认智能插座和安全要求',
+                    '过道': '过道交底完成，确认感应灯安装位置',
+                    '主卧': '主卧交底完成，确认智能窗帘和空调控制方案',
+                    '次卧': '次卧交底完成，确认照明和温控需求',
+                    '书房': '书房交底完成，确认智能音响和照明方案',
+                    '卫生间': '卫生间交底完成，确认智能镜子和通风系统'
+                },
+                '布线': {
+                    '客厅': '客厅布线进行中，智能开关线路铺设完成',
+                    '餐厅': '餐厅布线进行中，照明控制线路安装完成',
+                    '厨房': '厨房布线进行中，智能插座线路铺设完成',
+                    '过道': '过道布线进行中，感应灯线路安装完成',
+                    '主卧': '主卧布线进行中，窗帘电机线路铺设完成',
+                    '次卧': '次卧布线进行中，照明控制线路安装完成',
+                    '书房': '书房布线进行中，音响系统线路铺设完成',
+                    '卫生间': '卫生间布线进行中，智能设备线路安装完成'
+                },
+                '吊顶': {
+                    '客厅': '客厅吊顶施工中，预留智能设备安装位置',
+                    '餐厅': '餐厅吊顶施工中，照明设备位置预留完成',
+                    '厨房': '厨房吊顶施工中，通风和照明设备位置确认',
+                    '过道': '过道吊顶施工中，感应设备安装位置预留',
+                    '主卧': '主卧吊顶施工中，空调和照明设备位置确认',
+                    '次卧': '次卧吊顶施工中，照明设备安装位置预留',
+                    '书房': '书房吊顶施工中，音响设备安装位置确认',
+                    '卫生间': '卫生间吊顶施工中，通风和照明设备位置预留'
+                },
+                '安装': {
+                    '客厅': '客厅设备安装中，智能开关和传感器安装完成',
+                    '餐厅': '餐厅设备安装中，智能照明系统安装完成',
+                    '厨房': '厨房设备安装中，智能插座和安全设备安装完成',
+                    '过道': '过道设备安装中，感应灯和控制器安装完成',
+                    '主卧': '主卧设备安装中，智能窗帘和空调控制器安装完成',
+                    '次卧': '次卧设备安装中，照明和温控设备安装完成',
+                    '书房': '书房设备安装中，智能音响和照明系统安装完成',
+                    '卫生间': '卫生间设备安装中，智能镜子和通风系统安装完成'
+                },
+                '调试': {
+                    '客厅': '客厅调试完成，智能开关系统运行正常',
+                    '餐厅': '餐厅调试完成，照明控制系统运行正常',
+                    '厨房': '厨房调试完成，智能插座系统安全检测通过',
+                    '过道': '过道调试完成，感应灯系统灵敏度正常',
+                    '主卧': '主卧调试完成，智能窗帘和空调系统运行正常',
+                    '次卧': '次卧调试完成，照明和温控系统运行正常',
+                    '书房': '书房调试完成，智能音响系统音质效果良好',
+                    '卫生间': '卫生间调试完成，智能镜子和通风系统运行正常'
+                }
+            };
+
+            // 更新第一个动态项目的内容
+            const firstTimelineItem = document.querySelector('.timeline-item h4');
+            const firstTimelineDesc = document.querySelector('.timeline-item p');
+
+            if (firstTimelineItem && firstTimelineDesc) {
+                const stageInfo = stageSpaceInfo[stageName] || stageSpaceInfo['交底'];
+                const description = stageInfo[spaceName] || `${spaceName}${CONSTRUCTION_STAGES[stageName]}进行中`;
+
+                firstTimelineItem.textContent = `${spaceName} - ${CONSTRUCTION_STAGES[stageName]}`;
+                firstTimelineDesc.textContent = description;
+            }
+        }
+
+        // 跳转到交底说明页面
+        function goToInstructions() {
+            // 获取当前选择的空间
+            const activeTab = document.querySelector('.space-tab-item.active');
+            const currentSpace = activeTab ? activeTab.textContent.trim() : '客厅';
+
+            // 获取当前阶段
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentStage = urlParams.get('stage') || '交底';
+
+            // 跳转到施工演示页面，传递当前空间和阶段参数
+            window.location.href = `construction-demo.html?stage=${currentStage}&space=${currentSpace}`;
+        }
+
+        // 显示添加空间对话框
+        function showAddSpaceDialog() {
+            const modal = document.getElementById('addSpaceModal');
+            const input = document.getElementById('newSpaceName');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            input.focus();
+        }
+
+        // 隐藏添加空间对话框
+        function hideAddSpaceDialog() {
+            const modal = document.getElementById('addSpaceModal');
+            const input = document.getElementById('newSpaceName');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            input.value = '';
+        }
+
+        // 添加新空间
+        function addNewSpace() {
+            const input = document.getElementById('newSpaceName');
+            const spaceName = input.value.trim();
+
+            if (!spaceName) {
+                alert('请输入空间名称');
+                return;
+            }
+
+            // 检查是否已存在
+            const existingTabs = document.querySelectorAll('.space-tab-item');
+            for (let tab of existingTabs) {
+                if (tab.textContent.trim() === spaceName) {
+                    alert('该空间已存在');
+                    return;
+                }
+            }
+
+            // 创建新的空间Tab
+            const container = document.getElementById('spaceTabContainer');
+            const newTab = document.createElement('div');
+            newTab.className = 'space-tab-item';
+            newTab.onclick = () => switchSpace(spaceName);
+            newTab.innerHTML = `
+                ${spaceName}
+                <div class="space-delete-btn" onclick="deleteSpace(event, '${spaceName}')">×</div>
+            `;
+
+            container.appendChild(newTab);
+
+            // 切换到新添加的空间
+            switchSpace(spaceName);
+
+            // 隐藏对话框
+            hideAddSpaceDialog();
+
+            console.log(`添加新空间: ${spaceName}`);
+        }
+
+        // 删除空间
+        function deleteSpace(event, spaceName) {
+            event.stopPropagation(); // 阻止冒泡到switchSpace
+
+            // 检查是否是默认空间
+            const tab = event.target.closest('.space-tab-item');
+            if (tab.classList.contains('default-space')) {
+                alert('默认空间不能删除');
+                return;
+            }
+
+            if (confirm(`确定要删除空间"${spaceName}"吗？`)) {
+                // 如果删除的是当前选中的空间，切换到第一个空间
+                const isActive = tab.classList.contains('active');
+
+                // 删除Tab
+                tab.remove();
+
+                if (isActive) {
+                    // 切换到第一个可用空间
+                    const firstTab = document.querySelector('.space-tab-item');
+                    if (firstTab) {
+                        const firstSpaceName = firstTab.textContent.trim();
+                        switchSpace(firstSpaceName);
+                    }
+                }
+
+                console.log(`删除空间: ${spaceName}`);
+            }
+        }
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 从URL参数获取当前空间和环节
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentSpace = urlParams.get('space') || '客厅';
+            const currentStage = urlParams.get('stage') || '交底';
+
+            // 设置默认选中的空间
+            switchSpace(currentSpace);
+
+            // 点击模态框背景关闭对话框
+            const modal = document.getElementById('addSpaceModal');
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    hideAddSpaceDialog();
+                }
+            });
+
+            // 回车键添加空间
+            const input = document.getElementById('newSpaceName');
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addNewSpace();
+                }
+            });
+
+            console.log('✅ 施工动态页面初始化完成');
+            console.log(`当前空间: ${currentSpace}, 当前环节: ${currentStage}`);
+            console.log(`支持的施工阶段:`, Object.keys(CONSTRUCTION_STAGES));
+        });
+
+        // 发布功能相关
+        let selectedPhotos = [];
+
+        // 切换发布表单显示/隐藏
+        function togglePublishForm() {
+            const form = document.getElementById('publishForm');
+            const btn = document.getElementById('publishBtn');
+
+            if (form.style.display === 'none') {
+                form.style.display = 'block';
+                btn.innerHTML = '收起发布';
+                btn.style.background = '#6b7280';
+            } else {
+                form.style.display = 'none';
+                btn.innerHTML = `
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+                    </svg>
+                    发布施工实况
+                `;
+                btn.style.background = '#ef4444';
+            }
+        }
+
+        // 选择照片
+        function selectPhotos() {
+            document.getElementById('photoInput').click();
+        }
+
+        // 处理照片选择
+        function handlePhotoSelect(event) {
+            const files = Array.from(event.target.files);
+            const preview = document.getElementById('photoPreview');
+
+            files.forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const photoDiv = document.createElement('div');
+                        photoDiv.className = 'remove-photo';
+                        photoDiv.innerHTML = `<img src="${e.target.result}" alt="预览图">`;
+                        photoDiv.onclick = function() {
+                            photoDiv.remove();
+                            selectedPhotos = selectedPhotos.filter(p => p !== file);
+                        };
+                        preview.appendChild(photoDiv);
+                    };
+                    reader.readAsDataURL(file);
+                    selectedPhotos.push(file);
+                }
+            });
+        }
+
+        // 取消发布
+        function cancelPublish() {
+            document.getElementById('publishContent').value = '';
+            document.getElementById('photoPreview').innerHTML = '';
+            selectedPhotos = [];
+            togglePublishForm();
+        }
+
+        // 提交发布
+        function submitPublish() {
+            const content = document.getElementById('publishContent').value.trim();
+            const currentSpace = getCurrentSpace();
+            const currentStage = getCurrentStage();
+
+            if (!content && selectedPhotos.length === 0) {
+                alert('请输入内容或添加照片');
+                return;
+            }
+
+            // 创建新的动态条目
+            const newUpdate = {
+                id: Date.now(),
+                type: 'progress',
+                title: `${currentSpace} - ${currentStage}`,
+                content: content,
+                photos: selectedPhotos.map(file => URL.createObjectURL(file)),
+                time: '刚刚',
+                author: '施工师傅 张师傅',
+                likes: 0,
+                comments: 0
+            };
+
+            // 添加到时间线
+            addUpdateToTimeline(newUpdate);
+
+            // 清空表单
+            cancelPublish();
+
+            // 显示成功提示
+            showToast('发布成功！');
+        }
+
+        // 添加更新到时间线
+        function addUpdateToTimeline(update) {
+            const timeline = document.querySelector('.timeline-container');
+            if (!timeline) return;
+
+            const updateHtml = `
+                <div class="timeline-item" data-id="${update.id}">
+                    <div class="timeline-dot ${update.type}"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-header">
+                            <h3 class="timeline-title">${update.title}</h3>
+                            <span class="timeline-time">${update.time}</span>
+                        </div>
+                        <p class="timeline-description">${update.content}</p>
+                        ${update.photos && update.photos.length > 0 ? `
+                            <div class="timeline-photos">
+                                ${update.photos.map(photo => `<img src="${photo}" alt="施工照片" onclick="previewImage('${photo}')">`).join('')}
+                            </div>
+                        ` : ''}
+                        <div class="timeline-actions">
+                            <button class="action-btn" onclick="toggleLike(${update.id})">
+                                <i class="far fa-heart"></i>
+                                <span>点赞</span>
+                            </button>
+                            <button class="action-btn" onclick="showComments(${update.id})">
+                                <i class="far fa-comment"></i>
+                                <span>评论</span>
+                            </button>
+                            <span class="timeline-author">${update.author}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            timeline.insertAdjacentHTML('afterbegin', updateHtml);
+        }
+
+        // 显示提示消息
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0,0,0,0.8);
+                color: white;
+                padding: 12px 24px;
+                border-radius: 6px;
+                z-index: 10000;
+                font-size: 14px;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, 2000);
+        }
+
+        // 获取当前空间
+        function getCurrentSpace() {
+            const activeTab = document.querySelector('.space-tab-item.active');
+            return activeTab ? activeTab.textContent.trim() : '客厅';
+        }
+
+        // 获取当前阶段
+        function getCurrentStage() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const stage = urlParams.get('stage') || '交底';
+            return CONSTRUCTION_STAGES[stage] || '交底阶段';
+        }
+    </script>
+</body>
+</html>

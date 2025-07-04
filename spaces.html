@@ -1,0 +1,1768 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>施工空间 - 智能设计与施工</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'system': ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', '"SF Pro Icons"', '"Helvetica Neue"', 'Helvetica', 'Arial', 'sans-serif']
+                    },
+                    colors: {
+                        'primary-text': '#1A1A1A',
+                        'main-bg': '#F8F9FA'
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            -webkit-text-size-adjust: 100%;
+            -moz-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .scrollbar-none::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-none {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        :root {
+            --safe-area-inset-top: env(safe-area-inset-top);
+            --safe-area-inset-bottom: env(safe-area-inset-bottom);
+        }
+
+        /* 施工阶段人员弹窗样式 - 小型横向弹窗 */
+        .stage-team-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            display: none;
+            max-width: 280px;
+            width: 80%;
+        }
+
+        .stage-team-popup.show {
+            display: block;
+        }
+
+        .stage-team-card {
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        /* 横向滚动容器 */
+        .team-members-container {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 6px 0;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .team-members-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* 人员卡片 */
+        .member-item {
+            flex-shrink: 0;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+            padding: 4px;
+            border-radius: 4px;
+            transition: background-color 0.15s ease;
+            min-width: 42px;
+        }
+
+        .member-item:hover {
+            background: rgba(0, 0, 0, 0.03);
+        }
+
+        .member-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #101010;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+            margin: 0 auto 4px;
+        }
+
+        .member-name {
+            font-size: 10px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 1px;
+        }
+
+        .member-role {
+            font-size: 8px;
+            color: #666;
+            background: #f0f0f0;
+            padding: 1px 4px;
+            border-radius: 8px;
+        }
+
+        /* 联系方式弹窗 */
+        .contact-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .contact-popup.show {
+            display: flex;
+        }
+
+        .contact-popup-content {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            max-width: 320px;
+            width: 85%;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            position: relative;
+        }
+
+        .contact-popup-close {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            width: 20px;
+            height: 20px;
+            background: #000;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .contact-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .contact-name-role {
+            flex-shrink: 0;
+        }
+
+        .contact-popup-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #000;
+            margin-bottom: 2px;
+        }
+
+        .contact-popup-role {
+            font-size: 11px;
+            color: #666;
+            background: #f0f0f0;
+            padding: 1px 6px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+        .contact-details {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+            color: #333;
+        }
+
+        .contact-icon {
+            width: 14px;
+            height: 14px;
+            margin-right: 6px;
+            color: #666;
+            flex-shrink: 0;
+        }
+
+        /* 关闭按钮 */
+        .popup-close-btn {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 24px;
+            height: 24px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .popup-close-btn:hover {
+            background: #555;
+            transform: scale(1.1);
+        }
+
+        /* 防止页面滚动时弹窗位置错乱 */
+        body.popup-open {
+            overflow: hidden;
+        }
+
+        /* 状态徽章样式 */
+        .status-badge {
+            font-size: 8px;
+            font-weight: 500;
+        }
+
+        .status-progress {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .status-completed {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+        }
+
+        .status-pending {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+
+        /* 分享和邀请弹窗样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 3000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 320px;
+            width: 85%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            position: relative;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 20px;
+            margin-top: 8px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #000;
+            margin-bottom: 8px;
+        }
+
+        .modal-subtitle {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 28px;
+            height: 28px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+
+        .modal-close:hover {
+            background: #555;
+            transform: scale(1.1);
+        }
+
+        /* 文件选择样式 */
+        .file-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .file-option {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 2px solid #f0f0f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .file-option:hover {
+            border-color: #ddd;
+            background: #f9f9f9;
+        }
+
+        .file-option.selected {
+            border-color: #000;
+            background: #f8f8f8;
+        }
+
+        .file-option input[type="checkbox"] {
+            margin-right: 12px;
+            width: 18px;
+            height: 18px;
+        }
+
+        .file-option-content {
+            flex: 1;
+        }
+
+        .file-option-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #000;
+            margin-bottom: 2px;
+        }
+
+        .file-option-desc {
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* 角色选择样式 */
+        .role-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .role-option {
+            display: flex;
+            align-items: flex-start;
+            padding: 16px;
+            border: 2px solid #f0f0f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .role-option:hover {
+            border-color: #ddd;
+            background: #f9f9f9;
+        }
+
+        .role-option.selected {
+            border-color: #000;
+            background: #f8f8f8;
+        }
+
+        .role-option input[type="radio"] {
+            margin-right: 12px;
+            margin-top: 2px;
+            width: 18px;
+            height: 18px;
+        }
+
+        .role-option-content {
+            flex: 1;
+        }
+
+        .role-option-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #000;
+            margin-bottom: 4px;
+        }
+
+        .role-option-desc {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        /* 按钮样式 */
+        .modal-button {
+            width: 100%;
+            padding: 12px;
+            background: #000;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .modal-button:hover {
+            background: #333;
+        }
+
+        .modal-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* 二维码样式 */
+        .qr-code-container {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+<link href="css/styles.css" rel="stylesheet"/><link href="css/iphone16_fix.css" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
+    <!-- 全局错误处理和兜底方案 -->
+    <script>
+        (function() {
+            'use strict';
+            
+            // 创建 Trace 对象的兜底实现
+            window.Trace = window.Trace || {
+                init: function() { },
+                log: function() { },
+                error: function() { },
+                warn: function() { },
+                info: function() { }
+            };
+
+            // 防止其他可能的调试工具错误
+            window.wx = window.wx || {};
+            window.my = window.my || {};
+            
+            // 防止 chartId 未定义错误
+            window.chartId = window.chartId || 'default-chart-id';
+            
+            // 全局错误处理
+            window.addEventListener('error', function(e) {
+                return true; // 阻止默认错误处理
+            });
+
+            window.addEventListener('unhandledrejection', function(e) {
+                e.preventDefault(); // 阻止默认处理
+            });
+        })();
+    </script>
+</head>
+<body class="min-h-screen w-full bg-[#000000] flex items-center justify-center font-system">
+<!-- iPhone 容器 -->
+<div class="w-full max-w-[393px] h-[852px] bg-[#1E1E1E] shadow-2xl overflow-hidden relative mx-auto rounded-[54px]">
+<!-- iPhone 状态栏 -->
+<div class="w-full h-[47px] bg-black px-5 flex items-center justify-between text-white text-[14px] font-medium">
+<div class="flex items-center space-x-1">
+<!-- 信号图标 -->
+<svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+<path d="M2 20h.01"></path>
+<path d="M7 20v-4"></path>
+<path d="M12 20v-8"></path>
+<path d="M17 20V8"></path>
+<path d="M22 4v16"></path>
+</svg>
+<span>中国移动</span>
+<!-- WiFi图标 -->
+<svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 20h.01"></path>
+<path d="M2 8.82a15 15 0 0 1 20 0"></path>
+<path d="M5 12.859a10 10 0 0 1 14 0"></path>
+<path d="M8.5 16.429a5 5 0 0 1 7 0"></path>
+</svg>
+</div>
+<div class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">18:10</div>
+<div class="flex items-center space-x-1">
+<span>89%</span>
+<!-- 电池图标 -->
+<svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+<rect height="10" rx="2" ry="2" width="16" x="2" y="7"></rect>
+<line x1="22" x2="22" y1="11" y2="13"></line>
+</svg>
+</div>
+</div>
+<!-- 动态岛 -->
+<button class="absolute left-1/2 -translate-x-1/2 bg-black transition-all duration-300 ease-out w-[126px] h-[37.5px] -top-0.5 rounded-b-[24px]"></button>
+<!-- 主内容区域 -->
+<div class="w-full h-[calc(100%-47px)] bg-[#F8F9FA] overflow-hidden relative">
+<div class="h-full bg-white flex flex-col">
+<!-- 项目信息头部 -->
+<div class="flex flex-col">
+<div class="flex items-center justify-between px-4 h-[47px]">
+<div class="flex items-center">
+<button class="mr-2" onclick="window.location.href='my-projects.html'">
+<svg class="w-5 h-5" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="m15 18-6-6 6-6"></path>
+</svg>
+</button>
+<div class="flex flex-col">
+<div class="flex items-center space-x-2">
+<span class="text-sm font-medium">朝阳明园智能家居</span>
+<span class="status-badge status-progress text-[8px] px-2 py-0.5 rounded-full">施工中</span>
+</div>
+<span class="text-[10px] text-gray-500 mt-0.5">北京市朝阳区 | 120㎡ 三居室 | 进度: 60%</span>
+</div>
+</div>
+<!-- 分享和邀请按钮 -->
+<div class="flex items-center space-x-2">
+<button onclick="showShareModal()" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+<svg class="w-5 h-5" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<circle cx="18" cy="5" r="3"></circle>
+<circle cx="6" cy="12" r="3"></circle>
+<circle cx="18" cy="19" r="3"></circle>
+<line x1="8.59" x2="15.42" y1="13.51" y2="17.49"></line>
+<line x1="15.41" x2="8.59" y1="6.51" y2="10.49"></line>
+</svg>
+</button>
+<button onclick="showInviteModal()" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+<svg class="w-5 h-5" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+<circle cx="9" cy="7" r="4"></circle>
+<path d="m19 8 2 2-2 2"></path>
+<path d="m21 10-7.5-7.5L9 7"></path>
+</svg>
+</button>
+</div>
+</div>
+<!-- 功能按钮区域 -->
+<div class="px-4 mt-4">
+
+<div class="grid grid-cols-4 gap-3">
+<a href="my-projects.html#drawings" class="flex flex-col items-center justify-center bg-white rounded-2xl py-4 hover:bg-gray-50 active:bg-gray-100 transition-colors shadow-[0_2px_8px_rgba(0,0,0,0.06)] group">
+<div class="w-10 h-10 bg-black rounded-2xl flex items-center justify-center mb-2 group-hover:scale-105 group-active:scale-95 transition-transform">
+<svg class="w-5 h-5 text-white" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path>
+<path d="M14 2v4a2 2 0 0 0 2 2h4"></path>
+<path d="M8 13h2"></path>
+<path d="M14 13h2"></path>
+<path d="M8 17h2"></path>
+<path d="M14 17h2"></path>
+</svg>
+</div>
+<span class="text-[10px] text-gray-900">项目图纸</span>
+</a>
+<a href="my-projects.html#effects" class="flex flex-col items-center justify-center bg-white rounded-2xl py-4 hover:bg-gray-50 active:bg-gray-100 transition-colors shadow-[0_2px_8px_rgba(0,0,0,0.06)] group">
+<div class="w-10 h-10 bg-black rounded-2xl flex items-center justify-center mb-2 group-hover:scale-105 group-active:scale-95 transition-transform">
+<svg class="w-5 h-5 text-white" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path>
+<path d="M14 2v4a2 2 0 0 0 2 2h4"></path>
+<path d="M10 9H8"></path>
+<path d="M16 13H8"></path>
+<path d="M16 17H8"></path>
+</svg>
+</div>
+<span class="text-[10px] text-gray-900">3D效果图</span>
+</a>
+<a href="my-projects.html#equipment" class="flex flex-col items-center justify-center bg-white rounded-2xl py-4 hover:bg-gray-50 active:bg-gray-100 transition-colors shadow-[0_2px_8px_rgba(0,0,0,0.06)] group">
+<div class="w-10 h-10 bg-black rounded-2xl flex items-center justify-center mb-2 group-hover:scale-105 group-active:scale-95 transition-transform">
+<svg class="w-5 h-5 text-white" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"></path>
+<path d="M9 18h6"></path>
+<path d="M10 22h4"></path>
+</svg>
+</div>
+<span class="text-[10px] text-gray-900">设备清单</span>
+</a>
+<a href="my-projects.html#guide" class="flex flex-col items-center justify-center bg-white rounded-2xl py-4 hover:bg-gray-50 active:bg-gray-100 transition-colors shadow-[0_2px_8px_rgba(0,0,0,0.06)] group">
+<div class="w-10 h-10 bg-black rounded-2xl flex items-center justify-center mb-2 group-hover:scale-105 group-active:scale-95 transition-transform">
+<svg class="w-5 h-5 text-white" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M2 18a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v2z"></path>
+<path d="M10 10V5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5"></path>
+<path d="M4 15v-3a6 6 0 0 1 6-6h0"></path>
+<path d="M14 6h0a6 6 0 0 1 6 6v3"></path>
+</svg>
+</div>
+<span class="text-[10px] text-gray-900">施工说明</span>
+</a>
+</div>
+</div>
+
+<!-- 查看项目详情按钮 -->
+<div class="flex justify-center px-4 mt-4 mb-2">
+<a class="w-[80%] bg-black text-white rounded-xl py-3 px-4 flex items-center justify-center hover:bg-gray-800 active:bg-gray-900 transition-colors shadow-[0_4px_12px_rgba(0,0,0,0.15)]" href="construction-project-detail.html">
+<svg class="w-4 h-4 mr-2" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M9 12l2 2 4-4"></path>
+<path d="M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+</svg>
+<span class="text-sm font-medium">查看项目详情</span>
+</a>
+</div>
+
+</div>
+<!-- 施工流程进度条 -->
+<div class="mt-3 relative">
+<div class="flex justify-center px-3 py-1.5">
+<div class="w-[92%] bg-white rounded-xl p-2.5 shadow-[0_6px_12px_rgba(0,0,0,0.06)] relative overflow-hidden">
+<div class="relative flex justify-between items-center">
+<!-- 交底 -->
+<div class="flex items-center">
+<a href="construction-feed.html" class="flex flex-col items-center group relative">
+<div class="w-8 h-8 rounded-lg flex items-center justify-center mb-1 transition-all duration-300 bg-black text-white shadow-[0_6px_18px_rgba(0,0,0,0.12)]">
+<svg class="w-3 h-3" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<rect height="4" rx="1" ry="1" width="8" x="8" y="2"></rect>
+<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+<path d="m9 14 2 2 4-4"></path>
+</svg>
+</div>
+<span class="text-[10px] text-black font-medium">交底</span>
+</a>
+<div class="mx-1 flex-shrink-0">
+<svg class="w-3 h-3 text-black" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="m9 18 6-6-6-6"></path>
+</svg>
+</div>
+</div>
+<!-- 施工 -->
+<div class="flex items-center">
+<button onclick="showStageTeam('布线')" class="flex flex-col items-center group relative">
+<div class="w-8 h-8 rounded-lg flex items-center justify-center mb-1 transition-all duration-300 bg-black text-white shadow-[0_6px_18px_rgba(0,0,0,0.12)]">
+<svg class="w-3 h-3" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"></path>
+<path d="M15 18H9"></path>
+<path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"></path>
+<circle cx="17" cy="18" r="2"></circle>
+<circle cx="7" cy="18" r="2"></circle>
+</svg>
+</div>
+<span class="text-[10px] text-black font-medium">布线</span>
+</button>
+<div class="mx-1 flex-shrink-0">
+<svg class="w-3 h-3 text-black" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="m9 18 6-6-6-6"></path>
+</svg>
+</div>
+</div>
+<!-- 吊顶 -->
+<div class="flex items-center">
+<button onclick="showStageTeam('吊顶')" class="flex flex-col items-center group relative">
+<div class="w-8 h-8 rounded-lg flex items-center justify-center mb-1 transition-all duration-300 bg-black text-white shadow-[0_6px_18px_rgba(0,0,0,0.12)]">
+<svg class="w-3 h-3" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M3 21h18"></path>
+<path d="M5 21V7l8-4v18"></path>
+<path d="M19 21V11l-6-4"></path>
+</svg>
+</div>
+<span class="text-[10px] text-black font-medium">吊顶</span>
+</button>
+<div class="mx-1 flex-shrink-0">
+<svg class="w-3 h-3 text-black" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="m9 18 6-6-6-6"></path>
+</svg>
+</div>
+</div>
+<!-- 安装 -->
+<div class="flex items-center">
+<button onclick="showStageTeam('安装')" class="flex flex-col items-center group relative">
+<div class="w-8 h-8 rounded-lg flex items-center justify-center mb-1 transition-all duration-300 bg-black text-white shadow-[0_6px_18px_rgba(0,0,0,0.12)]">
+<svg class="w-3 h-3" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="m7.5 4.27 9 5.15"></path>
+<path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path>
+<path d="m3.3 7 8.7 5 8.7-5"></path>
+<path d="M12 22V12"></path>
+</svg>
+</div>
+<span class="text-[10px] text-black font-medium">安装</span>
+</button>
+<div class="mx-1 flex-shrink-0">
+<svg class="w-3 h-3 text-black" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="m9 18 6-6-6-6"></path>
+</svg>
+</div>
+</div>
+<!-- 调试 -->
+<div class="flex items-center">
+<button onclick="showStageTeam('调试')" class="flex flex-col items-center group relative">
+<div class="w-8 h-8 rounded-lg flex items-center justify-center mb-1 transition-all duration-300 bg-gray-100 text-gray-400 shadow-[0_6px_18px_rgba(0,0,0,0.12)]">
+<svg class="w-3 h-3" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M21 7 6.82 21.18a2.83 2.83 0 0 1-3.99-.01v0a2.83 2.83 0 0 1 0-4L17 3"></path>
+<path d="m16 2 6 6"></path>
+<path d="M12 16H4"></path>
+</svg>
+</div>
+<span class="text-[10px] text-gray-400">调试</span>
+</button>
+<div class="mx-1 flex-shrink-0">
+<svg class="w-3 h-3 text-gray-300" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="m9 18 6-6-6-6"></path>
+</svg>
+</div>
+</div>
+<!-- 售后 -->
+<div class="flex items-center">
+<button onclick="showStageTeam('售后')" class="flex flex-col items-center group relative">
+<div class="w-8 h-8 rounded-lg flex items-center justify-center mb-1 transition-all duration-300 bg-gray-100 text-gray-400 shadow-[0_6px_18px_rgba(0,0,0,0.12)]">
+<svg class="w-3 h-3" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"></path>
+</svg>
+</div>
+<span class="text-[10px] text-gray-400">售后</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+<!-- 动态分享区域 -->
+<div class="flex-1 overflow-y-auto mt-6 -mt-2">
+<div class="mt-2">
+<!-- 张三的动态 -->
+<div class="bg-white mb-2 p-4">
+<div class="flex items-center mb-3">
+<img alt="张三" class="w-10 h-10 rounded-full object-cover" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&amp;h=100&amp;fit=crop&amp;crop=face"/>
+<div class="ml-3">
+<h3 class="text-sm font-medium">张三</h3>
+<p class="text-xs text-gray-400">2024-03-15</p>
+</div>
+</div>
+<p class="text-sm text-gray-900 mb-3">今日完成智能家居主机安装，线路布置整齐美观，设备运行稳定。</p>
+<div class="grid grid-cols-2 gap-2 mb-4">
+<img alt="施工图片 1" class="w-full h-32 object-cover rounded-lg" src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&amp;h=300&amp;fit=crop"/>
+<img alt="施工图片 2" class="w-full h-32 object-cover rounded-lg" src="https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=400&amp;h=300&amp;fit=crop"/>
+</div>
+<div class="flex items-center justify-between text-gray-400">
+<button class="flex items-center text-xs">
+<svg class="w-4 h-4 mr-1" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
+</svg>
+                                    168
+                                </button>
+<button class="flex items-center text-xs">
+<svg class="w-4 h-4 mr-1" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"></path>
+</svg>
+                                    32
+                                </button>
+<button class="flex items-center text-xs">
+<svg class="w-4 h-4 mr-1" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<circle cx="18" cy="5" r="3"></circle>
+<circle cx="6" cy="12" r="3"></circle>
+<circle cx="18" cy="19" r="3"></circle>
+<line x1="8.59" x2="15.42" y1="13.51" y2="17.49"></line>
+<line x1="15.41" x2="8.59" y1="6.51" y2="10.49"></line>
+</svg>
+                                    分享
+                                </button>
+</div>
+</div>
+<!-- 李四的动态 -->
+<div class="bg-white mb-2 p-4">
+<div class="flex items-center mb-3">
+<img alt="李四" class="w-10 h-10 rounded-full object-cover" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&amp;h=100&amp;fit=crop&amp;crop=face"/>
+<div class="ml-3">
+<h3 class="text-sm font-medium">李四</h3>
+<p class="text-xs text-gray-400">2024-03-15</p>
+</div>
+</div>
+<p class="text-sm text-gray-900 mb-3">客厅智能照明系统调试完成，支持场景联动和语音控制。</p>
+<div class="grid grid-cols-2 gap-2 mb-4">
+<img alt="施工图片 1" class="w-full h-32 object-cover rounded-lg" src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&amp;h=300&amp;fit=crop"/>
+</div>
+<div class="flex items-center justify-between text-gray-400">
+<button class="flex items-center text-xs">
+<svg class="w-4 h-4 mr-1" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
+</svg>
+                                    156
+                                </button>
+<button class="flex items-center text-xs">
+<svg class="w-4 h-4 mr-1" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"></path>
+</svg>
+                                    28
+                                </button>
+<button class="flex items-center text-xs">
+<svg class="w-4 h-4 mr-1" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<circle cx="18" cy="5" r="3"></circle>
+<circle cx="6" cy="12" r="3"></circle>
+<circle cx="18" cy="19" r="3"></circle>
+<line x1="8.59" x2="15.42" y1="13.51" y2="17.49"></line>
+<line x1="15.41" x2="8.59" y1="6.51" y2="10.49"></line>
+</svg>
+                                    分享
+                                </button>
+</div>
+</div>
+</div>
+</div>
+<!-- 施工阶段人员信息弹窗 -->
+<div id="stageTeamPopup" class="stage-team-popup">
+    <div class="stage-team-card">
+        <button onclick="hideStageTeam()" class="popup-close-btn">×</button>
+        <div class="team-members-container" id="stageTeamMembers">
+            <!-- 人员信息将通过JavaScript动态生成 -->
+        </div>
+    </div>
+</div>
+
+<!-- 联系方式弹窗 -->
+<div id="contactPopup" class="contact-popup">
+    <div class="contact-popup-content">
+        <button class="contact-popup-close" onclick="hideContactPopup()">×</button>
+        <div class="contact-header">
+            <div class="contact-name-role">
+                <div id="contactPopupName" class="contact-popup-name"></div>
+                <div id="contactPopupRole" class="contact-popup-role"></div>
+            </div>
+            <div class="contact-details">
+                <div class="contact-item">
+                    <svg class="contact-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                    </svg>
+                    <span id="contactPopupPhone"></span>
+                </div>
+                <div class="contact-item">
+                    <svg class="contact-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                    </svg>
+                    <span id="contactPopupWechat"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 分享弹窗 -->
+<div id="shareModal" class="modal-overlay">
+    <div class="modal-content">
+        <button class="modal-close" onclick="hideShareModal()">×</button>
+        <div class="modal-header">
+            <div class="modal-title">分享项目文件</div>
+            <div class="modal-subtitle">选择要分享的文件类型</div>
+        </div>
+
+        <div class="file-options">
+            <label class="file-option" onclick="toggleFileOption(this)">
+                <input type="checkbox" value="drawings">
+                <div class="file-option-content">
+                    <div class="file-option-title">图纸文件</div>
+                    <div class="file-option-desc">包含设计图纸、施工图等PDF文件</div>
+                </div>
+            </label>
+
+            <label class="file-option" onclick="toggleFileOption(this)">
+                <input type="checkbox" value="effects">
+                <div class="file-option-content">
+                    <div class="file-option-title">效果图</div>
+                    <div class="file-option-desc">包含3D效果图、渲染图等图片文件</div>
+                </div>
+            </label>
+        </div>
+
+        <button class="modal-button" onclick="shareToWechat()" id="shareButton" disabled>
+            分享到微信群聊
+        </button>
+    </div>
+</div>
+
+<!-- 邀请弹窗 -->
+<div id="inviteModal" class="modal-overlay">
+    <div class="modal-content">
+        <button class="modal-close" onclick="hideInviteModal()">×</button>
+        <div class="modal-header">
+            <div class="modal-title">邀请团队成员</div>
+            <div class="modal-subtitle">选择邀请角色，生成专属二维码</div>
+        </div>
+
+        <div id="roleSelection">
+            <div class="role-options">
+                <label class="role-option" onclick="selectRole(this, 'family')">
+                    <input type="radio" name="role" value="family">
+                    <div class="role-option-content">
+                        <div class="role-option-title">家人</div>
+                        <div class="role-option-desc">权限：查看设计方案和效果图，可上传文件和评论</div>
+                    </div>
+                </label>
+
+                <label class="role-option" onclick="selectRole(this, 'designer')">
+                    <input type="radio" name="role" value="designer">
+                    <div class="role-option-content">
+                        <div class="role-option-title">设计师</div>
+                        <div class="role-option-desc">权限：查看方案、清单、效果图，可上传文件和评论</div>
+                    </div>
+                </label>
+
+                <label class="role-option" onclick="selectRole(this, 'manager')">
+                    <input type="radio" name="role" value="manager">
+                    <div class="role-option-content">
+                        <div class="role-option-title">项目经理</div>
+                        <div class="role-option-desc">权限：查看所有内容，管理进度，可上传文件和评论</div>
+                    </div>
+                </label>
+
+                <label class="role-option" onclick="selectRole(this, 'constructor')">
+                    <input type="radio" name="role" value="constructor">
+                    <div class="role-option-content">
+                        <div class="role-option-title">施工师傅</div>
+                        <div class="role-option-desc">权限：查看施工文档，上传现场图片，更新进度，可上传文件和评论</div>
+                    </div>
+                </label>
+            </div>
+
+            <button class="modal-button" onclick="generateQRCode()" id="generateButton" disabled>
+                生成邀请二维码
+            </button>
+        </div>
+
+        <div id="qrCodeResult" style="display: none;">
+            <div class="qr-code-container">
+                <div class="qr-code" id="qrCodeDisplay">
+                    二维码将在这里显示
+                </div>
+                <div style="font-size: 12px; color: #666; margin-bottom: 16px;">
+                    扫码加入项目空间
+                </div>
+                <button class="modal-button" onclick="backToRoleSelection()">
+                    重新选择角色
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 底部导航栏 -->
+<div class="absolute bottom-0 left-0 right-0 h-[84px] bg-white/80 backdrop-blur-xl border-t border-white/20">
+<!-- 导航栏内容 -->
+<nav class="h-[49px] flex items-center px-2">
+<div class="flex justify-around w-full text-[12px]">
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="home.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+<polyline points="9 22 9 12 15 12 15 22"></polyline>
+</svg>
+</div>
+<span class="mt-1">首页</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="design-result.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<circle cx="13.5" cy="6.5" fill="currentColor" r=".5"></circle>
+<circle cx="17.5" cy="10.5" fill="currentColor" r=".5"></circle>
+<circle cx="8.5" cy="7.5" fill="currentColor" r=".5"></circle>
+<circle cx="6.5" cy="12.5" fill="currentColor" r=".5"></circle>
+<path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+</svg>
+</div>
+<span class="mt-1">设计</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="mall.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+<path d="M3 6h18"></path>
+<path d="M16 10a4 4 0 0 1-8 0"></path>
+</svg>
+</div>
+<span class="mt-1">商城</span>
+</a>
+<a class="flex flex-col items-center group text-black transition-colors" href="spaces.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="m15 12-8.373 8.373a1 1 0 1 1-3-3L12 9"></path>
+<path d="m18 15 4-4"></path>
+<path d="m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172V7l-2.26-2.26a6 6 0 0 0-4.202-1.756L9 2.96l.92.82A6.18 6.18 0 0 1 12 8.4V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5"></path>
+</svg>
+</div>
+<span class="mt-1">施工</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="me.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+<circle cx="12" cy="7" r="4"></circle>
+</svg>
+</div>
+<span class="mt-1">我的</span>
+</a>
+</div>
+</nav>
+<!-- iPhone 16 Home Indicator -->
+<div class="h-[34px] flex items-center justify-center">
+<div class="w-[134px] h-[5px] bg-black rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+
+</div>
+
+<script>
+    // 施工阶段人员数据
+    const stageTeamData = {
+        '交底': {
+            title: '交底阶段负责人员',
+            description: '负责施工交底的专业人员',
+            members: [
+                {
+                    name: '张三',
+                    role: '项目经理',
+                    phone: '13636669666',
+                    wechat: 'zhangsan_pm'
+                },
+                {
+                    name: '李四',
+                    role: '电工',
+                    phone: '13888888888',
+                    wechat: 'lisi_electrician'
+                }
+            ]
+        },
+        '布线': {
+            title: '布线阶段负责人员',
+            description: '负责布线施工的专业人员',
+            members: [
+                {
+                    name: '王五',
+                    role: '布线师傅',
+                    phone: '13999999999',
+                    wechat: 'wangwu_wiring'
+                },
+                {
+                    name: '赵六',
+                    role: '助理',
+                    phone: '13777777777',
+                    wechat: 'zhaoliu_assistant'
+                },
+                {
+                    name: '钱七',
+                    role: '技术员',
+                    phone: '13666666666',
+                    wechat: 'qianqi_tech'
+                }
+            ]
+        },
+        '吊顶': {
+            title: '吊顶阶段负责人员',
+            description: '负责吊顶施工的专业人员',
+            members: [
+                {
+                    name: '李七',
+                    role: '吊顶师傅',
+                    phone: '13666666666',
+                    wechat: 'liqi_ceiling'
+                },
+                {
+                    name: '陈八',
+                    role: '吊顶助理',
+                    phone: '13777777777',
+                    wechat: 'chenba_helper'
+                }
+            ]
+        },
+        '安装': {
+            title: '安装阶段负责人员',
+            description: '负责设备安装的专业人员',
+            members: [
+                {
+                    name: '孙八',
+                    role: '安装师傅',
+                    phone: '13555555555',
+                    wechat: 'sunba_installer'
+                },
+                {
+                    name: '周九',
+                    role: '安装助理',
+                    phone: '13444444444',
+                    wechat: 'zhoujiu_helper'
+                }
+            ]
+        },
+        '调试': {
+            title: '调试阶段负责人员',
+            description: '负责系统调试的专业人员',
+            members: [
+                {
+                    name: '吴十',
+                    role: '调试工程师',
+                    phone: '13333333333',
+                    wechat: 'wushi_debugger'
+                }
+            ]
+        },
+        '售后': {
+            title: '售后服务负责人员',
+            description: '负责售后服务的专业人员',
+            members: [
+                {
+                    name: '郑十一',
+                    role: '售后客服',
+                    phone: '13222222222',
+                    wechat: 'zhengshiyi_service'
+                },
+                {
+                    name: '王十二',
+                    role: '技术支持',
+                    phone: '13111111111',
+                    wechat: 'wangshier_support'
+                }
+            ]
+        }
+    };
+
+    // 显示施工阶段人员信息
+    function showStageTeam(stageName) {
+        const stageData = stageTeamData[stageName];
+        if (!stageData) return;
+
+        // 生成人员列表HTML
+        const container = document.getElementById('stageTeamMembers');
+        container.innerHTML = '';
+
+        stageData.members.forEach(member => {
+            const memberDiv = document.createElement('div');
+            memberDiv.className = 'member-item';
+            memberDiv.style.cursor = 'pointer';
+
+            memberDiv.innerHTML = `
+                <div class="member-avatar">
+                    ${member.name.charAt(0)}
+                </div>
+                <div class="member-name">${member.name}</div>
+                <div class="member-role">${member.role}</div>
+            `;
+
+            // 添加点击事件显示联系方式弹窗
+            memberDiv.addEventListener('click', (e) => {
+                e.stopPropagation(); // 防止事件冒泡
+                showContactPopup(member.name, member.role, member.wechat, member.phone);
+            });
+
+            container.appendChild(memberDiv);
+        });
+
+        // 防止页面滚动
+        document.body.classList.add('popup-open');
+
+        // 显示弹窗
+        document.getElementById('stageTeamPopup').classList.add('show');
+    }
+
+    // 隐藏施工阶段人员信息弹窗
+    function hideStageTeam() {
+        document.getElementById('stageTeamPopup').classList.remove('show');
+        // 恢复页面滚动
+        document.body.classList.remove('popup-open');
+    }
+
+    // 显示联系方式弹窗
+    function showContactPopup(name, role, wechat, phone) {
+        // 设置联系方式弹窗内容
+        document.getElementById('contactPopupName').textContent = name;
+        document.getElementById('contactPopupRole').textContent = role;
+        document.getElementById('contactPopupPhone').textContent = phone;
+        document.getElementById('contactPopupWechat').textContent = wechat;
+
+        // 同时切换弹窗显示状态
+        document.getElementById('stageTeamPopup').classList.remove('show');
+        document.getElementById('contactPopup').classList.add('show');
+    }
+
+    // 隐藏联系方式弹窗
+    function hideContactPopup() {
+        document.getElementById('contactPopup').classList.remove('show');
+        // 恢复页面滚动
+        document.body.classList.remove('popup-open');
+    }
+
+    // 点击弹窗背景关闭
+    document.addEventListener('DOMContentLoaded', function() {
+        // 施工阶段人员弹窗背景点击关闭
+        document.getElementById('stageTeamPopup').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideStageTeam();
+            }
+        });
+
+        // 联系方式弹窗背景点击关闭
+        document.getElementById('contactPopup').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideContactPopup();
+            }
+        });
+
+        // ESC键关闭弹窗
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if (document.getElementById('contactPopup').classList.contains('show')) {
+                    hideContactPopup();
+                } else if (document.getElementById('stageTeamPopup').classList.contains('show')) {
+                    hideStageTeam();
+                } else if (document.getElementById('shareModal').classList.contains('show')) {
+                    hideShareModal();
+                } else if (document.getElementById('inviteModal').classList.contains('show')) {
+                    hideInviteModal();
+                }
+            }
+        });
+
+        // 分享弹窗背景点击关闭
+        document.getElementById('shareModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideShareModal();
+            }
+        });
+
+        // 邀请弹窗背景点击关闭
+        document.getElementById('inviteModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideInviteModal();
+            }
+        });
+    });
+
+    // 分享功能
+    function showShareModal() {
+        document.getElementById('shareModal').classList.add('show');
+        document.body.classList.add('popup-open');
+    }
+
+    function hideShareModal() {
+        document.getElementById('shareModal').classList.remove('show');
+        document.body.classList.remove('popup-open');
+        // 重置选择状态
+        const checkboxes = document.querySelectorAll('#shareModal input[type="checkbox"]');
+        checkboxes.forEach(cb => {
+            cb.checked = false;
+            cb.closest('.file-option').classList.remove('selected');
+        });
+        updateShareButton();
+    }
+
+    function toggleFileOption(element) {
+        const checkbox = element.querySelector('input[type="checkbox"]');
+        checkbox.checked = !checkbox.checked;
+
+        if (checkbox.checked) {
+            element.classList.add('selected');
+        } else {
+            element.classList.remove('selected');
+        }
+
+        updateShareButton();
+    }
+
+    function updateShareButton() {
+        const checkboxes = document.querySelectorAll('#shareModal input[type="checkbox"]:checked');
+        const shareButton = document.getElementById('shareButton');
+        shareButton.disabled = checkboxes.length === 0;
+    }
+
+    function shareToWechat() {
+        const selectedFiles = [];
+        const checkboxes = document.querySelectorAll('#shareModal input[type="checkbox"]:checked');
+
+        checkboxes.forEach(cb => {
+            if (cb.value === 'drawings') {
+                selectedFiles.push('图纸文件');
+            } else if (cb.value === 'effects') {
+                selectedFiles.push('效果图');
+            }
+        });
+
+        if (selectedFiles.length > 0) {
+            // 模拟分享到微信
+            alert(`正在分享 ${selectedFiles.join('、')} 到微信群聊...\n\n这里将调用微信分享API，生成可预览的文件链接。`);
+            hideShareModal();
+        }
+    }
+
+    // 邀请功能
+    function showInviteModal() {
+        document.getElementById('inviteModal').classList.add('show');
+        document.body.classList.add('popup-open');
+    }
+
+    function hideInviteModal() {
+        document.getElementById('inviteModal').classList.remove('show');
+        document.body.classList.remove('popup-open');
+        // 重置状态
+        backToRoleSelection();
+        const radios = document.querySelectorAll('#inviteModal input[type="radio"]');
+        radios.forEach(radio => {
+            radio.checked = false;
+            radio.closest('.role-option').classList.remove('selected');
+        });
+        updateGenerateButton();
+    }
+
+    function selectRole(element, roleValue) {
+        // 清除其他选择
+        const allOptions = document.querySelectorAll('.role-option');
+        allOptions.forEach(option => option.classList.remove('selected'));
+
+        // 选中当前选项
+        element.classList.add('selected');
+        const radio = element.querySelector('input[type="radio"]');
+        radio.checked = true;
+
+        updateGenerateButton();
+    }
+
+    function updateGenerateButton() {
+        const selectedRole = document.querySelector('#inviteModal input[type="radio"]:checked');
+        const generateButton = document.getElementById('generateButton');
+        generateButton.disabled = !selectedRole;
+    }
+
+    function generateQRCode() {
+        const selectedRole = document.querySelector('#inviteModal input[type="radio"]:checked');
+        if (!selectedRole) return;
+
+        const roleNames = {
+            'family': '家人',
+            'designer': '设计师',
+            'manager': '项目经理',
+            'constructor': '施工师傅'
+        };
+
+        const roleName = roleNames[selectedRole.value];
+
+        // 隐藏角色选择，显示二维码
+        document.getElementById('roleSelection').style.display = 'none';
+        document.getElementById('qrCodeResult').style.display = 'block';
+
+        // 模拟生成二维码
+        const qrDisplay = document.getElementById('qrCodeDisplay');
+        qrDisplay.innerHTML = `
+            <div style="text-align: center; padding: 20px;">
+                <div style="font-size: 48px; margin-bottom: 10px;">📱</div>
+                <div style="font-size: 12px; color: #333;">邀请码: ABC123</div>
+                <div style="font-size: 10px; color: #666; margin-top: 4px;">角色: ${roleName}</div>
+            </div>
+        `;
+    }
+
+    function backToRoleSelection() {
+        document.getElementById('roleSelection').style.display = 'block';
+        document.getElementById('qrCodeResult').style.display = 'none';
+    }
+</script>
+
+
+    <!-- 引入H5与小程序通信桥接工具 -->
+    <script src="../utils/h5-bridge.js"></script>
+    
+    <script>
+        // 小程序环境初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检查小程序环境并初始化通信
+            if (window.H5Bridge) {
+                if (window.H5Bridge.isInMiniProgram) {
+                    initMiniProgramFeatures();
+                }
+            }
+        });
+
+        // 初始化小程序特有功能
+        function initMiniProgramFeatures() {
+            
+            // 替换所有页面跳转为小程序导航
+            replacePageNavigation();
+            
+            // 替换alert为小程序toast
+            replaceAlertWithToast();
+            
+            // 监听支付结果（如果页面有支付功能）
+            if (typeof handlePaymentSuccess === 'function') {
+                window.H5Bridge.on('paymentSuccess', handlePaymentSuccess);
+                window.H5Bridge.on('paymentFail', handlePaymentFailure || function(error) {
+                    window.H5Bridge.showToast('支付失败，请重试', 'error');
+                });
+            }
+            
+            // 监听用户信息获取结果（如果页面需要用户信息）
+            if (typeof handleUserInfoSuccess === 'function') {
+                window.H5Bridge.on('userInfoSuccess', handleUserInfoSuccess);
+                window.H5Bridge.on('userInfoFail', handleUserInfoFailure || function(error) {
+                    window.H5Bridge.showToast('获取用户信息失败', 'error');
+                });
+            }
+        }
+
+        // 替换页面跳转为小程序导航
+        function replacePageNavigation() {
+            // 处理所有HTML页面链接
+            document.querySelectorAll('a[href$=".html"]').forEach(link => {
+                const originalHref = link.getAttribute('href');
+                
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // 解析目标页面
+                    const pageName = originalHref.replace('.html', '').replace(/^.*//, '');
+                    
+                    // 特殊页面映射到小程序原生页面
+                    const nativePageMap = {
+                        'home': '/pages/home/index',
+                        'design-result': '/pages/design/index',
+                        'mall': '/pages/mall/index',
+                        'spaces': '/pages/construction/index',
+                        'me': '/pages/profile/index'
+                    };
+                    
+                    if (nativePageMap[pageName]) {
+                        // 跳转到小程序原生页面
+                        window.H5Bridge.navigateTo(nativePageMap[pageName]);
+                    } else {
+                        // 跳转到web-view页面
+                        window.H5Bridge.navigateTo(`/pages/webview/index?page=${pageName}`);
+                    }
+                });
+            });
+            
+            // 处理返回按钮
+            document.querySelectorAll('[onclick*="history.back"], [onclick*="window.history.back"]').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    window.H5Bridge.navigateBack();
+                });
+            });
+        }
+
+        // 替换alert为小程序toast
+        function replaceAlertWithToast() {
+            // 重写全局alert函数
+            if (window.H5Bridge && window.H5Bridge.isInMiniProgram) {
+                window.alert = function(message) {
+                    window.H5Bridge.showToast(message);
+                };
+                
+                window.confirm = function(message) {
+                    // 小程序中的confirm需要特殊处理
+                    window.H5Bridge.showToast(message);
+                    return true; // 简化处理，实际项目中可能需要更复杂的逻辑
+                };
+            }
+        }
+
+        // 通用分享功能
+        function shareToWechat(shareData) {
+            if (window.H5Bridge && window.H5Bridge.isInMiniProgram) {
+                // 在小程序中使用原生分享
+                window.H5Bridge.share(shareData || {
+                    title: document.title,
+                    desc: '智能家居设计与施工服务',
+                    path: `/pages/webview/index?page=${getCurrentPageName()}`
+                });
+            } else {
+                // 在浏览器中使用Web Share API或降级处理
+                if (navigator.share) {
+                    navigator.share({
+                        title: document.title,
+                        text: '智能家居设计与施工服务',
+                        url: window.location.href
+                    });
+                } else {
+                    alert('分享功能需要在支持的浏览器中使用');
+                }
+            }
+        }
+
+        // 获取当前页面名称
+        function getCurrentPageName() {
+            const pathname = window.location.pathname;
+            return pathname.substring(pathname.lastIndexOf('/') + 1).replace('.html', '');
+        }
+
+        // 通用错误处理
+        function handleError(error, context = '') {
+            
+            if (window.H5Bridge && window.H5Bridge.isInMiniProgram) {
+                window.H5Bridge.showToast('操作失败，请重试', 'error');
+            } else {
+                alert('操作失败：' + (error.message || '未知错误'));
+            }
+        }
+    </script>
+
+    <!-- 引入设计订单权限控制系统 -->
+    <script src="js/design-order-permission.js"></script>
+
+    <script>
+        // 项目空间管理器
+        class ProjectSpaceManager {
+            constructor() {
+                this.permissionManager = new DesignOrderPermissionManager();
+                this.projectSpaces = [];
+            }
+
+            // 初始化项目空间
+            init() {
+                this.loadProjectSpaces();
+                this.renderProjectSpaces();
+                this.initEventListeners();
+            }
+
+            // 加载项目空间数据
+            loadProjectSpaces() {
+                this.projectSpaces = this.permissionManager.getProjectSpaces();
+            }
+
+            // 渲染项目空间列表
+            renderProjectSpaces() {
+                const container = document.getElementById('projectSpacesContainer');
+                if (!container) {
+                    // 如果没有专门的容器，在主要内容区域添加
+                    this.addProjectSpacesSection();
+                    return;
+                }
+
+                if (this.projectSpaces.length === 0) {
+                    container.innerHTML = this.renderEmptyState();
+                    return;
+                }
+
+                const spacesHTML = this.projectSpaces.map(space => this.renderProjectSpace(space)).join('');
+                container.innerHTML = spacesHTML;
+            }
+
+            // 添加项目空间区域
+            addProjectSpacesSection() {
+                const mainContent = document.querySelector('.space-content') || document.querySelector('main') || document.body;
+
+                const projectSection = document.createElement('div');
+                projectSection.className = 'project-spaces-section mb-6';
+                projectSection.innerHTML = `
+                    <div id="projectSpacesContainer"></div>
+                `;
+
+                mainContent.insertBefore(projectSection, mainContent.firstChild);
+
+                // 重新渲染
+                this.renderProjectSpaces();
+            }
+
+            // 渲染单个项目空间
+            renderProjectSpace(space) {
+                const permissionBadge = space.canViewFull ?
+                    '<span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">完整权限</span>' :
+                    '<span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">演示模式</span>';
+
+                return `
+                    <div class="project-space-card bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4"
+                         data-order-id="${space.orderId}">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900">${space.projectName}</h3>
+                                <p class="text-sm text-gray-500">订单号: ${space.orderNumber}</p>
+                            </div>
+                            ${permissionBadge}
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div class="text-center p-3 bg-gray-50 rounded-lg">
+                                <div class="text-2xl font-bold text-blue-600">100%</div>
+                                <div class="text-xs text-gray-500">设计完成度</div>
+                            </div>
+                            <div class="text-center p-3 bg-gray-50 rounded-lg">
+                                <div class="text-sm font-medium text-gray-900">
+                                    ${space.completionDate ? new Date(space.completionDate).toLocaleDateString() : '已完成'}
+                                </div>
+                                <div class="text-xs text-gray-500">完成时间</div>
+                            </div>
+                        </div>
+
+                        <div class="flex space-x-2">
+                            <button onclick="projectSpaceManager.viewProject('${space.orderId}')"
+                                    class="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors">
+                                查看项目
+                            </button>
+                            ${space.canViewFull ? `
+                                <button onclick="projectSpaceManager.viewDeviceList('${space.orderId}')"
+                                        class="flex-1 bg-green-500 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-green-600 transition-colors">
+                                    设备清单
+                                </button>
+                            ` : `
+                                <button onclick="projectSpaceManager.showUpgradePrompt('${space.orderId}')"
+                                        class="flex-1 bg-yellow-500 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-yellow-600 transition-colors">
+                                    升级查看
+                                </button>
+                            `}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // 渲染空状态
+            renderEmptyState() {
+                return `
+                    <div class="text-center py-12">
+                        <div class="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                            <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">暂无设计项目</h3>
+                        <p class="text-gray-500 mb-6">设计完成的订单将自动在此展示</p>
+                        <button onclick="location.href='design.html'"
+                                class="bg-blue-500 text-white py-2 px-6 rounded-lg font-medium hover:bg-blue-600 transition-colors">
+                            开始设计
+                        </button>
+                    </div>
+                `;
+            }
+
+            // 查看项目详情
+            viewProject(orderId) {
+                const space = this.projectSpaces.find(s => s.orderId === orderId);
+                if (!space) return;
+
+                // 根据权限级别跳转到不同页面
+                if (space.canViewFull) {
+                    window.location.href = `space-detail.html?orderId=${orderId}&mode=full`;
+                } else {
+                    window.location.href = `space-detail.html?orderId=${orderId}&mode=demo`;
+                }
+            }
+
+            // 查看设备清单
+            viewDeviceList(orderId) {
+                const space = this.projectSpaces.find(s => s.orderId === orderId);
+                if (!space) return;
+
+                if (space.canViewFull) {
+                    window.location.href = `device-list.html?orderId=${orderId}&mode=full`;
+                } else {
+                    this.showUpgradePrompt(orderId);
+                }
+            }
+
+            // 显示升级提示
+            showUpgradePrompt(orderId) {
+                const modal = document.createElement('div');
+                modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+                modal.innerHTML = `
+                    <div class="bg-white rounded-lg p-6 max-w-md mx-4">
+                        <h3 class="text-lg font-semibold mb-4">升级到完整版本</h3>
+                        <p class="text-gray-600 mb-4">
+                            您当前只能查看演示内容。支付设备清单费用后，即可查看完整的项目内容和设备清单。
+                        </p>
+                        <div class="flex space-x-3">
+                            <button onclick="this.closest('.fixed').remove()"
+                                    class="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">
+                                稍后再说
+                            </button>
+                            <button onclick="projectSpaceManager.upgradeToFull('${orderId}')"
+                                    class="flex-1 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                                立即升级
+                            </button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
+
+            // 升级到完整版本
+            upgradeToFull(orderId) {
+                // 关闭弹窗
+                const modal = document.querySelector('.fixed.inset-0');
+                if (modal) modal.remove();
+
+                // 跳转到支付页面
+                window.location.href = `order-confirm.html?source=design&upgrade=${orderId}`;
+            }
+
+            // 初始化事件监听器
+            initEventListeners() {
+
+            }
+        }
+
+        // 全局项目空间管理器实例
+        let projectSpaceManager;
+
+        // 页面加载完成后初始化项目空间管理器
+        document.addEventListener('DOMContentLoaded', function() {
+            // 延迟初始化，确保权限系统已加载
+            setTimeout(() => {
+                if (typeof DesignOrderPermissionManager !== 'undefined') {
+                    projectSpaceManager = new ProjectSpaceManager();
+                    projectSpaceManager.init();
+                }
+            }, 100);
+        });
+    </script>
+</body>
+</html>

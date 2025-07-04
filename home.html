@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>首页</title>
+
+    <!-- 兜底：防止 Trace 相关错误 -->
+    <script>
+        // 创建 Trace 对象的兜底实现
+        window.Trace = window.Trace || {
+            init: function() { console.log('Trace initialized (fallback)'); },
+            log: function() { console.log.apply(console, arguments); },
+            error: function() { console.error.apply(console, arguments); },
+            warn: function() { console.warn.apply(console, arguments); },
+            info: function() { console.info.apply(console, arguments); }
+        };
+
+        // 防止其他可能的调试工具错误
+        window.wx = window.wx || {};
+        window.my = window.my || {};
+    </script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/iphone16_fix.css">
+    <style>
+        .banner-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+
+        .service-card {
+            transition: transform 0.2s;
+        }
+
+        .service-card:active {
+            transform: scale(0.98);
+        }
+
+        /* Banner轮播图样式 */
+        .banner-slider {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .banner-slide {
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .banner-slide.active {
+            opacity: 1 !important;
+        }
+
+        .banner-indicator {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .banner-indicator:hover {
+            transform: scale(1.2);
+        }
+
+        .banner-indicator.active {
+            transform: scale(1.3);
+        }
+
+        /* 确保内容在安全区域内 */
+        @supports (padding-top: env(safe-area-inset-top)) {
+            .banner-content-safe {
+                padding-top: env(safe-area-inset-top);
+            }
+        }
+
+        /* 渐变遮罩效果 */
+        .banner-gradient {
+            background: linear-gradient(
+                to bottom,
+                rgba(0, 0, 0, 0.1) 0%,
+                rgba(0, 0, 0, 0.3) 70%,
+                rgba(0, 0, 0, 0.6) 100%
+            );
+        }
+
+        /* 按钮悬停效果 */
+        .banner-btn {
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .banner-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        /* 防止图片拖拽 */
+        .banner-slide img {
+            user-select: none;
+            -webkit-user-drag: none;
+            pointer-events: none;
+        }
+
+        /* 悬浮搜索框样式 */
+        .floating-search {
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .floating-search:focus-within {
+            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.15);
+            transform: translateY(-1px);
+        }
+
+        /* 搜索框动画 */
+        .floating-search {
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body class="min-h-screen w-full bg-[#000000] flex items-center justify-center font-system">
+    <!-- iPhone 容器 -->
+    <div class="w-full max-w-[393px] h-[852px] bg-[#1E1E1E] shadow-2xl overflow-hidden relative mx-auto rounded-[54px]">
+        <!-- iPhone 状态栏 -->
+        <div class="w-full h-[47px] bg-black px-5 flex items-center justify-between text-white text-[14px] font-medium">
+            <div class="flex items-center space-x-1">
+                <!-- 信号图标 -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 20h.01"></path>
+                    <path d="M7 20v-4"></path>
+                    <path d="M12 20v-8"></path>
+                    <path d="M17 20V8"></path>
+                    <path d="M22 4v16"></path>
+                </svg>
+                <span>中国移动</span>
+                <!-- WiFi图标 -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h.01"></path>
+                    <path d="M2 8.82a15 15 0 0 1 20 0"></path>
+                    <path d="M5 12.859a10 10 0 0 1 14 0"></path>
+                    <path d="M8.5 16.429a5 5 0 0 1 7 0"></path>
+                </svg>
+            </div>
+            <div class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">9:41</div>
+            <div class="flex items-center space-x-1">
+                <span>89%</span>
+                <!-- 电池图标 -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="16" height="10" x="2" y="7" rx="2" ry="2"></rect>
+                    <line x1="22" x2="22" y1="11" y2="13"></line>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Banner轮播图 - 延伸至刘海区域 -->
+        <section class="absolute top-0 left-0 right-0 h-[300px] z-10">
+            <div class="relative w-full h-full overflow-hidden">
+                <!-- 轮播图容器 -->
+                <div class="banner-slider relative w-full h-full">
+                    <!-- 轮播图1 - 平台核心价值宣传 -->
+                    <div class="banner-slide active absolute inset-0 w-full h-full">
+                        <img src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=393&h=300&q=80"
+                             alt="智能家居平台" class="w-full h-full object-cover">
+                        <!-- 内容安全区域 - 避开刘海和状态栏 -->
+                        <div class="absolute inset-0 bg-gradient-to-b from-black/20 via-black/30 to-black/60">
+                            <div class="absolute bottom-12 left-4 right-4 text-white">
+                                <div class="flex items-center mb-3">
+                                    <div class="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mr-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h2 class="text-xl font-bold">智能家居 · 美好生活</h2>
+                                        <p class="text-sm opacity-90 mt-1">专业设计 · 智能施工 · 品质保障</p>
+                                    </div>
+                                </div>
+                                <button class="flex items-center px-5 py-2.5 bg-white/20 backdrop-blur-sm rounded-full text-sm font-medium border border-white/30 hover:bg-white/30 transition-all">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
+                                        <path d="M5 12l5 5l10 -10"></path>
+                                    </svg>
+                                    立即体验
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 轮播图2 - 精选智能家居案例 -->
+                    <div class="banner-slide absolute inset-0 w-full h-full opacity-0">
+                        <img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=393&h=300&q=80"
+                             alt="现代简约案例" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-b from-black/20 via-black/30 to-black/60">
+                            <div class="absolute bottom-12 left-4 right-4 text-white">
+                                <div class="flex items-center mb-3">
+                                    <div class="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mr-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle>
+                                            <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle>
+                                            <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle>
+                                            <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle>
+                                            <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h2 class="text-xl font-bold">现代简约 · 智能生活</h2>
+                                        <p class="text-sm opacity-90 mt-1">120㎡全屋智能改造案例</p>
+                                    </div>
+                                </div>
+                                <button class="flex items-center px-5 py-2.5 bg-white/20 backdrop-blur-sm rounded-full text-sm font-medium border border-white/30 hover:bg-white/30 transition-all">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
+                                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                                    </svg>
+                                    查看案例
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 轮播图3 - 主推活动入口 -->
+                    <div class="banner-slide absolute inset-0 w-full h-full opacity-0">
+                        <img src="https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=393&h=300&q=80"
+                             alt="分享活动" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-b from-black/20 via-black/30 to-black/60">
+                            <div class="absolute bottom-12 left-4 right-4 text-white">
+                                <div class="flex items-center mb-3">
+                                    <div class="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mr-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+                                            <polyline points="16,6 12,2 8,6"></polyline>
+                                            <line x1="12" x2="12" y1="2" y2="15"></line>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h2 class="text-xl font-bold">分享得场景清单</h2>
+                                        <p class="text-sm opacity-90 mt-1">邀请好友，免费获取专属智能家居方案</p>
+                                    </div>
+                                </div>
+                                <button class="flex items-center px-5 py-2.5 bg-white text-black rounded-full text-sm font-medium hover:bg-gray-100 transition-all">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
+                                        <circle cx="18" cy="5" r="3"></circle>
+                                        <circle cx="6" cy="12" r="3"></circle>
+                                        <circle cx="18" cy="19" r="3"></circle>
+                                        <line x1="8.59" x2="15.42" y1="13.51" y2="17.49"></line>
+                                        <line x1="15.41" x2="8.59" y1="6.51" y2="10.49"></line>
+                                    </svg>
+                                    立即分享
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 轮播指示器 -->
+                <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-20">
+                    <button class="banner-indicator active w-2 h-2 rounded-full bg-white" data-slide="0"></button>
+                    <button class="banner-indicator w-2 h-2 rounded-full bg-white/50" data-slide="1"></button>
+                    <button class="banner-indicator w-2 h-2 rounded-full bg-white/50" data-slide="2"></button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 悬浮搜索框 - 一半在banner区域 -->
+        <div class="absolute left-4 right-4 top-[270px] z-20">
+            <div class="relative bg-white rounded-full shadow-lg border border-gray-200 floating-search">
+                <input type="text"
+                       placeholder="搜索智能家居产品、服务..."
+                       class="w-full h-12 pl-12 pr-4 bg-transparent rounded-full text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                       id="homeSearchInput"
+                       name="search">
+                <div class="absolute left-4 top-1/2 -translate-y-1/2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                </div>
+                <button class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors" id="homeSearchBtn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- 动态岛 -->
+        <button class="absolute left-1/2 -translate-x-1/2 bg-black transition-all duration-300 ease-out w-[126px] h-[37.5px] top-[6px] rounded-b-[24px] z-30"></button>
+
+        <!-- 右上角按钮组 -->
+        <div class="absolute top-[60px] right-4 z-30 flex space-x-2">
+            <!-- 消息通知按钮 -->
+            <a href="messages.html" class="relative p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-all">
+                <svg class="w-5 h-5 text-white" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+                <!-- 未读消息徽章 -->
+                <span id="homeMessagesBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full min-w-[16px] h-[16px] flex items-center justify-center px-1 leading-none hidden">0</span>
+            </a>
+
+            <!-- 分享按钮 -->
+            <button onclick="shareToWechat()" class="p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-all">
+                <svg class="w-5 h-5 text-white" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="18" cy="5" r="3"></circle>
+                    <circle cx="6" cy="12" r="3"></circle>
+                    <circle cx="18" cy="19" r="3"></circle>
+                    <line x1="8.59" x2="15.42" y1="13.51" y2="17.49"></line>
+                    <line x1="15.41" x2="8.59" y1="6.51" y2="10.49"></line>
+                </svg>
+            </button>
+        </div>
+
+        <!-- 主内容区域 -->
+        <div class="w-full h-[calc(100%-47px)] bg-white overflow-hidden relative">
+            <!-- 滚动内容区域 - 为banner和悬浮搜索框留出空间 -->
+            <div class="absolute inset-0 bottom-[84px] top-[270px] overflow-y-auto scrollbar-none">
+                <!-- 服务入口 -->
+                <section class="px-4 py-3 bg-white">
+            <div class="grid grid-cols-4 gap-3">
+                <a href="design-result.html" class="flex flex-col items-center">
+                    <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-1">
+                        <i class="fas fa-pencil text-black text-xl"></i>
+                    </div>
+                    <span class="text-xs text-center">智能设计</span>
+                </a>
+                <a href="spaces.html" class="flex flex-col items-center">
+                    <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-1">
+                        <i class="fas fa-shield text-black text-xl"></i>
+                    </div>
+                    <span class="text-xs text-center">智能施工</span>
+                </a>
+                <a href="mall.html" class="flex flex-col items-center">
+                    <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-1">
+                        <i class="fas fa-shopping-bag text-black text-xl"></i>
+                    </div>
+                    <span class="text-xs text-center">智能商城</span>
+                </a>
+                <a href="optimized_knowledge.html" class="flex flex-col items-center">
+                    <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-1">
+                        <i class="fas fa-file text-black text-xl"></i>
+                    </div>
+                    <span class="text-xs text-center">知识库</span>
+                </a>
+            </div>
+                </section>
+
+                <!-- 精选服务 -->
+                <section class="px-4 py-4">
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="text-sm font-semibold">精选服务</h2>
+                <a href="#" class="text-xs text-gray-500">查看全部 <i class="fas fa-chevron-right text-xs"></i></a>
+            </div>
+
+            <div class="space-y-3">
+                <!-- 服务卡片1 -->
+                <a href="design-service-detail.html" class="service-card bg-white p-4 rounded-lg shadow-sm block hover:shadow-md transition-shadow">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-sm font-semibold mb-1">户型优化/平面方案</h3>
+                            <p class="text-xs text-gray-500 mb-2">专业一对一定制</p>
+                            <div class="flex space-x-1">
+                                <span class="px-1.5 py-0.5 bg-gray-100 rounded text-xs">户型优化</span>
+                                <span class="px-1.5 py-0.5 bg-gray-100 rounded text-xs">空间规划</span>
+                            </div>
+                        </div>
+                        <div class="text-base font-bold">¥299</div>
+                    </div>
+                </a>
+
+                <!-- 服务卡片2 -->
+                <a href="design-service-detail.html" class="service-card bg-white p-4 rounded-lg shadow-sm block hover:shadow-md transition-shadow">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-sm font-semibold mb-1">全屋智能效果图设计</h3>
+                            <p class="text-xs text-gray-500 mb-2">大师级3D效果图设计</p>
+                            <div class="flex space-x-1">
+                                <span class="px-1.5 py-0.5 bg-gray-100 rounded text-xs">效果图设计</span>
+                                <span class="px-1.5 py-0.5 bg-gray-100 rounded text-xs">智能家居</span>
+                            </div>
+                        </div>
+                        <div class="text-base font-bold">¥999</div>
+                    </div>
+                </a>
+
+                <!-- 服务卡片3 -->
+                <a href="design-service-detail.html" class="service-card bg-white p-4 rounded-lg shadow-sm block hover:shadow-md transition-shadow">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-sm font-semibold mb-1">大师自定制设计</h3>
+                            <p class="text-xs text-gray-500 mb-2">1对1为您量身定制</p>
+                            <div class="flex space-x-1">
+                                <span class="px-1.5 py-0.5 bg-gray-100 rounded text-xs">全屋定制</span>
+                                <span class="px-1.5 py-0.5 bg-gray-100 rounded text-xs">智能家居</span>
+                            </div>
+                        </div>
+                        <div class="text-base font-bold">¥20/㎡起</div>
+                    </div>
+                </a>
+            </div>
+                </section>
+
+                <!-- 成功案例 -->
+                <section class="px-4 py-4">
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="text-sm font-semibold">成功案例</h2>
+                <a href="#" class="text-xs text-gray-500">查看全部 <i class="fas fa-chevron-right text-xs"></i></a>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <!-- 案例1 -->
+                <div class="bg-white rounded-lg overflow-hidden shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=180&h=120&q=80" alt="现代简约风" class="w-full h-28 object-cover">
+                    <div class="p-2">
+                        <h3 class="text-xs font-medium">现代简约风</h3>
+                        <p class="text-xxs text-gray-500">120㎡三居室</p>
+                    </div>
+                </div>
+
+                <!-- 案例2 -->
+                <div class="bg-white rounded-lg overflow-hidden shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=180&h=120&q=80" alt="北欧风格" class="w-full h-28 object-cover">
+                    <div class="p-2">
+                        <h3 class="text-xs font-medium">北欧风格</h3>
+                        <p class="text-xxs text-gray-500">89㎡两居室</p>
+                    </div>
+                </div>
+
+                <!-- 案例3 -->
+                <div class="bg-white rounded-lg overflow-hidden shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1615529182904-14819c35db37?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=180&h=120&q=80" alt="日式风格" class="w-full h-28 object-cover">
+                    <div class="p-2">
+                        <h3 class="text-xs font-medium">日式风格</h3>
+                        <p class="text-xxs text-gray-500">75㎡两居室</p>
+                    </div>
+                </div>
+
+                <!-- 案例4 -->
+                <div class="bg-white rounded-lg overflow-hidden shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=180&h=120&q=80" alt="轻奢风格" class="w-full h-28 object-cover">
+                    <div class="p-2">
+                        <h3 class="text-xs font-medium">轻奢风格</h3>
+                        <p class="text-xxs text-gray-500">145㎡四居室</p>
+                    </div>
+                </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- 底部导航栏 -->
+<div class="absolute bottom-0 left-0 right-0 h-[84px] bg-white/80 backdrop-blur-xl border-t border-white/20">
+<!-- 导航栏内容 -->
+<nav class="h-[49px] flex items-center px-2">
+<div class="flex justify-around w-full text-[12px]">
+<a class="flex flex-col items-center group text-black transition-colors" href="home.html" class="flex flex-col items-center group text-black transition-colors">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+<polyline points="9 22 9 12 15 12 15 22"></polyline>
+</svg>
+</div>
+<span class="mt-1">首页</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="design-result.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<circle cx="13.5" cy="6.5" fill="currentColor" r=".5"></circle>
+<circle cx="17.5" cy="10.5" fill="currentColor" r=".5"></circle>
+<circle cx="8.5" cy="7.5" fill="currentColor" r=".5"></circle>
+<circle cx="6.5" cy="12.5" fill="currentColor" r=".5"></circle>
+<path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+</svg>
+</div>
+<span class="mt-1">设计</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="mall.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+<path d="M3 6h18"></path>
+<path d="M16 10a4 4 0 0 1-8 0"></path>
+</svg>
+</div>
+<span class="mt-1">商城</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="spaces.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="m15 12-8.373 8.373a1 1 0 1 1-3-3L12 9"></path>
+<path d="m18 15 4-4"></path>
+<path d="m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172V7l-2.26-2.26a6 6 0 0 0-4.202-1.756L9 2.96l.92.82A6.18 6.18 0 0 1 12 8.4V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5"></path>
+</svg>
+</div>
+<span class="mt-1">施工</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="me.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+<circle cx="12" cy="7" r="4"></circle>
+</svg>
+</div>
+<span class="mt-1">我的</span>
+</a>
+</div>
+</nav>
+<!-- iPhone 16 Home Indicator -->
+<div class="h-[34px] flex items-center justify-center">
+<div class="w-[134px] h-[5px] bg-black rounded-full"></div>
+</div>
+</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入H5与小程序通信桥接工具 -->
+    <script src="../utils/h5-bridge.js"></script>
+
+    <script>
+        // 小程序环境初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检查小程序环境并初始化通信
+            if (window.H5Bridge) {
+                console.log('H5Bridge已加载，当前环境:', window.H5Bridge.isInMiniProgram ? '小程序' : '浏览器');
+
+                if (window.H5Bridge.isInMiniProgram) {
+                    // 在小程序环境中的特殊处理
+                    initMiniProgramFeatures();
+                }
+            }
+        });
+
+        // 初始化小程序特有功能
+        function initMiniProgramFeatures() {
+            console.log('初始化小程序特有功能');
+
+            // 监听支付结果
+            window.H5Bridge.on('paymentSuccess', function(data) {
+                console.log('支付成功:', data);
+                // 可以在这里处理支付成功后的逻辑
+                window.H5Bridge.showToast('支付成功！');
+            });
+
+            // 监听用户信息获取结果
+            window.H5Bridge.on('userInfoSuccess', function(userInfo) {
+                console.log('获取用户信息成功:', userInfo);
+                // 可以在这里更新页面的用户信息显示
+            });
+
+            // 监听位置信息获取结果
+            window.H5Bridge.on('locationSuccess', function(location) {
+                console.log('获取位置成功:', location);
+                // 可以在这里处理位置相关的功能
+            });
+        }
+
+        // Banner轮播图功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const slides = document.querySelectorAll('.banner-slide');
+            const indicators = document.querySelectorAll('.banner-indicator');
+            let currentSlide = 0;
+            let slideInterval;
+
+            // 事件监听器引用，用于清理
+            const eventListeners = {
+                touchStart: null,
+                touchEnd: null,
+                visibilityChange: null,
+                searchClick: null,
+                searchKeypress: null,
+                searchFocus: null,
+                searchBlur: null,
+                indicatorClicks: []
+            };
+
+            // 显示指定幻灯片
+            function showSlide(index) {
+                // 隐藏所有幻灯片
+                slides.forEach((slide, i) => {
+                    slide.style.opacity = i === index ? '1' : '0';
+                    slide.style.transition = 'opacity 0.5s ease-in-out';
+                });
+
+                // 更新指示器
+                indicators.forEach((indicator, i) => {
+                    if (i === index) {
+                        indicator.classList.add('active');
+                        indicator.classList.remove('bg-white/50');
+                        indicator.classList.add('bg-white');
+                    } else {
+                        indicator.classList.remove('active');
+                        indicator.classList.remove('bg-white');
+                        indicator.classList.add('bg-white/50');
+                    }
+                });
+
+                currentSlide = index;
+            }
+
+            // 下一张幻灯片
+            function nextSlide() {
+                const next = (currentSlide + 1) % slides.length;
+                showSlide(next);
+            }
+
+            // 自动轮播
+            function startAutoSlide() {
+                slideInterval = setInterval(nextSlide, 4000); // 4秒切换一次
+            }
+
+            // 停止自动轮播
+            function stopAutoSlide() {
+                clearInterval(slideInterval);
+            }
+
+            // 指示器点击事件
+            indicators.forEach((indicator, index) => {
+                const clickHandler = () => {
+                    showSlide(index);
+                    stopAutoSlide();
+                    setTimeout(startAutoSlide, 8000); // 8秒后重新开始自动轮播
+                };
+                indicator.addEventListener('click', clickHandler);
+                eventListeners.indicatorClicks.push({ element: indicator, handler: clickHandler });
+            });
+
+            // 触摸滑动支持
+            let startX = 0;
+            let endX = 0;
+            const bannerSlider = document.querySelector('.banner-slider');
+
+            if (bannerSlider) {
+                eventListeners.touchStart = (e) => {
+                    startX = e.touches[0].clientX;
+                    stopAutoSlide();
+                };
+
+                eventListeners.touchEnd = (e) => {
+                    endX = e.changedTouches[0].clientX;
+                    const diff = startX - endX;
+
+                    if (Math.abs(diff) > 50) { // 滑动距离大于50px才触发
+                        if (diff > 0) {
+                            // 向左滑动，显示下一张
+                            nextSlide();
+                        } else {
+                            // 向右滑动，显示上一张
+                            const prev = (currentSlide - 1 + slides.length) % slides.length;
+                            showSlide(prev);
+                        }
+                    }
+
+                    setTimeout(startAutoSlide, 8000); // 8秒后重新开始自动轮播
+                };
+
+                bannerSlider.addEventListener('touchstart', eventListeners.touchStart);
+                bannerSlider.addEventListener('touchend', eventListeners.touchEnd);
+            }
+
+            // 启动自动轮播
+            startAutoSlide();
+
+            // 初始化消息徽章
+            updateHomeMessagesBadge();
+
+            // 页面可见性变化时控制轮播
+            eventListeners.visibilityChange = () => {
+                if (document.hidden) {
+                    stopAutoSlide();
+                } else {
+                    startAutoSlide();
+                }
+            };
+            document.addEventListener('visibilitychange', eventListeners.visibilityChange);
+
+            // 搜索功能
+            const searchInput = document.getElementById('homeSearchInput');
+            const searchBtn = document.getElementById('homeSearchBtn');
+
+            // 搜索按钮点击事件
+            if (searchBtn) {
+                eventListeners.searchClick = function() {
+                    performSearch();
+                };
+                searchBtn.addEventListener('click', eventListeners.searchClick);
+            }
+
+            // 回车键搜索
+            if (searchInput) {
+                eventListeners.searchKeypress = function(e) {
+                    if (e.key === 'Enter') {
+                        performSearch();
+                    }
+                };
+                searchInput.addEventListener('keypress', eventListeners.searchKeypress);
+            }
+
+            // 执行智能搜索
+            function performSearch() {
+                try {
+                    if (!searchInput) {
+                        console.error('搜索输入框未找到');
+                        return;
+                    }
+
+                    const query = searchInput.value.trim().toLowerCase();
+                    if (!query) {
+                        // 如果没有输入内容，跳转到商城首页
+                        window.location.href = 'mall.html';
+                        return;
+                    }
+
+                // 智能搜索分发规则
+                const searchRules = {
+                    // 产品相关关键词 → 商城搜索
+                    products: ['智能', '设备', '产品', '网关', '开关', '灯具', '窗帘', '传感器', '摄像头', '门锁', '插座', '音响', '家电', '控制', '安防', '监控'],
+                    // 设计相关关键词 → 设计案例
+                    design: ['设计', '方案', '案例', '效果图', '户型', '装修', '风格', '简约', '北欧', '日式', '轻奢', '现代'],
+                    // 知识相关关键词 → 知识库
+                    knowledge: ['知识', '教程', '安装', '调试', '布线', '交底', '学习', '帮助', '指南'],
+                    // 施工相关关键词 → 施工空间
+                    construction: ['施工', '工程', '项目', '空间', '进度', '布线', '安装调试']
+                };
+
+                // 检查关键词匹配
+                let targetPage = 'mall-search.html'; // 默认跳转到商城搜索
+
+                for (const [category, keywords] of Object.entries(searchRules)) {
+                    if (keywords.some(keyword => query.includes(keyword))) {
+                        switch (category) {
+                            case 'design':
+                                targetPage = 'design-result.html';
+                                break;
+                            case 'knowledge':
+                                targetPage = 'optimized_knowledge.html';
+                                break;
+                            case 'construction':
+                                targetPage = 'spaces.html';
+                                break;
+                            default:
+                                targetPage = `mall-search.html?q=${encodeURIComponent(query)}`;
+                        }
+                        break;
+                    }
+                }
+
+                    // 执行跳转 - 集成小程序通信
+                    if (window.H5Bridge && window.H5Bridge.isInMiniProgram) {
+                        // 在小程序中，使用小程序导航
+                        let miniProgramUrl = '';
+
+                        if (targetPage.includes('design-result.html')) {
+                            miniProgramUrl = '/pages/design/index';
+                        } else if (targetPage.includes('optimized_knowledge.html')) {
+                            miniProgramUrl = '/pages/knowledge/index';
+                        } else if (targetPage.includes('spaces.html')) {
+                            miniProgramUrl = '/pages/construction/index';
+                        } else if (targetPage.includes('mall')) {
+                            miniProgramUrl = '/pages/mall/index';
+                        } else {
+                            // 默认使用webview加载H5页面
+                            const pageName = targetPage.split('.html')[0];
+                            miniProgramUrl = `/pages/webview/index?page=${pageName}`;
+                        }
+
+                        window.H5Bridge.navigateTo(miniProgramUrl);
+                    } else {
+                        // 在普通浏览器中，使用传统跳转
+                        if (targetPage.includes('?')) {
+                            window.location.href = targetPage;
+                        } else {
+                            window.location.href = `${targetPage}?search=${encodeURIComponent(query)}`;
+                        }
+                    }
+                } catch (error) {
+                    console.error('搜索功能出错:', error);
+                    // 降级处理：直接跳转到商城
+                    window.location.href = 'mall.html';
+                }
+            }
+
+            // 搜索输入框焦点效果
+            if (searchInput) {
+                eventListeners.searchFocus = function() {
+                    this.parentElement.classList.add('ring-2', 'ring-blue-500');
+                };
+
+                eventListeners.searchBlur = function() {
+                    this.parentElement.classList.remove('ring-2', 'ring-blue-500');
+                };
+
+                searchInput.addEventListener('focus', eventListeners.searchFocus);
+                searchInput.addEventListener('blur', eventListeners.searchBlur);
+            }
+
+            // 热门搜索建议（可选功能）
+            const hotSearchTerms = [
+                '智能门锁', '智能摄像头', '智能灯具', '智能窗帘',
+                '智能音响', '智能插座', '温湿度传感器', '智能开关'
+            ];
+
+            // 搜索建议功能（当输入框获得焦点时显示）
+            if (searchInput) {
+                searchInput.addEventListener('focus', function() {
+                    // 这里可以添加搜索建议下拉框的显示逻辑
+                    console.log('显示搜索建议:', hotSearchTerms);
+                });
+            }
+
+            // 页面卸载时清理事件监听器
+            function cleanup() {
+                try {
+                    // 清理轮播相关
+                    stopAutoSlide();
+
+                    // 清理触摸事件
+                    if (bannerSlider && eventListeners.touchStart) {
+                        bannerSlider.removeEventListener('touchstart', eventListeners.touchStart);
+                        bannerSlider.removeEventListener('touchend', eventListeners.touchEnd);
+                    }
+
+                    // 清理页面可见性事件
+                    if (eventListeners.visibilityChange) {
+                        document.removeEventListener('visibilitychange', eventListeners.visibilityChange);
+                    }
+
+                    // 清理搜索相关事件
+                    if (searchBtn && eventListeners.searchClick) {
+                        searchBtn.removeEventListener('click', eventListeners.searchClick);
+                    }
+
+                    if (searchInput) {
+                        if (eventListeners.searchKeypress) {
+                            searchInput.removeEventListener('keypress', eventListeners.searchKeypress);
+                        }
+                        if (eventListeners.searchFocus) {
+                            searchInput.removeEventListener('focus', eventListeners.searchFocus);
+                        }
+                        if (eventListeners.searchBlur) {
+                            searchInput.removeEventListener('blur', eventListeners.searchBlur);
+                        }
+                    }
+
+                    // 清理指示器点击事件
+                    eventListeners.indicatorClicks.forEach(({ element, handler }) => {
+                        element.removeEventListener('click', handler);
+                    });
+
+                    console.log('事件监听器清理完成');
+                } catch (error) {
+                    console.error('清理事件监听器时出错:', error);
+                }
+            }
+
+            // 页面卸载时执行清理
+            window.addEventListener('beforeunload', cleanup);
+            window.addEventListener('pagehide', cleanup);
+        });
+
+        // 消息徽章更新函数
+        function updateHomeMessagesBadge() {
+            const messagesBadge = document.getElementById('homeMessagesBadge');
+            if (!messagesBadge) return;
+
+            // 从localStorage获取消息数据
+            const savedMessages = localStorage.getItem('appMessages');
+            if (savedMessages) {
+                const messages = JSON.parse(savedMessages);
+                const unreadCount = messages.filter(msg => !msg.isRead).length;
+
+                if (unreadCount > 0) {
+                    messagesBadge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                    messagesBadge.classList.remove('hidden');
+                } else {
+                    messagesBadge.classList.add('hidden');
+                }
+            } else {
+                // 如果没有消息数据，显示默认的未读数量
+                messagesBadge.textContent = '5';
+                messagesBadge.classList.remove('hidden');
+            }
+        }
+
+        // 监听storage事件，当其他页面更新消息时同步更新徽章
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'appMessages') {
+                updateHomeMessagesBadge();
+            }
+        });
+
+        // 页面加载时更新徽章
+        document.addEventListener('DOMContentLoaded', function() {
+            updateHomeMessagesBadge();
+            // 每30秒检查一次消息更新
+            setInterval(updateHomeMessagesBadge, 30000);
+        });
+
+        // 分享功能 - 集成小程序通信
+        function shareToWechat() {
+            // 检查是否在小程序环境中
+            if (window.H5Bridge && window.H5Bridge.isInMiniProgram) {
+                // 在小程序中，使用小程序原生分享
+                const shareData = {
+                    title: '智能家居设计服务',
+                    desc: '专业设计师一对一服务，打造智能家居体验',
+                    path: '/pages/webview/index?page=design-result'
+                };
+
+                window.H5Bridge.share(shareData);
+                window.H5Bridge.showToast('分享功能已调用');
+                return;
+            }
+
+            // 在普通浏览器中的分享逻辑
+            const shareUrl = `${window.location.origin}${window.location.pathname.replace('home.html', 'design-result.html')}`;
+            const shareTitle = '智能家居设计服务';
+            const shareDesc = '专业设计师一对一服务，打造智能家居体验';
+
+            // 模拟微信分享
+            if (navigator.share) {
+                // 使用Web Share API（如果支持）
+                navigator.share({
+                    title: shareTitle,
+                    text: shareDesc,
+                    url: shareUrl
+                }).then(() => {
+                    console.log('分享成功');
+                }).catch((error) => {
+                    console.log('分享失败:', error);
+                    fallbackShare(shareUrl, shareTitle, shareDesc);
+                });
+            } else {
+                // 降级处理
+                fallbackShare(shareUrl, shareTitle, shareDesc);
+            }
+        }
+
+        function fallbackShare(url, title, desc) {
+            // 复制链接到剪贴板
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(url).then(() => {
+                    alert(`链接已复制到剪贴板！\n\n${title}\n${desc}\n\n点击链接进入设计结果页面：\n${url}`);
+                }).catch(() => {
+                    showShareInfo(url, title, desc);
+                });
+            } else {
+                showShareInfo(url, title, desc);
+            }
+        }
+
+        function showShareInfo(url, title, desc) {
+            alert(`分享信息：\n\n${title}\n${desc}\n\n链接：${url}\n\n点击链接进入小程序design-result.html页面`);
+        }
+    </script>
+</body>
+</html>

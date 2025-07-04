@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>设计项目详情</title>
+
+    <!-- 兜底：防止 Trace 相关错误 -->
+    <script>
+        // 创建 Trace 对象的兜底实现
+        window.Trace = window.Trace || {
+            init: function() { console.log('Trace initialized (fallback)'); },
+            log: function() { console.log.apply(console, arguments); },
+            error: function() { console.error.apply(console, arguments); },
+            warn: function() { console.warn.apply(console, arguments); },
+            info: function() { console.info.apply(console, arguments); }
+        };
+
+        // 防止其他可能的调试工具错误
+        window.wx = window.wx || {};
+        window.my = window.my || {};
+
+        // 防止 chartId 未定义错误
+        window.chartId = window.chartId || 'default-chart-id';
+
+        // 全局错误处理
+        window.addEventListener('error', function(e) {
+            console.error('Global error caught:', e.error);
+            return true; // 阻止默认错误处理
+        });
+
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('Unhandled promise rejection:', e.reason);
+            e.preventDefault(); // 阻止默认处理
+        });
+    </script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/iphone16_fix.css">
+    <style>
+        .tab-button.active {
+            color: #000;
+            border-bottom: 2px solid #000;
+        }
+
+        .file-item {
+            transition: background-color 0.2s;
+        }
+
+        .file-item:active {
+            background-color: #f3f4f6;
+        }
+
+        .progress-bar {
+            transition: width 0.3s ease;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 200px;
+            margin: 16px 0;
+        }
+
+        .chart-small {
+            height: 150px;
+        }
+
+        .data-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s ease;
+        }
+
+        .data-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .metric-label {
+            font-size: 0.75rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .trend-up {
+            color: #10b981;
+        }
+
+        .trend-down {
+            color: #ef4444;
+        }
+
+        .chart-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body class="min-h-screen w-full bg-[#000000] flex items-center justify-center font-system">
+    <!-- iPhone 容器 -->
+    <div class="w-full max-w-[393px] h-[852px] bg-[#1E1E1E] shadow-2xl overflow-hidden relative mx-auto rounded-[54px]">
+        <!-- iPhone 状态栏 -->
+        <div class="w-full h-[47px] bg-black px-5 flex items-center justify-between text-white text-[14px] font-medium">
+            <div class="flex items-center space-x-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 20h.01"></path>
+                    <path d="M7 20v-4"></path>
+                    <path d="M12 20v-8"></path>
+                    <path d="M17 20V8"></path>
+                    <path d="M22 4v16"></path>
+                </svg>
+                <span>中国移动</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h.01"></path>
+                    <path d="M2 8.82a15 15 0 0 1 20 0"></path>
+                    <path d="M5 12.859a10 10 0 0 1 14 0"></path>
+                    <path d="M8.5 16.429a5 5 0 0 1 7 0"></path>
+                </svg>
+            </div>
+            <div class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">9:41</div>
+            <div class="flex items-center space-x-1">
+                <span>89%</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="16" height="10" x="2" y="7" rx="2" ry="2"></rect>
+                    <line x1="22" x2="22" y1="11" y2="13"></line>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 动态岛 -->
+        <button class="absolute left-1/2 -translate-x-1/2 bg-black transition-all duration-300 ease-out w-[126px] h-[37.5px] -top-0.5 rounded-b-[24px]"></button>
+
+        <!-- 主内容区域 -->
+        <div class="w-full h-[calc(100%-47px)] bg-white overflow-hidden relative">
+            <!-- 滚动内容区域 -->
+            <div class="absolute inset-0 bottom-[84px] overflow-y-auto scrollbar-none">
+                <!-- 顶部导航栏 -->
+                <header class="bg-white border-b border-gray-100 sticky top-0 z-10">
+                    <div class="flex items-center justify-between px-4 py-3">
+                        <a href="design.html" class="text-black hover:text-gray-600 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m15 18-6-6 6-6"></path>
+                            </svg>
+                        </a>
+                        <h1 class="text-[16px] font-medium text-black">项目详情</h1>
+                        <a href="#" class="text-black hover:text-gray-600 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="1"></circle>
+                                <circle cx="12" cy="5" r="1"></circle>
+                                <circle cx="12" cy="19" r="1"></circle>
+                            </svg>
+                        </a>
+                    </div>
+                </header>
+
+                <!-- 项目基本信息 -->
+                <section class="px-4 py-4 bg-white">
+                    <div class="flex items-start justify-between space-x-3">
+                        <img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=80&h=80&q=80" alt="项目封面" class="w-20 h-20 rounded-lg object-cover">
+                        <div class="flex-1">
+                            <h2 class="text-lg font-semibold mb-1">现代简约三居室设计</h2>
+                            <p class="text-sm text-gray-500 mb-2">120㎡ · 三居两厅 · 现代简约</p>
+                            <div class="flex items-center space-x-4" style="margin-top: 20px;">
+                                <span class="px-2 py-1 bg-green-100 text-green-600 rounded-full text-sm w-20 text-center">设计中</span>
+                                <a href="design-history.html" class="px-2 py-1 bg-black text-white rounded-full hover:bg-gray-800 transition-colors text-sm w-20 text-center">历史设计</a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 设计进度 -->
+                <section class="px-4 py-4 bg-white mt-2">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-sm font-semibold">设计进度</h3>
+                        <span class="text-xs text-gray-400">创建时间: 2024-03-15</span>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm">需求分析</span>
+                            <span class="text-xs text-green-600">已完成</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="progress-bar bg-green-500 h-2 rounded-full" style="width: 100%"></div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm">方案设计</span>
+                            <span class="text-xs text-blue-600">进行中</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="progress-bar bg-blue-500 h-2 rounded-full" style="width: 60%"></div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm">效果图制作</span>
+                            <span class="text-xs text-gray-400">待开始</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="progress-bar bg-gray-300 h-2 rounded-full" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 标签页导航 -->
+                <section class="px-4 py-3 bg-white mt-2 border-b border-gray-100">
+                    <div class="flex space-x-6 overflow-x-auto scrollbar-none">
+                        <button id="tab-files" class="tab-button active text-sm font-medium pb-2 whitespace-nowrap">设计文件</button>
+                        <button id="tab-analytics" class="tab-button text-sm text-gray-500 pb-2 whitespace-nowrap">现场实拍</button>
+                        <button id="tab-communication" class="tab-button text-sm text-gray-500 pb-2 whitespace-nowrap">沟通记录</button>
+                        <button id="tab-info" class="tab-button text-sm text-gray-500 pb-2 whitespace-nowrap">项目信息</button>
+                    </div>
+                </section>
+
+                <!-- 标签页内容容器 -->
+                <div id="tab-content">
+                    <!-- 设计文件列表 -->
+                    <section id="content-files" class="px-4 py-4 bg-white">
+                        <div class="space-y-3">
+                        <!-- 文件项 -->
+                        <div class="file-item flex items-center space-x-3 p-3 rounded-lg border border-gray-100">
+                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-600">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"></path>
+                                    <path d="M14 2v6h6"></path>
+                                </svg>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="text-sm font-medium">户型分析图.pdf</h4>
+                                <p class="text-xs text-gray-500">2.3MB · 2024-03-15 10:30</p>
+                            </div>
+                            <button class="text-gray-400 hover:text-gray-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" x2="12" y1="15" y2="3"></line>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="file-item flex items-center space-x-3 p-3 rounded-lg border border-gray-100">
+                            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-600">
+                                    <rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>
+                                    <circle cx="9" cy="9" r="2"></circle>
+                                    <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path>
+                                </svg>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="text-sm font-medium">平面布局方案.jpg</h4>
+                                <p class="text-xs text-gray-500">1.8MB · 2024-03-16 14:20</p>
+                            </div>
+                            <button class="text-gray-400 hover:text-gray-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" x2="12" y1="15" y2="3"></line>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <a href="design-budget.html" class="file-item flex items-center space-x-3 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
+                            <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-orange-600">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"></path>
+                                    <path d="M14 2v6h6"></path>
+                                    <path d="M16 13H8"></path>
+                                    <path d="M16 17H8"></path>
+                                    <path d="M10 9H8"></path>
+                                </svg>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="text-sm font-medium">方案预算.pdf</h4>
+                                <p class="text-xs text-gray-500">总预算 ¥14,800 · 2024-03-16 16:30</p>
+                            </div>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400">
+                                <path d="m9 18 6-6-6-6"></path>
+                            </svg>
+                        </a>
+
+                        <a href="design-history.html" class="file-item flex items-center space-x-3 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
+                            <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-purple-600">
+                                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                                    <path d="M3 3v5h5"></path>
+                                    <path d="M12 7v5l4 2"></path>
+                                </svg>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="text-sm font-medium">历史设计</h4>
+                                <p class="text-xs text-gray-500">查看所有历史设计方案 · 5个方案</p>
+                            </div>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400">
+                                <path d="m9 18 6-6-6-6"></path>
+                            </svg>
+                        </a>
+
+                        <!-- 多媒体管理区域 -->
+                        <div class="space-y-4">
+                            <!-- 文件筛选和搜索 -->
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-2">
+                                    <select id="fileTypeFilter" class="text-xs border border-gray-200 rounded-lg px-2 py-1">
+                                        <option value="all">全部文件</option>
+                                        <option value="image">图片</option>
+                                        <option value="video">视频</option>
+                                        <option value="document">文档</option>
+                                    </select>
+                                    <button id="fileViewToggle" class="text-xs text-gray-500 hover:text-black transition-colors">
+                                        <i class="fas fa-th-large"></i> 网格视图
+                                    </button>
+                                </div>
+                                <button id="uploadFileBtn" class="text-xs bg-black text-white px-3 py-1.5 rounded-lg hover:bg-gray-800 transition-colors">
+                                    <i class="fas fa-plus mr-1"></i> 上传文件
+                                </button>
+                            </div>
+
+                            <!-- 图片/视频网格视图 -->
+                            <div id="mediaGrid" class="grid grid-cols-2 gap-3">
+                                <!-- 示例图片 -->
+                                <div class="media-item relative group cursor-pointer" data-type="image" data-src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80">
+                                    <div class="aspect-square rounded-lg overflow-hidden bg-gray-100">
+                                        <img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80"
+                                             alt="设计效果图"
+                                             class="w-full h-full object-cover transition-transform group-hover:scale-105"
+                                             loading="lazy">
+                                    </div>
+                                    <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all rounded-lg"></div>
+                                    <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button class="w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-sm">
+                                            <i class="fas fa-eye text-xs text-gray-600"></i>
+                                        </button>
+                                    </div>
+                                    <div class="absolute bottom-2 left-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <div class="bg-white bg-opacity-90 rounded px-2 py-1">
+                                            <p class="text-xs font-medium truncate">客厅效果图.jpg</p>
+                                            <p class="text-xs text-gray-500">1.2MB</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 示例视频 -->
+                                <div class="media-item relative group cursor-pointer" data-type="video" data-src="https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4">
+                                    <div class="aspect-square rounded-lg overflow-hidden bg-gray-100 relative">
+                                        <img src="https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80"
+                                             alt="视频缩略图"
+                                             class="w-full h-full object-cover">
+                                        <div class="absolute inset-0 flex items-center justify-center">
+                                            <div class="w-12 h-12 bg-black bg-opacity-60 rounded-full flex items-center justify-center">
+                                                <i class="fas fa-play text-white text-lg ml-1"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all rounded-lg"></div>
+                                    <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button class="w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-sm">
+                                            <i class="fas fa-play text-xs text-gray-600"></i>
+                                        </button>
+                                    </div>
+                                    <div class="absolute bottom-2 left-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <div class="bg-white bg-opacity-90 rounded px-2 py-1">
+                                            <p class="text-xs font-medium truncate">施工演示.mp4</p>
+                                            <p class="text-xs text-gray-500">5.8MB · 2:30</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 更多图片示例 -->
+                                <div class="media-item relative group cursor-pointer" data-type="image" data-src="https://images.unsplash.com/photo-1615529182904-14819c35db37?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80">
+                                    <div class="aspect-square rounded-lg overflow-hidden bg-gray-100">
+                                        <img src="https://images.unsplash.com/photo-1615529182904-14819c35db37?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80"
+                                             alt="卧室效果图"
+                                             class="w-full h-full object-cover transition-transform group-hover:scale-105"
+                                             loading="lazy">
+                                    </div>
+                                    <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all rounded-lg"></div>
+                                    <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button class="w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-sm">
+                                            <i class="fas fa-eye text-xs text-gray-600"></i>
+                                        </button>
+                                    </div>
+                                    <div class="absolute bottom-2 left-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <div class="bg-white bg-opacity-90 rounded px-2 py-1">
+                                            <p class="text-xs font-medium truncate">卧室效果图.jpg</p>
+                                            <p class="text-xs text-gray-500">980KB</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="media-item relative group cursor-pointer" data-type="image" data-src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80">
+                                    <div class="aspect-square rounded-lg overflow-hidden bg-gray-100">
+                                        <img src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80"
+                                             alt="厨房效果图"
+                                             class="w-full h-full object-cover transition-transform group-hover:scale-105"
+                                             loading="lazy">
+                                    </div>
+                                    <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all rounded-lg"></div>
+                                    <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button class="w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-sm">
+                                            <i class="fas fa-eye text-xs text-gray-600"></i>
+                                        </button>
+                                    </div>
+                                    <div class="absolute bottom-2 left-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <div class="bg-white bg-opacity-90 rounded px-2 py-1">
+                                            <p class="text-xs font-medium truncate">厨房效果图.jpg</p>
+                                            <p class="text-xs text-gray-500">1.5MB</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 上传新文件区域 -->
+                            <div id="uploadArea" class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors cursor-pointer">
+                                <input type="file" id="fileInput" multiple accept="image/*,video/*,.pdf,.doc,.docx" class="hidden">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-8 h-8 text-gray-400 mx-auto mb-2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" x2="12" y1="3" y2="15"></line>
+                                </svg>
+                                <p class="text-sm text-gray-600 mb-1">点击上传或拖拽文件到此处</p>
+                                <p class="text-xs text-gray-500">支持 JPG、PNG、MP4、PDF 等格式，单个文件不超过 10MB</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 现场实拍内容 -->
+                    <section id="content-analytics" class="px-4 py-4 bg-white" style="display: none;">
+                        <!-- 关键指标卡片 -->
+                        <div class="grid grid-cols-2 gap-3 mb-6">
+                            <div class="data-card rounded-lg p-4 text-center">
+                                <div class="metric-value">¥14,800</div>
+                                <div class="metric-label">总预算</div>
+                                <div class="text-xs text-green-600 mt-1">
+                                    <i class="fas fa-arrow-up"></i> 比预期节省8%
+                                </div>
+                            </div>
+                            <div class="data-card rounded-lg p-4 text-center">
+                                <div class="metric-value">60%</div>
+                                <div class="metric-label">设计进度</div>
+                                <div class="text-xs text-blue-600 mt-1">
+                                    <i class="fas fa-clock"></i> 预计7天完成
+                                </div>
+                            </div>
+                            <div class="data-card rounded-lg p-4 text-center">
+                                <div class="metric-value">15</div>
+                                <div class="metric-label">设备数量</div>
+                                <div class="text-xs text-gray-600 mt-1">
+                                    <i class="fas fa-home"></i> 覆盖5个房间
+                                </div>
+                            </div>
+                            <div class="data-card rounded-lg p-4 text-center">
+                                <div class="metric-value">4.8</div>
+                                <div class="metric-label">满意度评分</div>
+                                <div class="text-xs text-yellow-600 mt-1">
+                                    <i class="fas fa-star"></i> 基于12条评价
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 预算分布饼图 -->
+                        <div class="bg-white rounded-lg border border-gray-100 p-4 mb-4">
+                            <h4 class="text-sm font-semibold mb-3">预算分布</h4>
+                            <div class="chart-container chart-small">
+                                <canvas id="budgetChart"></canvas>
+                            </div>
+                            <div class="chart-legend">
+                                <div class="legend-item">
+                                    <div class="legend-color bg-blue-500"></div>
+                                    <span>智能照明 (35%)</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color bg-green-500"></div>
+                                    <span>智能安防 (25%)</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color bg-yellow-500"></div>
+                                    <span>智能温控 (20%)</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color bg-purple-500"></div>
+                                    <span>智能影音 (20%)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 设备类型分布 -->
+                        <div class="bg-white rounded-lg border border-gray-100 p-4 mb-4">
+                            <h4 class="text-sm font-semibold mb-3">设备类型分布</h4>
+                            <div class="chart-container chart-small">
+                                <canvas id="deviceChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- 成本趋势图 -->
+                        <div class="bg-white rounded-lg border border-gray-100 p-4 mb-4">
+                            <h4 class="text-sm font-semibold mb-3">成本趋势分析</h4>
+                            <div class="chart-container">
+                                <canvas id="costTrendChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- 进度时间线 -->
+                        <div class="bg-white rounded-lg border border-gray-100 p-4">
+                            <h4 class="text-sm font-semibold mb-3">项目时间线</h4>
+                            <div class="space-y-3">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                                    <div class="flex-1">
+                                        <div class="text-sm font-medium">需求分析</div>
+                                        <div class="text-xs text-gray-500">2024-03-15 完成</div>
+                                    </div>
+                                    <div class="text-xs text-green-600">100%</div>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                                    <div class="flex-1">
+                                        <div class="text-sm font-medium">方案设计</div>
+                                        <div class="text-xs text-gray-500">进行中，预计3-20完成</div>
+                                    </div>
+                                    <div class="text-xs text-blue-600">60%</div>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-3 h-3 bg-gray-300 rounded-full"></div>
+                                    <div class="flex-1">
+                                        <div class="text-sm font-medium">效果图制作</div>
+                                        <div class="text-xs text-gray-500">待开始</div>
+                                    </div>
+                                    <div class="text-xs text-gray-400">0%</div>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-3 h-3 bg-gray-300 rounded-full"></div>
+                                    <div class="flex-1">
+                                        <div class="text-sm font-medium">方案交付</div>
+                                        <div class="text-xs text-gray-500">待开始</div>
+                                    </div>
+                                    <div class="text-xs text-gray-400">0%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 沟通记录内容 -->
+                    <section id="content-communication" class="px-4 py-4 bg-white" style="display: none;">
+                        <div class="text-center py-8 text-gray-500">
+                            <i class="fas fa-comments text-4xl mb-4"></i>
+                            <p class="text-sm">沟通记录功能开发中</p>
+                        </div>
+                    </section>
+
+                    <!-- 项目信息内容 -->
+                    <section id="content-info" class="px-4 py-4 bg-white" style="display: none;">
+                        <div class="text-center py-8 text-gray-500">
+                            <i class="fas fa-info-circle text-4xl mb-4"></i>
+                            <p class="text-sm">项目信息功能开发中</p>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- 底部导航栏 -->
+<div class="absolute bottom-0 left-0 right-0 h-[84px] bg-white/80 backdrop-blur-xl border-t border-white/20">
+<!-- 导航栏内容 -->
+<nav class="h-[49px] flex items-center px-2">
+<div class="flex justify-around w-full text-[12px]">
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="home.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+<polyline points="9 22 9 12 15 12 15 22"></polyline>
+</svg>
+</div>
+<span class="mt-1">首页</span>
+</a>
+<a class="flex flex-col items-center group text-black transition-colors" href="design-result.html" class="flex flex-col items-center group text-black transition-colors">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<circle cx="13.5" cy="6.5" fill="currentColor" r=".5"></circle>
+<circle cx="17.5" cy="10.5" fill="currentColor" r=".5"></circle>
+<circle cx="8.5" cy="7.5" fill="currentColor" r=".5"></circle>
+<circle cx="6.5" cy="12.5" fill="currentColor" r=".5"></circle>
+<path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+</svg>
+</div>
+<span class="mt-1">设计</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="mall.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+<path d="M3 6h18"></path>
+<path d="M16 10a4 4 0 0 1-8 0"></path>
+</svg>
+</div>
+<span class="mt-1">商城</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="spaces.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="m15 12-8.373 8.373a1 1 0 1 1-3-3L12 9"></path>
+<path d="m18 15 4-4"></path>
+<path d="m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172V7l-2.26-2.26a6 6 0 0 0-4.202-1.756L9 2.96l.92.82A6.18 6.18 0 0 1 12 8.4V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5"></path>
+</svg>
+</div>
+<span class="mt-1">施工</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="me.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+<circle cx="12" cy="7" r="4"></circle>
+</svg>
+</div>
+<span class="mt-1">我的</span>
+</a>
+</div>
+</nav>
+<!-- iPhone 16 Home Indicator -->
+<div class="h-[34px] flex items-center justify-center">
+<div class="w-[134px] h-[5px] bg-black rounded-full"></div>
+</div>
+</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 数据可视化功能
+        let charts = {};
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeTabs();
+            initializeCharts();
+            initializeMediaManager();
+        });
+
+        // 初始化标签页功能
+        function initializeTabs() {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = {
+                'tab-files': 'content-files',
+                'tab-analytics': 'content-analytics',
+                'tab-communication': 'content-communication',
+                'tab-info': 'content-info'
+            };
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // 移除所有活动状态
+                    tabButtons.forEach(btn => {
+                        btn.classList.remove('active');
+                        btn.classList.add('text-gray-500');
+                        btn.classList.remove('text-black');
+                    });
+
+                    // 隐藏所有内容
+                    Object.values(tabContents).forEach(contentId => {
+                        const content = document.getElementById(contentId);
+                        if (content) {
+                            content.style.display = 'none';
+                        }
+                    });
+
+                    // 激活当前标签
+                    this.classList.add('active');
+                    this.classList.remove('text-gray-500');
+                    this.classList.add('text-black');
+
+                    // 显示对应内容
+                    const contentId = tabContents[this.id];
+                    const content = document.getElementById(contentId);
+                    if (content) {
+                        content.style.display = 'block';
+
+                        // 如果是现场实拍标签，初始化图表
+                        if (this.id === 'tab-analytics') {
+                            setTimeout(() => {
+                                initializeCharts();
+                            }, 100);
+                        }
+                    }
+                });
+            });
+        }
+
+        // 初始化图表
+        
+        // 图表错误处理函数
+        function handleChartError(chartId, error) {
+            console.error(`图表 ${chartId} 初始化失败:`, error);
+            const container = document.getElementById(chartId)?.parentElement;
+            if (container) {
+                container.innerHTML = '<div class="text-center text-gray-500 py-4">图表加载失败，请刷新重试</div>';
+            }
+        }
+        
+        // 安全的图表初始化函数
+        function safeInitChart(chartId, initFunction) {
+            try {
+                if (typeof Chart === 'undefined') {
+                    throw new Error('Chart.js 未加载');
+                }
+                initFunction();
+            } catch (error) {
+                handleChartError(chartId, error);
+            }
+        }
+        function initializeCharts() {
+            try {
+                // 检查Chart.js是否加载
+                if (typeof Chart === 'undefined') {
+                    console.error('Chart.js未加载');
+                    return;
+                }
+
+                // 预算分布饼图
+                initBudgetChart();
+
+                // 设备类型分布柱状图
+                initDeviceChart();
+
+                // 成本趋势线图
+                initCostTrendChart();
+
+                console.log('✅ 图表初始化完成');
+            } catch (error) {
+                console.error('❌ 图表初始化失败:', error);
+                // 显示友好的错误提示
+                showChartError('图表加载失败，请刷新页面重试');
+            }
+        }
+
+        // 显示图表错误提示
+        function showChartError(message) {
+            const chartContainers = document.querySelectorAll('.chart-container');
+            chartContainers.forEach(container => {
+                container.innerHTML = `
+                    <div class="flex items-center justify-center h-full text-gray-500">
+                        <div class="text-center">
+                            <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
+                            <p class="text-sm">${message}</p>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // 预算分布饼图
+        function initBudgetChart() {
+            try {
+                const ctx = document.getElementById('budgetChart');
+                if (!ctx) {
+                    console.warn('budgetChart canvas 元素未找到');
+                    return;
+                }
+
+                // 销毁现有图表
+                if (charts.budgetChart) {
+                    charts.budgetChart.destroy();
+                }
+
+                charts.budgetChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['智能照明', '智能安防', '智能温控', '智能影音'],
+                    datasets: [{
+                        data: [5180, 3700, 2960, 2960],
+                        backgroundColor: [
+                            '#3b82f6', // blue-500
+                            '#10b981', // green-500
+                            '#f59e0b', // yellow-500
+                            '#8b5cf6'  // purple-500
+                        ],
+                        borderWidth: 0,
+                        cutout: '60%'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ¥${value.toLocaleString()} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            } catch (error) {
+                console.error('预算图表初始化失败:', error);
+                const container = document.getElementById('budgetChart')?.parentElement;
+                if (container) {
+                    container.innerHTML = '<div class="text-center text-gray-500 py-4">预算图表加载失败</div>';
+                }
+            }
+        }
+
+        // 设备类型分布柱状图
+        function initDeviceChart() {
+            try {
+                const ctx = document.getElementById('deviceChart');
+                if (!ctx) {
+                    console.warn('deviceChart canvas 元素未找到');
+                    return;
+                }
+
+                if (charts.deviceChart) {
+                    charts.deviceChart.destroy();
+                }
+
+            charts.deviceChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['照明设备', '安防设备', '温控设备', '影音设备', '智能开关'],
+                    datasets: [{
+                        label: '设备数量',
+                        data: [6, 4, 3, 2, 5],
+                        backgroundColor: [
+                            '#3b82f6',
+                            '#10b981',
+                            '#f59e0b',
+                            '#8b5cf6',
+                            '#ef4444'
+                        ],
+                        borderRadius: 4,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            },
+                            grid: {
+                                color: '#f1f5f9'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            } catch (error) {
+                console.error('设备图表初始化失败:', error);
+                const container = document.getElementById('deviceChart')?.parentElement;
+                if (container) {
+                    container.innerHTML = '<div class="text-center text-gray-500 py-4">设备图表加载失败</div>';
+                }
+            }
+        }
+
+        // 成本趋势线图
+        function initCostTrendChart() {
+            try {
+                const ctx = document.getElementById('costTrendChart');
+                if (!ctx) {
+                    console.warn('costTrendChart canvas 元素未找到');
+                    return;
+                }
+
+                if (charts.costTrendChart) {
+                    charts.costTrendChart.destroy();
+                }
+
+            charts.costTrendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['初始预算', '需求调整', '方案优化', '最终预算'],
+                    datasets: [{
+                        label: '预算金额',
+                        data: [16000, 15200, 14800, 14800],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#3b82f6',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `预算: ¥${context.parsed.y.toLocaleString()}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 14000,
+                            max: 17000,
+                            ticks: {
+                                callback: function(value) {
+                                    return '¥' + value.toLocaleString();
+                                }
+                            },
+                            grid: {
+                                color: '#f1f5f9'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            } catch (error) {
+                console.error('成本趋势图表初始化失败:', error);
+                const container = document.getElementById('costTrendChart')?.parentElement;
+                if (container) {
+                    container.innerHTML = '<div class="text-center text-gray-500 py-4">成本趋势图表加载失败</div>';
+                }
+            }
+        }
+
+        // 页面卸载时清理图表
+        window.addEventListener('beforeunload', function() {
+            Object.values(charts).forEach(chart => {
+                if (chart && typeof chart.destroy === 'function') {
+                    chart.destroy();
+                }
+            });
+        });
+
+        // 通知推送示例功能
+        function triggerNotificationExample() {
+            // 检查是否有全局通知管理器
+            if (window.NotificationManager) {
+                // 推送项目进度更新通知
+                window.NotificationManager.pushProjectMessage(
+                    '设计方案已更新',
+                    '您的智能家居设计方案已完成最新修改，请查看并确认。',
+                    '设计师小王',
+                    'high'
+                );
+
+                alert('通知已推送！请查看消息中心。');
+            } else {
+                alert('通知系统未初始化，请先访问消息中心页面。');
+            }
+        }
+
+        // 添加一个隐藏的测试按钮（开发测试用）
+        document.addEventListener('DOMContentLoaded', function() {
+            // 双击页面标题触发通知测试
+            const pageTitle = document.querySelector('h1');
+            if (pageTitle) {
+                let clickCount = 0;
+                pageTitle.addEventListener('click', function() {
+                    clickCount++;
+                    setTimeout(() => {
+                        if (clickCount === 2) {
+                            triggerNotificationExample();
+                        }
+                        clickCount = 0;
+                    }, 300);
+                });
+            }
+        });
+
+        // 多媒体管理功能
+        function initializeMediaManager() {
+            const fileInput = document.getElementById('fileInput');
+            const uploadArea = document.getElementById('uploadArea');
+            const uploadBtn = document.getElementById('uploadFileBtn');
+            const fileTypeFilter = document.getElementById('fileTypeFilter');
+            const viewToggle = document.getElementById('fileViewToggle');
+            const mediaGrid = document.getElementById('mediaGrid');
+
+            // 文件上传功能
+            if (uploadArea && fileInput) {
+                // 点击上传区域
+                uploadArea.addEventListener('click', () => {
+                    fileInput.click();
+                });
+
+                // 上传按钮
+                if (uploadBtn) {
+                    uploadBtn.addEventListener('click', () => {
+                        fileInput.click();
+                    });
+                }
+
+                // 文件选择处理
+                fileInput.addEventListener('change', handleFileSelect);
+
+                // 拖拽上传
+                uploadArea.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    uploadArea.classList.add('border-blue-400', 'bg-blue-50');
+                });
+
+                uploadArea.addEventListener('dragleave', (e) => {
+                    e.preventDefault();
+                    uploadArea.classList.remove('border-blue-400', 'bg-blue-50');
+                });
+
+                uploadArea.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    uploadArea.classList.remove('border-blue-400', 'bg-blue-50');
+
+                    const files = e.dataTransfer.files;
+                    handleFiles(files);
+                });
+            }
+
+            // 文件筛选
+            if (fileTypeFilter) {
+                fileTypeFilter.addEventListener('change', (e) => {
+                    filterMediaItems(e.target.value);
+                });
+            }
+
+            // 视图切换
+            if (viewToggle) {
+                viewToggle.addEventListener('click', toggleMediaView);
+            }
+
+            // 媒体项点击事件
+            initializeMediaItemEvents();
+        }
+
+        // 处理文件选择
+        function handleFileSelect(e) {
+            const files = e.target.files;
+            handleFiles(files);
+        }
+
+        // 处理文件上传
+        function handleFiles(files) {
+            Array.from(files).forEach(file => {
+                if (validateFile(file)) {
+                    uploadFile(file);
+                }
+            });
+        }
+
+        // 文件验证
+        function validateFile(file) {
+            const maxSize = 10 * 1024 * 1024; // 10MB
+            const allowedTypes = [
+                'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+                'video/mp4', 'video/webm', 'video/ogg',
+                'application/pdf', 'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            ];
+
+            if (file.size > maxSize) {
+                alert(`文件 "${file.name}" 超过 10MB 限制`);
+                return false;
+            }
+
+            if (!allowedTypes.includes(file.type)) {
+                alert(`文件 "${file.name}" 格式不支持`);
+                return false;
+            }
+
+            return true;
+        }
+
+        // 上传文件
+        function uploadFile(file) {
+            // 创建上传进度提示
+            const uploadProgress = createUploadProgress(file.name);
+
+            // 模拟文件上传过程
+            simulateFileUpload(file, uploadProgress);
+        }
+
+        // 创建上传进度提示
+        function createUploadProgress(fileName) {
+            const progressDiv = document.createElement('div');
+            progressDiv.className = 'upload-progress bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3';
+            progressDiv.innerHTML = `
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium">${fileName}</span>
+                    <span class="text-xs text-blue-600">上传中...</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+            `;
+
+            const mediaGrid = document.getElementById('mediaGrid');
+            mediaGrid.parentNode.insertBefore(progressDiv, mediaGrid);
+
+            return progressDiv;
+        }
+
+        // 模拟文件上传
+        function simulateFileUpload(file, progressDiv) {
+            let progress = 0;
+            const progressBar = progressDiv.querySelector('.bg-blue-600');
+            const statusText = progressDiv.querySelector('.text-blue-600');
+
+            const interval = setInterval(() => {
+                progress += Math.random() * 20;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+
+                    // 上传完成
+                    statusText.textContent = '上传完成';
+                    progressBar.style.width = '100%';
+
+                    // 添加到媒体网格
+                    setTimeout(() => {
+                        addMediaItem(file);
+                        progressDiv.remove();
+                    }, 1000);
+                }
+
+                progressBar.style.width = progress + '%';
+            }, 200);
+        }
+
+        // 添加媒体项到网格
+        function addMediaItem(file) {
+            const mediaGrid = document.getElementById('mediaGrid');
+            const mediaItem = document.createElement('div');
+
+            const fileType = getFileType(file.type);
+            const fileSize = formatFileSize(file.size);
+
+            // 创建文件预览URL
+            const fileURL = URL.createObjectURL(file);
+
+            mediaItem.className = 'media-item relative group cursor-pointer';
+            mediaItem.setAttribute('data-type', fileType);
+            mediaItem.setAttribute('data-src', fileURL);
+
+            if (fileType === 'image') {
+                mediaItem.innerHTML = `
+                    <div class="aspect-square rounded-lg overflow-hidden bg-gray-100">
+                        <img src="${fileURL}"
+                             alt="${file.name}"
+                             class="w-full h-full object-cover transition-transform group-hover:scale-105"
+                             loading="lazy">
+                    </div>
+                    <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all rounded-lg"></div>
+                    <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button class="w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-sm">
+                            <i class="fas fa-eye text-xs text-gray-600"></i>
+                        </button>
+                    </div>
+                    <div class="absolute bottom-2 left-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div class="bg-white bg-opacity-90 rounded px-2 py-1">
+                            <p class="text-xs font-medium truncate">${file.name}</p>
+                            <p class="text-xs text-gray-500">${fileSize}</p>
+                        </div>
+                    </div>
+                `;
+            } else if (fileType === 'video') {
+                mediaItem.innerHTML = `
+                    <div class="aspect-square rounded-lg overflow-hidden bg-gray-100 relative">
+                        <video class="w-full h-full object-cover" preload="metadata">
+                            <source src="${fileURL}" type="${file.type}">
+                        </video>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="w-12 h-12 bg-black bg-opacity-60 rounded-full flex items-center justify-center">
+                                <i class="fas fa-play text-white text-lg ml-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all rounded-lg"></div>
+                    <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button class="w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-sm">
+                            <i class="fas fa-play text-xs text-gray-600"></i>
+                        </button>
+                    </div>
+                    <div class="absolute bottom-2 left-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div class="bg-white bg-opacity-90 rounded px-2 py-1">
+                            <p class="text-xs font-medium truncate">${file.name}</p>
+                            <p class="text-xs text-gray-500">${fileSize}</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            mediaGrid.appendChild(mediaItem);
+
+            // 添加点击事件
+            mediaItem.addEventListener('click', () => {
+                openMediaViewer(fileURL, fileType, file.name);
+            });
+        }
+
+        // 获取文件类型
+        function getFileType(mimeType) {
+            if (mimeType.startsWith('image/')) return 'image';
+            if (mimeType.startsWith('video/')) return 'video';
+            return 'document';
+        }
+
+        // 格式化文件大小
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // 筛选媒体项
+        function filterMediaItems(type) {
+            const mediaItems = document.querySelectorAll('.media-item');
+
+            mediaItems.forEach(item => {
+                const itemType = item.getAttribute('data-type');
+                if (type === 'all' || itemType === type) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        // 切换视图模式
+        function toggleMediaView() {
+            const mediaGrid = document.getElementById('mediaGrid');
+            const viewToggle = document.getElementById('fileViewToggle');
+
+            if (mediaGrid.classList.contains('grid-cols-2')) {
+                // 切换到列表视图
+                mediaGrid.classList.remove('grid-cols-2');
+                mediaGrid.classList.add('grid-cols-1');
+                viewToggle.innerHTML = '<i class="fas fa-list"></i> 列表视图';
+            } else {
+                // 切换到网格视图
+                mediaGrid.classList.remove('grid-cols-1');
+                mediaGrid.classList.add('grid-cols-2');
+                viewToggle.innerHTML = '<i class="fas fa-th-large"></i> 网格视图';
+            }
+        }
+
+        // 初始化媒体项事件
+        function initializeMediaItemEvents() {
+            const mediaItems = document.querySelectorAll('.media-item');
+
+            mediaItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const src = item.getAttribute('data-src');
+                    const type = item.getAttribute('data-type');
+                    const name = item.querySelector('.text-xs.font-medium')?.textContent || '未知文件';
+
+                    openMediaViewer(src, type, name);
+                });
+            });
+        }
+
+        // 打开媒体查看器
+        function openMediaViewer(src, type, name) {
+            // 创建模态框
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4';
+
+            let content = '';
+            if (type === 'image') {
+                content = `
+                    <div class="relative max-w-4xl max-h-full">
+                        <img src="${src}" alt="${name}" class="max-w-full max-h-full object-contain rounded-lg">
+                        <button class="absolute top-4 right-4 w-8 h-8 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full flex items-center justify-center text-white transition-colors" onclick="this.closest('.fixed').remove()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        <div class="absolute bottom-4 left-4 right-4 bg-black bg-opacity-50 text-white p-3 rounded-lg">
+                            <p class="font-medium">${name}</p>
+                        </div>
+                    </div>
+                `;
+            } else if (type === 'video') {
+                content = `
+                    <div class="relative max-w-4xl max-h-full">
+                        <video controls class="max-w-full max-h-full rounded-lg" autoplay>
+                            <source src="${src}" type="video/mp4">
+                            您的浏览器不支持视频播放。
+                        </video>
+                        <button class="absolute top-4 right-4 w-8 h-8 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full flex items-center justify-center text-white transition-colors" onclick="this.closest('.fixed').remove()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        <div class="absolute bottom-4 left-4 right-4 bg-black bg-opacity-50 text-white p-3 rounded-lg">
+                            <p class="font-medium">${name}</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            modal.innerHTML = content;
+
+            // 点击背景关闭
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+
+            // ESC键关闭
+            const handleEsc = (e) => {
+                if (e.key === 'Escape') {
+                    modal.remove();
+                    document.removeEventListener('keydown', handleEsc);
+                }
+            };
+            document.addEventListener('keydown', handleEsc);
+
+            document.body.appendChild(modal);
+        }
+    </script>
+
+    <!-- 引入H5与小程序通信桥接工具 -->
+    <script src="../utils/h5-bridge.js"></script>
+    
+    <script>
+        // 小程序环境初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检查小程序环境并初始化通信
+            if (window.H5Bridge) {
+                console.log('H5Bridge已加载，当前环境:', window.H5Bridge.isInMiniProgram ? '小程序' : '浏览器');
+                
+                if (window.H5Bridge.isInMiniProgram) {
+                    initMiniProgramFeatures();
+                }
+            }
+        });
+
+        // 初始化小程序特有功能
+        function initMiniProgramFeatures() {
+            console.log('初始化小程序特有功能');
+            
+            // 替换所有页面跳转为小程序导航
+            replacePageNavigation();
+            
+            // 替换alert为小程序toast
+            replaceAlertWithToast();
+            
+            // 监听支付结果（如果页面有支付功能）
+            if (typeof handlePaymentSuccess === 'function') {
+                window.H5Bridge.on('paymentSuccess', handlePaymentSuccess);
+                window.H5Bridge.on('paymentFail', handlePaymentFailure || function(error) {
+                    window.H5Bridge.showToast('支付失败，请重试', 'error');
+                });
+            }
+            
+            // 监听用户信息获取结果（如果页面需要用户信息）
+            if (typeof handleUserInfoSuccess === 'function') {
+                window.H5Bridge.on('userInfoSuccess', handleUserInfoSuccess);
+                window.H5Bridge.on('userInfoFail', handleUserInfoFailure || function(error) {
+                    window.H5Bridge.showToast('获取用户信息失败', 'error');
+                });
+            }
+        }
+
+        // 替换页面跳转为小程序导航
+        function replacePageNavigation() {
+            // 处理所有HTML页面链接
+            document.querySelectorAll('a[href$=".html"]').forEach(link => {
+                const originalHref = link.getAttribute('href');
+                
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // 解析目标页面
+                    const pageName = originalHref.replace('.html', '').replace(/^.*//, '');
+                    
+                    // 特殊页面映射到小程序原生页面
+                    const nativePageMap = {
+                        'home': '/pages/home/index',
+                        'design-result': '/pages/design/index',
+                        'mall': '/pages/mall/index',
+                        'spaces': '/pages/construction/index',
+                        'me': '/pages/profile/index'
+                    };
+                    
+                    if (nativePageMap[pageName]) {
+                        // 跳转到小程序原生页面
+                        window.H5Bridge.navigateTo(nativePageMap[pageName]);
+                    } else {
+                        // 跳转到web-view页面
+                        window.H5Bridge.navigateTo(`/pages/webview/index?page=${pageName}`);
+                    }
+                });
+            });
+            
+            // 处理返回按钮
+            document.querySelectorAll('[onclick*="history.back"], [onclick*="window.history.back"]').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    window.H5Bridge.navigateBack();
+                });
+            });
+        }
+
+        // 替换alert为小程序toast
+        function replaceAlertWithToast() {
+            // 重写全局alert函数
+            if (window.H5Bridge && window.H5Bridge.isInMiniProgram) {
+                window.alert = function(message) {
+                    window.H5Bridge.showToast(message);
+                };
+                
+                window.confirm = function(message) {
+                    // 小程序中的confirm需要特殊处理
+                    window.H5Bridge.showToast(message);
+                    return true; // 简化处理，实际项目中可能需要更复杂的逻辑
+                };
+            }
+        }
+
+        // 通用分享功能
+        function shareToWechat(shareData) {
+            if (window.H5Bridge && window.H5Bridge.isInMiniProgram) {
+                // 在小程序中使用原生分享
+                window.H5Bridge.share(shareData || {
+                    title: document.title,
+                    desc: '智能家居设计与施工服务',
+                    path: `/pages/webview/index?page=${getCurrentPageName()}`
+                });
+            } else {
+                // 在浏览器中使用Web Share API或降级处理
+                if (navigator.share) {
+                    navigator.share({
+                        title: document.title,
+                        text: '智能家居设计与施工服务',
+                        url: window.location.href
+                    });
+                } else {
+                    alert('分享功能需要在支持的浏览器中使用');
+                }
+            }
+        }
+
+        // 获取当前页面名称
+        function getCurrentPageName() {
+            const pathname = window.location.pathname;
+            return pathname.substring(pathname.lastIndexOf('/') + 1).replace('.html', '');
+        }
+
+        // 通用错误处理
+        function handleError(error, context = '') {
+            console.error(`错误[${context}]:`, error);
+            
+            if (window.H5Bridge && window.H5Bridge.isInMiniProgram) {
+                window.H5Bridge.showToast('操作失败，请重试', 'error');
+            } else {
+                alert('操作失败：' + (error.message || '未知错误'));
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>AI助手页</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/iphone16_fix.css">
+    <style>
+        .btn-primary {
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary:active {
+            background-color: #333;
+        }
+    </style>
+
+    <!-- 全局错误处理和兜底方案 -->
+    <script>
+        (function() {
+            'use strict';
+            
+            // 创建 Trace 对象的兜底实现
+            window.Trace = window.Trace || {
+                init: function() { console.log('Trace initialized (fallback)'); },
+                log: function() { console.log.apply(console, arguments); },
+                error: function() { console.error.apply(console, arguments); },
+                warn: function() { console.warn.apply(console, arguments); },
+                info: function() { console.info.apply(console, arguments); }
+            };
+
+            // 防止其他可能的调试工具错误
+            window.wx = window.wx || {};
+            window.my = window.my || {};
+            
+            // 防止 chartId 未定义错误
+            window.chartId = window.chartId || 'default-chart-id';
+            
+            // 全局错误处理
+            window.addEventListener('error', function(e) {
+                console.error('Global error caught:', e.error);
+                return true; // 阻止默认错误处理
+            });
+            
+            window.addEventListener('unhandledrejection', function(e) {
+                console.error('Unhandled promise rejection:', e.reason);
+                e.preventDefault(); // 阻止默认处理
+            });
+            
+            console.log('✅ 全局错误处理已初始化');
+        })();
+    </script>
+</head>
+<body class="min-h-screen w-full bg-[#000000] flex items-center justify-center font-system">
+    <!-- iPhone 容器 -->
+    <div class="w-full max-w-[393px] h-[852px] bg-[#1E1E1E] shadow-2xl overflow-hidden relative mx-auto rounded-[54px]">
+        <!-- iPhone 状态栏 -->
+        <div class="w-full h-[47px] bg-black px-5 flex items-center justify-between text-white text-[14px] font-medium">
+            <div class="flex items-center space-x-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 20h.01"></path>
+                    <path d="M7 20v-4"></path>
+                    <path d="M12 20v-8"></path>
+                    <path d="M17 20V8"></path>
+                    <path d="M22 4v16"></path>
+                </svg>
+                <span>中国移动</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h.01"></path>
+                    <path d="M2 8.82a15 15 0 0 1 20 0"></path>
+                    <path d="M5 12.859a10 10 0 0 1 14 0"></path>
+                    <path d="M8.5 16.429a5 5 0 0 1 7 0"></path>
+                </svg>
+            </div>
+            <div class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">9:41</div>
+            <div class="flex items-center space-x-1">
+                <span>89%</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="16" height="10" x="2" y="7" rx="2" ry="2"></rect>
+                    <line x1="22" x2="22" y1="11" y2="13"></line>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 动态岛 -->
+        <button class="absolute left-1/2 -translate-x-1/2 bg-black transition-all duration-300 ease-out w-[126px] h-[37.5px] -top-0.5 rounded-b-[24px]"></button>
+
+        <!-- 主内容区域 -->
+        <div class="w-full h-[calc(100%-47px)] bg-white overflow-hidden relative">
+
+            <!-- 顶部导航栏 -->
+            <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+                <div class="flex items-center justify-between px-4 py-3">
+                    <a href="me.html" class="text-black">
+                        <i class="fas fa-arrow-left"></i>
+                    </a>
+                    <h1 class="text-sm font-medium text-black">智能助手</h1>
+                    <a href="#" class="text-black">
+                        <i class="fas fa-ellipsis-vertical"></i>
+                    </a>
+                </div>
+            </header>
+
+            <!-- 滚动内容区域 -->
+            <div class="absolute inset-0 top-[60px] bottom-[84px] overflow-y-auto scrollbar-none">
+                <!-- 聊天区域 -->
+                <div class="flex-grow p-4">
+            <!-- 系统消息 -->
+            <div class="flex justify-center mb-6">
+                <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">今天 9:41</span>
+            </div>
+
+            <!-- AI消息 -->
+            <div class="flex mb-4">
+                <div class="w-8 h-8 bg-black rounded-full flex items-center justify-center text-white mr-2">
+                    <i class="fas fa-user text-xs"></i>
+                </div>
+                <div class="chat-bubble chat-bubble-ai max-w-[75%]">
+                    <p class="text-sm">您好！我是您的智能家居助手，有什么可以帮助您的吗？</p>
+                </div>
+            </div>
+
+            <!-- AI消息 -->
+            <div class="flex mb-4">
+                <div class="w-8 h-8 bg-black rounded-full flex items-center justify-center text-white mr-2">
+                    <i class="fas fa-user text-xs"></i>
+                </div>
+                <div class="chat-bubble chat-bubble-ai max-w-[75%]">
+                    <p class="text-sm">我可以帮您：</p>
+                    <p class="text-sm">1. 解答智能家居相关问题</p>
+                    <p class="text-sm">2. 提供设计和施工建议</p>
+                    <p class="text-sm">3. 推荐适合您的智能产品</p>
+                    <p class="text-sm">4. 查询订单和项目进度</p>
+                </div>
+            </div>
+
+            <!-- 用户消息 -->
+            <div class="flex justify-end mb-4">
+                <div class="chat-bubble chat-bubble-user max-w-[75%]">
+                    <p class="text-sm">我想了解一下智能家居系统需要哪些基础设备？</p>
+                </div>
+                <div class="w-8 h-8 bg-gray-200 rounded-full ml-2"></div>
+            </div>
+
+            <!-- AI消息 -->
+            <div class="flex mb-4">
+                <div class="w-8 h-8 bg-black rounded-full flex items-center justify-center text-white mr-2">
+                    <i class="fas fa-user text-xs"></i>
+                </div>
+                <div class="chat-bubble chat-bubble-ai max-w-[75%]">
+                    <p class="text-sm">智能家居系统的基础设备通常包括：</p>
+                    <p class="text-sm">1. <strong>智能中控/网关</strong>：作为整个系统的"大脑"，连接和控制其他设备</p>
+                    <p class="text-sm">2. <strong>WiFi路由器</strong>：提供稳定的网络连接</p>
+                    <p class="text-sm">3. <strong>智能开关/插座</strong>：控制电器设备的开关</p>
+                    <p class="text-sm">4. <strong>智能灯具</strong>：可调节亮度、色温的照明设备</p>
+                    <p class="text-sm">5. <strong>传感器</strong>：如温湿度、人体感应、门窗等传感器</p>
+                    <p class="text-sm">您想了解哪方面的更多信息？</p>
+                </div>
+            </div>
+
+            <!-- 用户消息 -->
+            <div class="flex justify-end mb-4">
+                <div class="chat-bubble chat-bubble-user max-w-[75%]">
+                    <p class="text-sm">智能网关有什么推荐吗？</p>
+                </div>
+                <div class="w-8 h-8 bg-gray-200 rounded-full ml-2"></div>
+            </div>
+
+            <!-- AI消息 -->
+            <div class="flex mb-4">
+                <div class="w-8 h-8 bg-black rounded-full flex items-center justify-center text-white mr-2">
+                    <i class="fas fa-user text-xs"></i>
+                </div>
+                <div class="chat-bubble chat-bubble-ai max-w-[75%]">
+                    <p class="text-sm">我们商城有几款热销的智能网关可以推荐：</p>
+                    <p class="text-sm">1. <strong>智家ZJ-GW100</strong>：支持WiFi/ZigBee/蓝牙多协议，可连接100+设备</p>
+                    <p class="text-sm">2. <strong>智能管家SH-01</strong>：内置AI语音助手，支持离线语音控制</p>
+                    <p class="text-sm">3. <strong>全屋智控HC-200</strong>：专为大户型设计，信号覆盖更广</p>
+                    <p class="text-sm">您可以点击下方查看详情，或者告诉我您的具体需求，我可以给出更精准的推荐。</p>
+                </div>
+            </div>
+
+            <!-- 快捷回复卡片 -->
+            <div class="flex overflow-x-auto space-x-2 py-2 no-scrollbar">
+                <button class="whitespace-nowrap px-3 py-1.5 bg-gray-100 text-black text-xs rounded-full">查看智能网关详情</button>
+                <button class="whitespace-nowrap px-3 py-1.5 bg-gray-100 text-black text-xs rounded-full">智能灯具推荐</button>
+                <button class="whitespace-nowrap px-3 py-1.5 bg-gray-100 text-black text-xs rounded-full">智能家居布线方案</button>
+                <button class="whitespace-nowrap px-3 py-1.5 bg-gray-100 text-black text-xs rounded-full">联系人工客服</button>
+            </div>
+                </div>
+            </div>
+
+            <!-- 输入区域 -->
+            <div class="absolute bottom-[84px] left-0 right-0 bg-white border-t border-gray-200 p-2">
+                <div class="flex items-center">
+                    <button class="p-2 text-gray-500">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <div class="flex-grow relative">
+                        <input type="text" name="message" placeholder="请输入您的问题"
+                               class="w-full h-10 pl-4 pr-10 rounded-full text-sm bg-gray-100 focus:outline-none focus:ring-1 focus:ring-black">
+                        <button class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                            <i class="far fa-heart"></i>
+                        </button>
+                    </div>
+                    <button class="p-2 ml-2 bg-black text-white rounded-full w-10 h-10 flex items-center justify-center">
+                        <i class="fas fa-share"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 底部导航栏 -->
+<div class="absolute bottom-0 left-0 right-0 h-[84px] bg-white/80 backdrop-blur-xl border-t border-white/20">
+<!-- 导航栏内容 -->
+<nav class="h-[49px] flex items-center px-2">
+<div class="flex justify-around w-full text-[12px]">
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="home.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+<polyline points="9 22 9 12 15 12 15 22"></polyline>
+</svg>
+</div>
+<span class="mt-1">首页</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="design-result.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<circle cx="13.5" cy="6.5" fill="currentColor" r=".5"></circle>
+<circle cx="17.5" cy="10.5" fill="currentColor" r=".5"></circle>
+<circle cx="8.5" cy="7.5" fill="currentColor" r=".5"></circle>
+<circle cx="6.5" cy="12.5" fill="currentColor" r=".5"></circle>
+<path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+</svg>
+</div>
+<span class="mt-1">设计</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="mall.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+<path d="M3 6h18"></path>
+<path d="M16 10a4 4 0 0 1-8 0"></path>
+</svg>
+</div>
+<span class="mt-1">商城</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="spaces.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="m15 12-8.373 8.373a1 1 0 1 1-3-3L12 9"></path>
+<path d="m18 15 4-4"></path>
+<path d="m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172V7l-2.26-2.26a6 6 0 0 0-4.202-1.756L9 2.96l.92.82A6.18 6.18 0 0 1 12 8.4V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5"></path>
+</svg>
+</div>
+<span class="mt-1">施工</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="me.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+<circle cx="12" cy="7" r="4"></circle>
+</svg>
+</div>
+<span class="mt-1">我的</span>
+</a>
+</div>
+</nav>
+<!-- iPhone 16 Home Indicator -->
+<div class="h-[34px] flex items-center justify-center">
+<div class="w-[134px] h-[5px] bg-black rounded-full"></div>
+</div>
+</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

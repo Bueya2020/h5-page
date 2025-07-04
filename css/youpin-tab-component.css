@@ -1,0 +1,299 @@
+/**
+ * 小米有品风格Tab滚动组件 - 独立版本
+ * 可复用的Tab滚动组件，遵循小米有品设计规范
+ * 
+ * 使用方法：
+ * 1. 引入此CSS文件
+ * 2. 使用指定的HTML结构
+ * 3. 调用YoupinTabComponent.init()初始化
+ * 
+ * @version 1.0.0
+ * @author AI Assistant
+ */
+
+/* ========== 主容器 ========== */
+.youpin-tab-component {
+  position: relative;
+  background: white;
+  width: 100%;
+  /* 简洁设计理念 - 无分割线 */
+}
+
+/* ========== 滚动容器 ========== */
+.youpin-tab-scrollable {
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  /* 性能优化 */
+  will-change: scroll-position;
+  transform: translateZ(0);
+  /* 滚动对齐 */
+  scroll-snap-type: x proximity;
+}
+
+.youpin-tab-scrollable::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+/* ========== Tab包装器 ========== */
+.youpin-tab-wrapper {
+  display: flex;
+  width: max-content;
+  min-width: 100%;
+  padding: 0 24px; /* 6倍数间距规律 */
+  gap: 0;
+}
+
+/* ========== Tab按钮样式 ========== */
+.youpin-tab {
+  flex-shrink: 0;
+  padding: 12px 16px; /* 6倍数间距规律 */
+  font-size: 14px;
+  color: #666666; /* 未选中项灰色 */
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  cursor: pointer;
+  position: relative;
+  /* 优化的过渡效果 */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  /* 性能优化 */
+  will-change: color, background-color, border-color, transform;
+  transform: translateZ(0);
+  /* 滚动对齐 */
+  scroll-snap-align: center;
+  /* 触摸优化 */
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ========== 悬停效果 ========== */
+.youpin-tab:hover {
+  color: #000000;
+  background: rgba(248, 249, 250, 0.8); /* 低饱和度背景 */
+  transform: translateZ(0) translateY(-1px); /* 微妙上移 */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* 轻微阴影 */
+}
+
+/* ========== 激活状态 ========== */
+.youpin-tab.active {
+  color: #333333; /* 选中项黑色文字 */
+  border-bottom-color: #000000; /* 品牌色线段 */
+  font-weight: 600; /* 加粗 */
+  background: rgba(248, 249, 250, 0.5); /* 轻微背景色 */
+}
+
+/* ========== 点击反馈 ========== */
+.youpin-tab:active {
+  transform: translateZ(0) translateY(0px) scale(0.98);
+  transition: transform 0.1s ease;
+}
+
+/* ========== 焦点状态 ========== */
+.youpin-tab:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+/* ========== 激活状态动画 ========== */
+.youpin-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: #000000;
+  transform: translateX(-50%);
+  animation: youpin-expand-border 0.3s ease-out forwards;
+}
+
+@keyframes youpin-expand-border {
+  from { width: 0; }
+  to { width: calc(100% - 32px); } /* 6倍数间距 */
+}
+
+/* ========== 滚动指示器 ========== */
+.youpin-tab-indicator-left,
+.youpin-tab-indicator-right {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 40px; /* 增强视觉效果 */
+  pointer-events: none;
+  z-index: 17; /* 确保在tab之上 */
+  opacity: 0;
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  /* 性能优化 */
+  will-change: opacity;
+  transform: translateZ(0);
+}
+
+.youpin-tab-indicator-left {
+  left: 0;
+  background: linear-gradient(to right,
+    rgba(255, 255, 255, 1) 0%,
+    rgba(255, 255, 255, 0.8) 50%,
+    rgba(255, 255, 255, 0) 100%);
+}
+
+.youpin-tab-indicator-right {
+  right: 0;
+  background: linear-gradient(to left,
+    rgba(255, 255, 255, 1) 0%,
+    rgba(255, 255, 255, 0.8) 50%,
+    rgba(255, 255, 255, 0) 100%);
+}
+
+.youpin-tab-indicator-left.show,
+.youpin-tab-indicator-right.show {
+  opacity: 1;
+  animation: youpin-fade-in-indicator 0.3s ease-out;
+}
+
+@keyframes youpin-fade-in-indicator {
+  from {
+    opacity: 0;
+    transform: translateZ(0) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateZ(0) scale(1);
+  }
+}
+
+/* ========== 滚动状态增强 ========== */
+.youpin-tab-component.scrolling .youpin-tab-scrollable {
+  scroll-behavior: smooth;
+}
+
+.youpin-tab.scrolling-target {
+  background: rgba(248, 249, 250, 0.6);
+  transform: translateZ(0) scale(1.02);
+  transition: all 0.2s ease;
+}
+
+.youpin-tab.scroll-complete {
+  background: none;
+  transform: translateZ(0) scale(1);
+  transition: all 0.3s ease;
+}
+
+/* ========== 性能优化类 ========== */
+.youpin-tab-scrollable.optimized-scroll {
+  contain: layout style paint;
+  will-change: scroll-position;
+}
+
+/* ========== 滚动边界状态 ========== */
+.youpin-tab-scrollable.at-start .youpin-tab-indicator-left {
+  opacity: 0 !important;
+}
+
+.youpin-tab-scrollable.at-end .youpin-tab-indicator-right {
+  opacity: 0 !important;
+}
+
+/* ========== 响应式适配 ========== */
+@media (max-width: 480px) {
+  .youpin-tab {
+    padding: 12px 12px; /* 保持6倍数 */
+    font-size: 13px;
+  }
+  
+  .youpin-tab-wrapper {
+    padding: 0 18px; /* 6倍数 */
+  }
+  
+  .youpin-tab-indicator-left,
+  .youpin-tab-indicator-right {
+    width: 30px;
+  }
+}
+
+@media (max-width: 360px) {
+  .youpin-tab {
+    padding: 12px 10px;
+    font-size: 12px;
+  }
+  
+  .youpin-tab-wrapper {
+    padding: 0 12px; /* 6倍数 */
+  }
+  
+  .youpin-tab-indicator-left,
+  .youpin-tab-indicator-right {
+    width: 24px; /* 6倍数 */
+  }
+}
+
+/* ========== 触摸设备优化 ========== */
+@media (hover: none) and (pointer: coarse) {
+  .youpin-tab-scrollable {
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .youpin-tab {
+    scroll-snap-align: start;
+  }
+  
+  .youpin-tab:hover {
+    background: none;
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+/* ========== 主题变量支持 ========== */
+:root {
+  --youpin-tab-color-inactive: #666666;
+  --youpin-tab-color-active: #333333;
+  --youpin-tab-color-border: #000000;
+  --youpin-tab-bg-hover: rgba(248, 249, 250, 0.8);
+  --youpin-tab-bg-active: rgba(248, 249, 250, 0.5);
+  --youpin-tab-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ========== 深色主题支持 ========== */
+@media (prefers-color-scheme: dark) {
+  .youpin-tab-component {
+    background: #1a1a1a;
+  }
+  
+  .youpin-tab {
+    color: #999999;
+  }
+  
+  .youpin-tab.active {
+    color: #ffffff;
+    border-bottom-color: #ffffff;
+  }
+  
+  .youpin-tab:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.1);
+  }
+  
+  .youpin-tab-indicator-left {
+    background: linear-gradient(to right,
+      rgba(26, 26, 26, 1) 0%,
+      rgba(26, 26, 26, 0.8) 50%,
+      rgba(26, 26, 26, 0) 100%);
+  }
+  
+  .youpin-tab-indicator-right {
+    background: linear-gradient(to left,
+      rgba(26, 26, 26, 1) 0%,
+      rgba(26, 26, 26, 0.8) 50%,
+      rgba(26, 26, 26, 0) 100%);
+  }
+}

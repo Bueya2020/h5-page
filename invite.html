@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>邀请好友</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/iphone16_fix.css">
+    <style>
+        .invite-card {
+            transition: all 0.2s;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .invite-card:active {
+            transform: scale(0.98);
+        }
+
+        .reward-item {
+            transition: background-color 0.2s;
+        }
+
+        .reward-item:active {
+            background-color: #f9fafb;
+        }
+
+        .share-btn {
+            transition: all 0.2s;
+        }
+
+        .share-btn:active {
+            transform: scale(0.95);
+        }
+
+        .qr-code {
+            background: linear-gradient(45deg, #f0f0f0, #ffffff);
+        }
+    </style>
+
+    <!-- 全局错误处理和兜底方案 -->
+    <script>
+        (function() {
+            'use strict';
+            
+            // 创建 Trace 对象的兜底实现
+            window.Trace = window.Trace || {
+                init: function() { console.log('Trace initialized (fallback)'); },
+                log: function() { console.log.apply(console, arguments); },
+                error: function() { console.error.apply(console, arguments); },
+                warn: function() { console.warn.apply(console, arguments); },
+                info: function() { console.info.apply(console, arguments); }
+            };
+
+            // 防止其他可能的调试工具错误
+            window.wx = window.wx || {};
+            window.my = window.my || {};
+            
+            // 全局错误处理
+            window.addEventListener('error', function(e) {
+                console.error('Global error:', e.error);
+                e.preventDefault(); // 阻止默认处理
+            });
+
+            window.addEventListener('unhandledrejection', function(e) {
+                console.error('Unhandled promise rejection:', e.reason);
+                e.preventDefault(); // 阻止默认处理
+            });
+            
+            console.log('✅ 全局错误处理已初始化');
+        })();
+    </script>
+</head>
+<body class="min-h-screen w-full bg-[#000000] flex items-center justify-center font-system">
+    <!-- iPhone 容器 -->
+    <div class="w-full max-w-[393px] h-[852px] bg-[#1E1E1E] shadow-2xl overflow-hidden relative mx-auto rounded-[54px]">
+        <!-- iPhone 状态栏 -->
+        <div class="w-full h-[47px] bg-black px-5 flex items-center justify-between text-white text-[14px] font-medium">
+            <div class="flex items-center space-x-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 20h.01"></path>
+                    <path d="M7 20v-4"></path>
+                    <path d="M12 20v-8"></path>
+                    <path d="M17 20V8"></path>
+                    <path d="M22 4v16"></path>
+                </svg>
+                <span>中国移动</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h.01"></path>
+                    <path d="M2 8.82a15 15 0 0 1 20 0"></path>
+                    <path d="M5 12.859a10 10 0 0 1 14 0"></path>
+                    <path d="M8.5 16.429a5 5 0 0 1 7 0"></path>
+                </svg>
+            </div>
+            <div class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">9:41</div>
+            <div class="flex items-center space-x-1">
+                <span>89%</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="16" height="10" x="2" y="7" rx="2" ry="2"></rect>
+                    <line x1="22" x2="22" y1="11" y2="13"></line>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 动态岛 -->
+        <button class="absolute left-1/2 -translate-x-1/2 bg-black transition-all duration-300 ease-out w-[126px] h-[37.5px] -top-0.5 rounded-b-[24px]"></button>
+
+        <!-- 主内容区域 -->
+        <div class="w-full h-[calc(100%-47px)] bg-white overflow-hidden relative">
+            <!-- 滚动内容区域 -->
+            <div class="absolute inset-0 bottom-[84px] overflow-y-auto scrollbar-none">
+                <!-- 顶部导航栏 -->
+                <header class="bg-white border-b border-gray-100 sticky top-0 z-10">
+                    <div class="flex items-center justify-between px-4 py-3">
+                        <a href="me.html" class="text-black hover:text-gray-600 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m15 18-6-6 6-6"></path>
+                            </svg>
+                        </a>
+                        <h1 class="text-[16px] font-medium text-black">邀请好友</h1>
+                        <div class="w-5"></div>
+                    </div>
+                </header>
+
+                <!-- 邀请卡片 -->
+                <div class="p-4">
+                    <div class="invite-card rounded-2xl p-6 text-white text-center mb-6">
+                        <div class="mb-4">
+                            <i class="fas fa-gift text-4xl mb-3"></i>
+                            <h2 class="text-xl font-bold mb-2">邀请好友，共享福利</h2>
+                            <p class="text-white/80 text-sm">邀请好友注册，双方都可获得丰厚奖励</p>
+                        </div>
+                        
+                        <div class="bg-white/20 rounded-xl p-4 mb-4">
+                            <div class="text-2xl font-bold mb-1">¥100</div>
+                            <div class="text-sm text-white/80">邀请奖励</div>
+                        </div>
+                        
+                        <div class="text-xs text-white/70">
+                            已邀请 <span class="font-bold" id="invite-count">0</span> 位好友
+                        </div>
+                    </div>
+
+                    <!-- 奖励规则 -->
+                    <div class="bg-white rounded-xl border border-gray-100 mb-6">
+                        <div class="p-4 border-b border-gray-100">
+                            <h3 class="font-medium text-gray-900">奖励规则</h3>
+                        </div>
+                        <div class="p-4 space-y-3">
+                            <div class="reward-item flex items-center p-3 rounded-lg">
+                                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                    <i class="fas fa-user-plus text-blue-500 text-sm"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-medium text-gray-900">好友注册</div>
+                                    <div class="text-sm text-gray-500">您获得 ¥50 奖励</div>
+                                </div>
+                            </div>
+                            
+                            <div class="reward-item flex items-center p-3 rounded-lg">
+                                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                                    <i class="fas fa-shopping-cart text-green-500 text-sm"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-medium text-gray-900">好友首单</div>
+                                    <div class="text-sm text-gray-500">您再获得 ¥50 奖励</div>
+                                </div>
+                            </div>
+                            
+                            <div class="reward-item flex items-center p-3 rounded-lg">
+                                <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                                    <i class="fas fa-crown text-purple-500 text-sm"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-medium text-gray-900">VIP特权</div>
+                                    <div class="text-sm text-gray-500">邀请5人升级VIP会员</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 邀请方式 -->
+                    <div class="bg-white rounded-xl border border-gray-100 mb-6">
+                        <div class="p-4 border-b border-gray-100">
+                            <h3 class="font-medium text-gray-900">邀请方式</h3>
+                        </div>
+                        <div class="p-4 space-y-3">
+                            <button onclick="shareToWechat()" class="share-btn w-full flex items-center p-4 bg-green-50 rounded-xl">
+                                <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center mr-3">
+                                    <i class="fab fa-weixin text-white"></i>
+                                </div>
+                                <div class="flex-1 text-left">
+                                    <div class="font-medium text-gray-900">微信分享</div>
+                                    <div class="text-sm text-gray-500">分享给微信好友或朋友圈</div>
+                                </div>
+                                <i class="fas fa-chevron-right text-gray-400"></i>
+                            </button>
+                            
+                            <button onclick="copyInviteLink()" class="share-btn w-full flex items-center p-4 bg-blue-50 rounded-xl">
+                                <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center mr-3">
+                                    <i class="fas fa-link text-white"></i>
+                                </div>
+                                <div class="flex-1 text-left">
+                                    <div class="font-medium text-gray-900">复制链接</div>
+                                    <div class="text-sm text-gray-500">复制邀请链接分享给好友</div>
+                                </div>
+                                <i class="fas fa-chevron-right text-gray-400"></i>
+                            </button>
+                            
+                            <button onclick="showQRCode()" class="share-btn w-full flex items-center p-4 bg-gray-50 rounded-xl">
+                                <div class="w-10 h-10 bg-gray-500 rounded-full flex items-center justify-center mr-3">
+                                    <i class="fas fa-qrcode text-white"></i>
+                                </div>
+                                <div class="flex-1 text-left">
+                                    <div class="font-medium text-gray-900">二维码分享</div>
+                                    <div class="text-sm text-gray-500">生成专属二维码</div>
+                                </div>
+                                <i class="fas fa-chevron-right text-gray-400"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 我的邀请 -->
+                    <div class="bg-white rounded-xl border border-gray-100">
+                        <div class="p-4 border-b border-gray-100 flex items-center justify-between">
+                            <h3 class="font-medium text-gray-900">我的邀请</h3>
+                            <a href="#" class="text-blue-500 text-sm">查看全部</a>
+                        </div>
+                        <div class="p-4" id="invite-list">
+                            <div class="text-center py-8 text-gray-500">
+                                <i class="fas fa-users text-3xl mb-3"></i>
+                                <div>还没有邀请记录</div>
+                                <div class="text-sm">快去邀请好友吧！</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 底部导航栏 -->
+            <div class="absolute bottom-0 left-0 right-0 h-[84px] bg-white border-t border-gray-100">
+                <div class="flex items-center justify-around h-full px-4">
+                    <a href="home.html" class="flex flex-col items-center space-y-1 text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                            <polyline points="9,22 9,12 15,12 15,22"></polyline>
+                        </svg>
+                        <span class="text-[10px]">首页</span>
+                    </a>
+                    <a href="design.html" class="flex flex-col items-center space-y-1 text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 19l7-7 3 3-7 7-3-3z"></path>
+                            <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path>
+                            <path d="M2 2l7.586 7.586"></path>
+                            <circle cx="11" cy="11" r="2"></circle>
+                        </svg>
+                        <span class="text-[10px]">设计</span>
+                    </a>
+                    <a href="mall.html" class="flex flex-col items-center space-y-1 text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                            <line x1="3" x2="21" y1="6" y2="6"></line>
+                            <path d="M16 10a4 4 0 0 1-8 0"></path>
+                        </svg>
+                        <span class="text-[10px]">商城</span>
+                    </a>
+                    <a href="construction.html" class="flex flex-col items-center space-y-1 text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="16" height="20" x="4" y="2" rx="2" ry="2"></rect>
+                            <path d="M9 22v-4h6v4"></path>
+                            <path d="M8 6h.01"></path>
+                            <path d="M16 6h.01"></path>
+                            <path d="M12 6h.01"></path>
+                            <path d="M12 10h.01"></path>
+                            <path d="M12 14h.01"></path>
+                            <path d="M16 10h.01"></path>
+                            <path d="M16 14h.01"></path>
+                            <path d="M8 10h.01"></path>
+                            <path d="M8 14h.01"></path>
+                        </svg>
+                        <span class="text-[10px]">施工</span>
+                    </a>
+                    <a href="me.html" class="flex flex-col items-center space-y-1 text-blue-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <span class="text-[10px]">我的</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeInvitePage();
+        });
+
+        /**
+         * 初始化邀请页面
+         */
+        function initializeInvitePage() {
+            loadInviteData();
+            generateInviteCode();
+        }
+
+        /**
+         * 加载邀请数据
+         */
+        function loadInviteData() {
+            const inviteData = JSON.parse(localStorage.getItem('inviteData') || '{"count": 0, "records": []}');
+            document.getElementById('invite-count').textContent = inviteData.count;
+            
+            if (inviteData.records.length > 0) {
+                renderInviteList(inviteData.records);
+            }
+        }
+
+        /**
+         * 生成邀请码
+         */
+        function generateInviteCode() {
+            let inviteCode = localStorage.getItem('inviteCode');
+            if (!inviteCode) {
+                inviteCode = 'INV' + Date.now().toString(36).toUpperCase();
+                localStorage.setItem('inviteCode', inviteCode);
+            }
+            return inviteCode;
+        }
+
+        /**
+         * 微信分享
+         */
+        function shareToWechat() {
+            const inviteCode = generateInviteCode();
+            const shareText = `我在智能家居设计平台发现了很棒的服务，邀请你一起体验！使用我的邀请码 ${inviteCode} 注册，我们都能获得¥100奖励哦！`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: '智能家居设计邀请',
+                    text: shareText,
+                    url: window.location.origin + '/register.html?invite=' + inviteCode
+                });
+            } else {
+                showToast('分享功能需要在微信中打开');
+            }
+        }
+
+        /**
+         * 复制邀请链接
+         */
+        function copyInviteLink() {
+            const inviteCode = generateInviteCode();
+            const inviteLink = window.location.origin + '/register.html?invite=' + inviteCode;
+            
+            navigator.clipboard.writeText(inviteLink).then(() => {
+                showToast('邀请链接已复制到剪贴板');
+            }).catch(() => {
+                showToast('复制失败，请手动复制');
+            });
+        }
+
+        /**
+         * 显示二维码
+         */
+        function showQRCode() {
+            const inviteCode = generateInviteCode();
+            alert(`二维码功能开发中\n您的邀请码：${inviteCode}`);
+        }
+
+        /**
+         * 渲染邀请列表
+         */
+        function renderInviteList(records) {
+            const listContainer = document.getElementById('invite-list');
+            listContainer.innerHTML = '';
+            
+            records.slice(0, 3).forEach(record => {
+                const item = document.createElement('div');
+                item.className = 'flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0';
+                item.innerHTML = `
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-user text-blue-500"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-900">${record.name}</div>
+                            <div class="text-sm text-gray-500">${record.date}</div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-green-500 font-medium">+¥${record.reward}</div>
+                        <div class="text-xs text-gray-500">${record.status}</div>
+                    </div>
+                `;
+                listContainer.appendChild(item);
+            });
+        }
+
+        /**
+         * 显示提示消息
+         */
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-black/80 text-white px-4 py-2 rounded-lg text-sm z-50';
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>3D效果图 - 智能设计与施工</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/iphone16_fix.css">
+    <link rel="stylesheet" href="css/youpin-tab-component.css">
+    <style>
+        .effect-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .effect-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        .space-tab {
+            transition: all 0.3s ease;
+        }
+        .space-tab.active {
+            background: linear-gradient(135deg, #000, #333);
+            color: white;
+        }
+        .effect-viewer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .effect-viewer.show {
+            display: flex;
+        }
+        .effect-content {
+            width: 90%;
+            height: 80%;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+        .effect-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* 嵌入式iframe样式 */
+        .embedded-iframe {
+            width: 100%;
+            height: 300px;
+            border: none;
+            border-radius: 8px;
+        }
+
+        .view-mode-toggle {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            z-index: 10;
+        }
+
+        .scrollbar-none::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-none {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+
+    <!-- 全局错误处理和兜底方案 -->
+    <script>
+        (function() {
+            'use strict';
+            
+            // 创建 Trace 对象的兜底实现
+            window.Trace = window.Trace || {
+                init: function() { console.log('Trace initialized (fallback)'); },
+                log: function() { console.log.apply(console, arguments); },
+                error: function() { console.error.apply(console, arguments); },
+                warn: function() { console.warn.apply(console, arguments); },
+                info: function() { console.info.apply(console, arguments); }
+            };
+
+            // 防止其他可能的调试工具错误
+            window.wx = window.wx || {};
+            window.my = window.my || {};
+            
+            // 防止 chartId 未定义错误
+            window.chartId = window.chartId || 'default-chart-id';
+            
+            // 全局错误处理
+            window.addEventListener('error', function(e) {
+                console.error('Global error caught:', e.error);
+                return true; // 阻止默认错误处理
+            });
+            
+            window.addEventListener('unhandledrejection', function(e) {
+                console.error('Unhandled promise rejection:', e.reason);
+                e.preventDefault(); // 阻止默认处理
+            });
+            
+            console.log('✅ 全局错误处理已初始化');
+        })();
+    </script>
+</head>
+<body class="min-h-screen w-full bg-[#000000] flex items-center justify-center font-system">
+    <!-- iPhone 容器 -->
+    <div class="w-full max-w-[393px] h-[852px] bg-[#1E1E1E] shadow-2xl overflow-hidden relative mx-auto rounded-[54px]">
+        <!-- iPhone 状态栏 -->
+        <div class="w-full h-[47px] bg-black px-5 flex items-center justify-between text-white text-[14px] font-medium">
+            <div class="flex items-center space-x-1">
+                <!-- 信号图标 -->
+                <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2 20h.01"></path>
+                    <path d="M7 20v-4"></path>
+                    <path d="M12 20v-8"></path>
+                    <path d="M17 20V8"></path>
+                    <path d="M22 4v16"></path>
+                </svg>
+                <span>中国移动</span>
+                <!-- WiFi图标 -->
+                <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 20h.01"></path>
+                    <path d="M2 8.82a15 15 0 0 1 20 0"></path>
+                    <path d="M5 12.859a10 10 0 0 1 14 0"></path>
+                    <path d="M8.5 16.429a5 5 0 0 1 7 0"></path>
+                </svg>
+            </div>
+            <div class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">9:41</div>
+            <div class="flex items-center space-x-1">
+                <span>89%</span>
+                <!-- 电池图标 -->
+                <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                    <rect height="10" rx="2" ry="2" width="16" x="2" y="7"></rect>
+                    <line x1="22" x2="22" y1="11" y2="13"></line>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 动态岛 -->
+        <button class="absolute left-1/2 -translate-x-1/2 bg-black transition-all duration-300 ease-out w-[126px] h-[37.5px] -top-0.5 rounded-b-[24px]"></button>
+
+        <!-- 主内容区域 -->
+        <div class="w-full h-[calc(100%-47px)] bg-white overflow-hidden relative">
+            <!-- 滚动内容区域 -->
+            <div class="absolute inset-0 bottom-[84px] overflow-y-auto scrollbar-none">
+                <!-- 顶部导航栏 -->
+                <header class="bg-white border-b border-gray-200">
+                    <div class="flex items-center justify-between px-4 py-3">
+                        <a class="text-black" href="construction-project-detail.html">
+                            <i class="fas fa-arrow-left"></i>
+                        </a>
+                        <h1 class="text-sm font-medium text-black">3D效果图</h1>
+                        <a class="text-black" href="#">
+                            <i class="fas fa-share"></i>
+                        </a>
+                    </div>
+                </header>
+
+                <!-- 查看模式切换 -->
+                <section class="px-4 py-3 bg-white border-b border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-sm font-medium text-black">查看模式</h2>
+                        <div class="flex space-x-2">
+                            <button onclick="switchViewMode('card')" id="cardModeBtn" class="px-3 py-1 bg-black text-white rounded-full text-xs font-medium">
+                                卡片模式
+                            </button>
+                            <button onclick="switchViewMode('embedded')" id="embeddedModeBtn" class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
+                                嵌入模式
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 空间分类标签 - 使用YoupinTabComponent -->
+                <section class="bg-white">
+                    <div class="youpin-tab-component" id="space-tabs">
+                        <!-- 滚动指示器 -->
+                        <div class="youpin-tab-indicator-left"></div>
+                        <div class="youpin-tab-indicator-right"></div>
+
+                        <!-- 滚动容器 -->
+                        <div class="youpin-tab-scrollable">
+                            <div class="youpin-tab-wrapper">
+                                <button class="youpin-tab active" data-space="living">客餐厅</button>
+                                <button class="youpin-tab" data-space="bedroom">主卧</button>
+                                <button class="youpin-tab" data-space="panorama">全景图</button>
+                                <button class="youpin-tab" data-space="elder">长辈房</button>
+                                <button class="youpin-tab" data-space="all">全部展示</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            <!-- 客餐厅效果图 -->
+            <section id="living-section" class="px-4 py-4 bg-white mt-2">
+                <h3 class="text-sm font-medium mb-3">客餐厅效果展示</h3>
+                <div class="space-y-3">
+                    <!-- 情景互动合集 -->
+                    <div class="effect-card border border-gray-200 rounded-lg overflow-hidden" onclick="viewEffect('https://www.kujiale.com/pub/koolab/koolight/pano/index?type=set&setId=3FOIB9H31TV1', '客餐厅情景互动合集')">
+                        <div class="h-32 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+                            <div class="text-center">
+                                <i class="fas fa-cube text-3xl text-blue-600 mb-2"></i>
+                                <div class="text-sm text-blue-700 font-medium">情景互动合集</div>
+                            </div>
+                        </div>
+                        <div class="p-3">
+                            <div class="text-sm font-medium">客餐厅情景互动合集</div>
+                            <div class="text-xs text-gray-500">3D交互式场景展示</div>
+                        </div>
+                    </div>
+
+                    <!-- 灯光色温渐变 -->
+                    <div class="effect-card border border-gray-200 rounded-lg overflow-hidden" onclick="viewEffect('https://www.kujiale.com/pub/koolab/koolight/pano/index?type=set&setId=3FOIB9H48RQK', '客餐厅灯光色温渐变')">
+                        <div class="h-32 bg-gradient-to-br from-yellow-100 to-orange-100 flex items-center justify-center">
+                            <div class="text-center">
+                                <i class="fas fa-lightbulb text-3xl text-yellow-600 mb-2"></i>
+                                <div class="text-sm text-yellow-700 font-medium">灯光色温渐变</div>
+                            </div>
+                        </div>
+                        <div class="p-3">
+                            <div class="text-sm font-medium">客餐厅灯光色温渐变</div>
+                            <div class="text-xs text-gray-500">智能灯光调节演示</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 主卧效果图 -->
+            <section id="bedroom-section" class="px-4 py-4 bg-white mt-2 hidden">
+                <h3 class="text-sm font-medium mb-3">主卧效果展示</h3>
+                <div class="space-y-3">
+                    <!-- 主卧情景互动合集 -->
+                    <div class="effect-card border border-gray-200 rounded-lg overflow-hidden" onclick="viewEffect('https://www.kujiale.com/pub/koolab/koolight/pano/index?type=set&setId=3FOIBCKYUGNC', '主卧情景互动合集')">
+                        <div class="h-32 bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
+                            <div class="text-center">
+                                <i class="fas fa-bed text-3xl text-purple-600 mb-2"></i>
+                                <div class="text-sm text-purple-700 font-medium">情景互动合集</div>
+                            </div>
+                        </div>
+                        <div class="p-3">
+                            <div class="text-sm font-medium">主卧情景互动合集</div>
+                            <div class="text-xs text-gray-500">3D交互式卧室场景</div>
+                        </div>
+                    </div>
+
+                    <!-- 主卧灯光色温渐变 -->
+                    <div class="effect-card border border-gray-200 rounded-lg overflow-hidden" onclick="viewEffect('https://www.kujiale.com/pub/koolab/koolight/pano/index?type=set&setId=3FOIBCKI7SL3', '主卧灯光色温渐变')">
+                        <div class="h-32 bg-gradient-to-br from-indigo-100 to-blue-100 flex items-center justify-center">
+                            <div class="text-center">
+                                <i class="fas fa-moon text-3xl text-indigo-600 mb-2"></i>
+                                <div class="text-sm text-indigo-700 font-medium">灯光色温渐变</div>
+                            </div>
+                        </div>
+                        <div class="p-3">
+                            <div class="text-sm font-medium">主卧灯光色温渐变</div>
+                            <div class="text-xs text-gray-500">舒适睡眠灯光调节</div>
+                        </div>
+                    </div>
+
+                    <!-- 主卧黑白配色 -->
+                    <div class="effect-card border border-gray-200 rounded-lg overflow-hidden" onclick="viewEffect('https://www.kujiale.com/pub/tool/render/image/display/3FOIB9FSGV1H?type=2', '主卧黑白配色')">
+                        <div class="h-32 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                            <div class="text-center">
+                                <i class="fas fa-palette text-3xl text-gray-600 mb-2"></i>
+                                <div class="text-sm text-gray-700 font-medium">黑白配色</div>
+                            </div>
+                        </div>
+                        <div class="p-3">
+                            <div class="text-sm font-medium">主卧黑白配色</div>
+                            <div class="text-xs text-gray-500">简约现代风格展示</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 全景图 -->
+            <section id="panorama-section" class="px-4 py-4 bg-white mt-2 hidden">
+                <h3 class="text-sm font-medium mb-3">全景效果展示</h3>
+                <div class="space-y-3">
+                    <!-- 整体全景图 -->
+                    <div class="effect-card border border-gray-200 rounded-lg overflow-hidden" onclick="viewEffect('https://yun.kujiale.com/design/3FO3GSMJ3NPX/show', '整体全景图')">
+                        <div class="h-32 bg-gradient-to-br from-green-100 to-teal-100 flex items-center justify-center">
+                            <div class="text-center">
+                                <i class="fas fa-globe text-3xl text-green-600 mb-2"></i>
+                                <div class="text-sm text-green-700 font-medium">整体全景图</div>
+                            </div>
+                        </div>
+                        <div class="p-3">
+                            <div class="text-sm font-medium">整体全景图</div>
+                            <div class="text-xs text-gray-500">360度全景浏览</div>
+                        </div>
+                    </div>
+
+                    <!-- 修改版全景 -->
+                    <div class="effect-card border border-gray-200 rounded-lg overflow-hidden" onclick="viewEffect('https://yun.kujiale.com/pub/render/pano/custom/tour/3FO4K7E6H9K9', '修改版全景')">
+                        <div class="h-32 bg-gradient-to-br from-cyan-100 to-blue-100 flex items-center justify-center">
+                            <div class="text-center">
+                                <i class="fas fa-eye text-3xl text-cyan-600 mb-2"></i>
+                                <div class="text-sm text-cyan-700 font-medium">修改版全景</div>
+                            </div>
+                        </div>
+                        <div class="p-3">
+                            <div class="text-sm font-medium">修改版全景（主卧，主卫，长辈房，生活阳台）</div>
+                            <div class="text-xs text-gray-500">最新设计方案展示</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 长辈房 -->
+            <section id="elder-section" class="px-4 py-4 bg-white mt-2 hidden">
+                <h3 class="text-sm font-medium mb-3">长辈房效果展示</h3>
+                <div class="space-y-3">
+                    <!-- 单视角展示 -->
+                    <div class="effect-card border border-gray-200 rounded-lg overflow-hidden" onclick="viewEffect('https://yun.kujiale.com/pub/tool/render/image/display/3FSHAREALBUM?pid=3FOIF2EYUJQ8&firstOpen=true', '长辈房单视角')">
+                        <div class="h-32 bg-gradient-to-br from-amber-100 to-yellow-100 flex items-center justify-center">
+                            <div class="text-center">
+                                <i class="fas fa-home text-3xl text-amber-600 mb-2"></i>
+                                <div class="text-sm text-amber-700 font-medium">单视角展示</div>
+                            </div>
+                        </div>
+                        <div class="p-3">
+                            <div class="text-sm font-medium">长辈房单视角展示</div>
+                            <div class="text-xs text-gray-500">温馨舒适的长辈房设计</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 全部展示 -->
+            <section id="all-section" class="px-4 py-4 bg-white mt-2 hidden">
+                <h3 class="text-sm font-medium mb-4">所有3D效果图展示</h3>
+                <div class="space-y-6" id="allEffectsContainer">
+                    <!-- 内容将通过JavaScript动态生成 -->
+                </div>
+            </section>
+        </div>
+
+        <!-- 底部导航栏 -->
+        <div class="absolute bottom-0 left-0 right-0 h-[84px] bg-white/80 backdrop-blur-xl border-t border-white/20">
+            <!-- 导航栏内容 -->
+            <nav class="h-[49px] flex items-center px-2">
+                <div class="flex justify-around w-full text-[12px]">
+                    <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="home.html">
+                        <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                            <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                            </svg>
+                        </div>
+                        <span class="mt-1">首页</span>
+                    </a>
+                    <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="design-result.html">
+                        <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                            <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="13.5" cy="6.5" fill="currentColor" r=".5"></circle>
+                                <circle cx="17.5" cy="10.5" fill="currentColor" r=".5"></circle>
+                                <circle cx="8.5" cy="7.5" fill="currentColor" r=".5"></circle>
+                                <circle cx="6.5" cy="12.5" fill="currentColor" r=".5"></circle>
+                                <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+                            </svg>
+                        </div>
+                        <span class="mt-1">设计</span>
+                    </a>
+                    <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="mall.html">
+                        <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                            <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+                                <path d="M3 6h18"></path>
+                                <path d="M16 10a4 4 0 0 1-8 0"></path>
+                            </svg>
+                        </div>
+                        <span class="mt-1">商城</span>
+                    </a>
+                    <a class="flex flex-col items-center group text-black transition-colors" href="spaces.html">
+                        <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                            <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="m15 12-8.373 8.373a1 1 0 1 1-3-3L12 9"></path>
+                                <path d="m18 15 4-4"></path>
+                                <path d="m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172V7l-2.26-2.26a6 6 0 0 0-4.202-1.756L9 2.96l.92.82A6.18 6.18 0 0 1 12 8.4V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5"></path>
+                            </svg>
+                        </div>
+                        <span class="mt-1">施工</span>
+                    </a>
+                    <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="me.html">
+                        <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                            <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                        </div>
+                        <span class="mt-1">我的</span>
+                    </a>
+                </div>
+            </nav>
+            <!-- iPhone 16 Home Indicator -->
+            <div class="h-[34px] flex items-center justify-center">
+                <div class="w-[134px] h-[5px] bg-black rounded-full"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 效果图查看器 -->
+    <div id="effectViewer" class="effect-viewer">
+        <div class="effect-content">
+            <div class="absolute top-4 right-4 z-10">
+                <button onclick="closeEffectViewer()" class="w-10 h-10 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black/70 transition-colors">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <iframe id="effectIframe" class="effect-iframe" src=""></iframe>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let currentViewMode = 'card'; // 'card' 或 'embedded'
+
+        // 所有3D效果数据
+        const allEffectsData = [
+            {
+                title: '客餐厅情景互动合集',
+                url: 'https://www.kujiale.com/pub/koolab/koolight/pano/index?type=set&setId=3FOIB9H31TV1',
+                type: 'iframe',
+                category: 'living',
+                icon: 'fas fa-cube',
+                gradient: 'from-blue-100 to-purple-100',
+                iconColor: 'text-blue-600'
+            },
+            {
+                title: '客餐厅灯光色温渐变',
+                url: 'https://www.kujiale.com/pub/koolab/koolight/pano/index?type=set&setId=3FOIB9H48RQK',
+                type: 'iframe',
+                category: 'living',
+                icon: 'fas fa-lightbulb',
+                gradient: 'from-yellow-100 to-orange-100',
+                iconColor: 'text-yellow-600'
+            },
+            {
+                title: '主卧情景互动合集',
+                url: 'https://www.kujiale.com/pub/koolab/koolight/pano/index?type=set&setId=3FOIBCKYUGNC',
+                type: 'iframe',
+                category: 'bedroom',
+                icon: 'fas fa-bed',
+                gradient: 'from-purple-100 to-pink-100',
+                iconColor: 'text-purple-600'
+            },
+            {
+                title: '主卧灯光色温渐变',
+                url: 'https://www.kujiale.com/pub/koolab/koolight/pano/index?type=set&setId=3FOIBCKI7SL3',
+                type: 'iframe',
+                category: 'bedroom',
+                icon: 'fas fa-moon',
+                gradient: 'from-indigo-100 to-blue-100',
+                iconColor: 'text-indigo-600'
+            },
+            {
+                title: '主卧黑白配色',
+                url: 'https://www.kujiale.com/pub/tool/render/image/display/3FOIB9FSGV1H?type=2',
+                type: 'image',
+                category: 'bedroom',
+                icon: 'fas fa-palette',
+                gradient: 'from-gray-100 to-gray-200',
+                iconColor: 'text-gray-600'
+            },
+            {
+                title: '整体全景图',
+                url: 'https://yun.kujiale.com/design/3FO3GSMJ3NPX/show',
+                type: 'iframe',
+                category: 'panorama',
+                icon: 'fas fa-globe',
+                gradient: 'from-green-100 to-teal-100',
+                iconColor: 'text-green-600'
+            },
+            {
+                title: '修改版全景（主卧，主卫，长辈房，生活阳台）',
+                url: 'https://yun.kujiale.com/pub/render/pano/custom/tour/3FO4K7E6H9K9',
+                type: 'iframe',
+                category: 'panorama',
+                icon: 'fas fa-eye',
+                gradient: 'from-cyan-100 to-blue-100',
+                iconColor: 'text-cyan-600'
+            },
+            {
+                title: '长辈房单视角展示',
+                url: 'https://yun.kujiale.com/pub/tool/render/image/display/3FSHAREALBUM?pid=3FOIF2EYUJQ8&firstOpen=true',
+                type: 'iframe',
+                category: 'elder',
+                icon: 'fas fa-home',
+                gradient: 'from-amber-100 to-yellow-100',
+                iconColor: 'text-amber-600'
+            }
+        ];
+
+        // 切换查看模式
+        function switchViewMode(mode) {
+            currentViewMode = mode;
+
+            // 更新按钮样式
+            document.getElementById('cardModeBtn').className = mode === 'card'
+                ? 'px-3 py-1 bg-black text-white rounded-full text-xs font-medium'
+                : 'px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium';
+
+            document.getElementById('embeddedModeBtn').className = mode === 'embedded'
+                ? 'px-3 py-1 bg-black text-white rounded-full text-xs font-medium'
+                : 'px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium';
+
+            // 重新渲染当前显示的内容
+            const activeSection = document.querySelector('[id$="-section"]:not(.hidden)');
+            if (activeSection && activeSection.id === 'all-section') {
+                generateAllEffectsContent();
+            }
+        }
+
+        // 切换空间标签 - 使用YoupinTabComponent
+        function switchSpace(spaceName) {
+            // 隐藏所有section
+            document.querySelectorAll('[id$="-section"]').forEach(section => {
+                section.classList.add('hidden');
+            });
+
+            // 显示选中的section
+            const targetSection = document.getElementById(spaceName + '-section');
+            if (targetSection) {
+                targetSection.classList.remove('hidden');
+            }
+
+            // 如果是全部展示，生成内容
+            if (spaceName === 'all') {
+                generateAllEffectsContent();
+            }
+        }
+
+        // 生成全部效果图内容
+        function generateAllEffectsContent() {
+            const container = document.getElementById('allEffectsContainer');
+            container.innerHTML = '';
+
+            allEffectsData.forEach((effect, index) => {
+                const effectDiv = document.createElement('div');
+                effectDiv.className = 'space-y-3';
+
+                if (currentViewMode === 'card') {
+                    // 卡片模式
+                    effectDiv.innerHTML = `
+                        <div class="effect-card border border-gray-200 rounded-lg overflow-hidden" onclick="viewEffect('${effect.url}', '${effect.title}')">
+                            <div class="h-32 bg-gradient-to-br ${effect.gradient} flex items-center justify-center">
+                                <div class="text-center">
+                                    <i class="${effect.icon} text-3xl ${effect.iconColor} mb-2"></i>
+                                    <div class="text-sm ${effect.iconColor.replace('text-', 'text-')} font-medium">${effect.title}</div>
+                                </div>
+                            </div>
+                            <div class="p-3">
+                                <div class="text-sm font-medium">${effect.title}</div>
+                                <div class="text-xs text-gray-500">点击查看完整效果</div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // 嵌入模式
+                    effectDiv.innerHTML = `
+                        <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                            <div class="p-3 border-b border-gray-100">
+                                <h4 class="text-sm font-medium text-black">${effect.title}</h4>
+                            </div>
+                            <div class="relative">
+                                ${effect.type === 'iframe'
+                                    ? `<iframe src="${effect.url}" class="embedded-iframe" allowfullscreen></iframe>`
+                                    : `<img src="${effect.url}" alt="${effect.title}" class="w-full h-[300px] object-cover">`
+                                }
+                                <div class="view-mode-toggle">
+                                    <button onclick="viewEffect('${effect.url}', '${effect.title}')" class="w-8 h-8 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black/70 transition-colors">
+                                        <i class="fas fa-expand text-xs"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                container.appendChild(effectDiv);
+            });
+        }
+
+        // 查看效果图
+        function viewEffect(url, title) {
+            document.getElementById('effectIframe').src = url;
+            document.getElementById('effectViewer').classList.add('show');
+        }
+
+        // 关闭效果图查看器
+        function closeEffectViewer() {
+            document.getElementById('effectViewer').classList.remove('show');
+            document.getElementById('effectIframe').src = '';
+        }
+
+        // 点击背景关闭查看器
+        document.getElementById('effectViewer').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeEffectViewer();
+            }
+        });
+
+        // 初始化空间Tab组件
+        document.addEventListener('DOMContentLoaded', function() {
+            const spaceTabComponent = new YoupinTabComponent('#space-tabs', {
+                enableKeyboard: true,
+                enableAutoScroll: true,
+                debug: false
+            });
+
+            // 监听Tab切换事件
+            document.getElementById('space-tabs').addEventListener('youpinTabChange', (e) => {
+                const spaceName = e.detail.data.space;
+                console.log('空间Tab切换:', { spaceName, index: e.detail.index });
+
+                // 调用原有的切换逻辑
+                switchSpace(spaceName);
+            });
+        });
+    </script>
+
+    <!-- 引入YoupinTabComponent -->
+    <script src="js/youpin-tab-component.js"></script>
+</body>
+</html>

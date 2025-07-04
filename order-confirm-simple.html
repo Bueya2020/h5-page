@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>确认订单 - 智能家居</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'system': ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', '"SF Pro Icons"', '"Helvetica Neue"', 'Helvetica', 'Arial', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            -webkit-text-size-adjust: 100%;
+            -moz-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .scrollbar-none::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-none {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+
+
+
+    </style>
+</head>
+<body class="min-h-screen w-full bg-[#000000] flex items-center justify-center font-system">
+    <!-- iPhone 容器 -->
+    <div class="w-full max-w-[393px] h-[852px] bg-[#1E1E1E] shadow-2xl overflow-hidden relative mx-auto rounded-[54px]">
+        <!-- iPhone 状态栏 -->
+        <div class="w-full h-[47px] bg-black px-5 flex items-center justify-between text-white text-[14px] font-medium">
+            <div class="flex items-center space-x-1">
+                <!-- 信号图标 -->
+                <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2 20h.01"></path>
+                    <path d="M7 20v-4"></path>
+                    <path d="M12 20v-8"></path>
+                    <path d="M17 20V8"></path>
+                    <path d="M22 4v16"></path>
+                </svg>
+                <span>中国移动</span>
+                <!-- WiFi图标 -->
+                <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 20h.01"></path>
+                    <path d="M2 8.82a15 15 0 0 1 20 0"></path>
+                    <path d="M5 12.859a10 10 0 0 1 14 0"></path>
+                    <path d="M8.5 16.429a5 5 0 0 1 7 0"></path>
+                </svg>
+            </div>
+            <div class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">9:41</div>
+            <div class="flex items-center space-x-1">
+                <span>89%</span>
+                <!-- 电池图标 -->
+                <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                    <rect height="10" rx="2" ry="2" width="16" x="2" y="7"></rect>
+                    <line x1="22" x2="22" y1="11" y2="13"></line>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 动态岛 -->
+        <button class="absolute left-1/2 -translate-x-1/2 bg-black transition-all duration-300 ease-out w-[126px] h-[37.5px] -top-0.5 rounded-b-[24px]"></button>
+
+        <!-- 主内容区域 -->
+        <div class="w-full h-[calc(100%-47px)] bg-white overflow-hidden relative">
+            <!-- 滚动内容区域 -->
+            <div class="absolute inset-0 bottom-[84px] overflow-y-auto scrollbar-none">
+                <!-- 顶部导航栏 -->
+                <header class="bg-white border-b border-gray-200">
+                    <div class="flex items-center justify-between px-4 py-3">
+                        <a class="text-black" href="javascript:history.back()">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="m15 18-6-6 6-6"></path>
+                            </svg>
+                        </a>
+                        <h1 class="text-sm font-medium text-black">确认订单</h1>
+                        <div class="w-4"></div>
+                    </div>
+                </header>
+
+                <!-- 页面内容 -->
+                <div class="px-4 py-4">
+                    <!-- 商品信息 -->
+                    <div class="mb-6">
+                        <h2 class="text-lg font-semibold text-gray-900 mb-3">商品信息</h2>
+                        <div class="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+                            <div class="flex gap-3 mb-4 pb-4 border-b border-gray-100">
+                                <div class="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24">
+                                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                                        <polyline points="3.27,6.96 12,12.01 20.73,6.96"></polyline>
+                                        <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="text-sm font-medium text-gray-900 mb-1">智能家居设计方案</div>
+                                    <div class="text-xs text-gray-500 mb-2">现代简约风格 · 三室两厅</div>
+                                    <div class="text-sm font-semibold text-gray-900">¥12,800</div>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-3">
+                                <div class="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24">
+                                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                        <polyline points="9,22 9,12 15,12 15,22"></polyline>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="text-sm font-medium text-gray-900 mb-1">施工监理服务</div>
+                                    <div class="text-xs text-gray-500 mb-2">全程监理 · 质量保证</div>
+                                    <div class="text-sm font-semibold text-gray-900">¥3,200</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 费用明细 -->
+                    <div class="mb-6">
+                        <h2 class="text-lg font-semibold text-gray-900 mb-3">费用明细</h2>
+                        <div class="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm text-gray-600">商品总价</span>
+                                <span class="text-sm font-medium text-gray-900">¥16,000</span>
+                            </div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm text-gray-600">优惠券</span>
+                                <span class="text-sm font-medium text-red-500">-¥500</span>
+                            </div>
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-sm text-gray-600">运费</span>
+                                <span class="text-sm font-medium text-gray-900">免费</span>
+                            </div>
+                            <div class="border-t border-gray-100 pt-4">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-600">实付金额</span>
+                                    <span class="text-lg font-semibold text-gray-900">¥15,500</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 底部支付栏 -->
+            <div class="absolute bottom-[84px] left-0 right-0 bg-white border-t border-gray-200 px-4 py-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <span class="text-sm text-gray-600 mr-2">合计：</span>
+                        <span class="text-lg font-semibold text-gray-900">¥15,500</span>
+                    </div>
+                    <button class="bg-black text-white px-6 py-2 rounded-xl text-sm font-medium hover:bg-gray-800 active:bg-gray-900 transition-colors" onclick="handlePayment()">
+                        立即支付
+                    </button>
+                </div>
+            </div>
+
+            <!-- 底部导航栏 -->
+            <div class="absolute bottom-0 left-0 right-0 h-[84px] bg-white/80 backdrop-blur-xl border-t border-white/20">
+                <div class="flex items-center justify-around h-full px-4">
+                    <a href="index.html" class="flex flex-col items-center justify-center space-y-1">
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                            <polyline points="9,22 9,12 15,12 15,22"></polyline>
+                        </svg>
+                        <span class="text-xs text-gray-400">首页</span>
+                    </a>
+                    <a href="design-services.html" class="flex flex-col items-center justify-center space-y-1">
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M12 19l7-7 3 3-7 7-3-3z"></path>
+                            <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path>
+                            <path d="M2 2l7.586 7.586"></path>
+                            <circle cx="11" cy="11" r="2"></circle>
+                        </svg>
+                        <span class="text-xs text-gray-400">设计</span>
+                    </a>
+                    <a href="mall.html" class="flex flex-col items-center justify-center space-y-1">
+                        <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                            <line x1="3" x2="21" y1="6" y2="6"></line>
+                            <path d="M16 10a4 4 0 0 1-8 0"></path>
+                        </svg>
+                        <span class="text-xs text-black font-medium">商城</span>
+                    </a>
+                    <a href="construction.html" class="flex flex-col items-center justify-center space-y-1">
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"></path>
+                            <path d="M15 18H9"></path>
+                            <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"></path>
+                            <circle cx="17" cy="18" r="2"></circle>
+                            <circle cx="7" cy="18" r="2"></circle>
+                        </svg>
+                        <span class="text-xs text-gray-400">施工</span>
+                    </a>
+                    <a href="profile.html" class="flex flex-col items-center justify-center space-y-1">
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <span class="text-xs text-gray-400">我的</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function handlePayment() {
+            // 显示支付处理中状态
+            const payBtn = event.target;
+            const originalText = payBtn.textContent;
+            payBtn.textContent = '处理中...';
+            payBtn.disabled = true;
+
+            // 模拟支付处理
+            setTimeout(() => {
+                // 跳转到支付页面或显示支付成功
+                window.location.href = 'order-confirm.html?amount=15500&type=simple';
+            }, 1500);
+        }
+
+        // 页面加载完成后的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('✅ 智能家居订单确认页面加载完成');
+
+            // 添加页面交互效果
+            const payBtn = document.querySelector('button');
+            if (payBtn) {
+                payBtn.addEventListener('mousedown', function() {
+                    this.style.transform = 'scale(0.98)';
+                });
+
+                payBtn.addEventListener('mouseup', function() {
+                    this.style.transform = 'scale(1)';
+                });
+            }
+        });
+    </script>
+</body>
+</html>

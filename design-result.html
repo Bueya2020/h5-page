@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>设计方案 - 智能设计与施工</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/youpin-tab-component.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'system': ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', '"SF Pro Icons"', '"Helvetica Neue"', 'Helvetica', 'Arial', 'sans-serif']
+                    },
+                    colors: {
+                        'primary-text': '#1A1A1A',
+                        'main-bg': '#F8F9FA'
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/iphone16_fix.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            -webkit-text-size-adjust: 100%;
+            -moz-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .scrollbar-none::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-none {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        :root {
+            --safe-area-inset-top: env(safe-area-inset-top);
+            --safe-area-inset-bottom: env(safe-area-inset-bottom);
+        }
+
+        .design-card {
+            transition: transform 0.2s;
+        }
+
+        .design-card:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary:active {
+            background-color: #333;
+        }
+
+        /* 移除旧的tab-item样式，现在使用YoupinTabComponent */
+
+        .floating-design-btn {
+            position: fixed;
+            top: 120px;
+            right: 16px;
+            left: 16px;
+            z-index: 1000;
+            background: #000;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 0;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            max-width: 361px;
+        }
+
+        .floating-design-btn:hover {
+            background: #333;
+        }
+
+        .floating-design-btn:active {
+            background: #555;
+        }
+
+        .floating-design-btn i {
+            margin-right: 6px;
+            font-size: 14px;
+        }
+
+        .text-shadow {
+            text-shadow: 0 1px 0 rgb(0 0 0 / 40%);
+        }
+
+        .tab-content {
+            transition: opacity 0.3s ease;
+        }
+
+        .tab-content.hidden {
+            display: none;
+        }
+
+
+
+        .team-member {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .team-member:hover {
+            background-color: #f8f9fa;
+            transform: translateY(-2px);
+        }
+
+        .contact-tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a1a1a;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1001;
+            margin-bottom: 8px;
+        }
+
+        .contact-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: #1a1a1a;
+        }
+
+        .team-member:hover .contact-tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .role-badge {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 500;
+        }
+
+        /* 分享弹窗样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 3000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 320px;
+            width: 85%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            position: relative;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 20px;
+            margin-top: 8px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #000;
+            margin-bottom: 8px;
+        }
+
+        .modal-subtitle {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 28px;
+            height: 28px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+
+        .modal-close:hover {
+            background: #555;
+            transform: scale(1.1);
+        }
+
+        /* 分享选项样式 */
+        .share-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .share-option {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            border: 2px solid #f0f0f0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .share-option:hover {
+            border-color: #ddd;
+            background: #f9f9f9;
+            transform: translateY(-1px);
+        }
+
+        .share-option:active {
+            transform: translateY(0);
+        }
+
+        .share-option-icon {
+            margin-right: 12px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #f8f8f8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .share-option-content {
+            flex: 1;
+        }
+
+        .share-option-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #000;
+            margin-bottom: 2px;
+        }
+
+        .share-option-desc {
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* 防止页面滚动 */
+        .popup-open {
+            overflow: hidden;
+        }
+    </style>
+
+    <!-- 全局错误处理和兜底方案 -->
+    <script>
+        (function() {
+            'use strict';
+            
+            // 创建 Trace 对象的兜底实现
+            window.Trace = window.Trace || {
+                init: function() { console.log('Trace initialized (fallback)'); },
+                log: function() { console.log.apply(console, arguments); },
+                error: function() { console.error.apply(console, arguments); },
+                warn: function() { console.warn.apply(console, arguments); },
+                info: function() { console.info.apply(console, arguments); }
+            };
+
+            // 防止其他可能的调试工具错误
+            window.wx = window.wx || {};
+            window.my = window.my || {};
+            
+            // 防止 chartId 未定义错误
+            window.chartId = window.chartId || 'default-chart-id';
+            
+            // 全局错误处理
+            window.addEventListener('error', function(e) {
+                console.error('Global error caught:', e.error);
+                return true; // 阻止默认错误处理
+            });
+            
+            window.addEventListener('unhandledrejection', function(e) {
+                console.error('Unhandled promise rejection:', e.reason);
+                e.preventDefault(); // 阻止默认处理
+            });
+            
+            console.log('✅ 全局错误处理已初始化');
+        })();
+    </script>
+</head>
+<body class="min-h-screen w-full bg-[#000000] flex items-center justify-center font-system">
+    <!-- iPhone 容器 -->
+    <div class="w-full max-w-[393px] h-[852px] bg-[#1E1E1E] shadow-2xl overflow-hidden relative mx-auto rounded-[54px]">
+        <!-- iPhone 状态栏 -->
+        <div class="w-full h-[47px] bg-black px-5 flex items-center justify-between text-white text-[14px] font-medium">
+            <div class="flex items-center space-x-1">
+                <!-- 信号图标 -->
+                <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2 20h.01"></path>
+                    <path d="M7 20v-4"></path>
+                    <path d="M12 20v-8"></path>
+                    <path d="M17 20V8"></path>
+                    <path d="M22 4v16"></path>
+                </svg>
+                <span>中国移动</span>
+                <!-- WiFi图标 -->
+                <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 20h.01"></path>
+                    <path d="M2 8.82a15 15 0 0 1 20 0"></path>
+                    <path d="M5 12.859a10 10 0 0 1 14 0"></path>
+                    <path d="M8.5 16.429a5 5 0 0 1 7 0"></path>
+                </svg>
+            </div>
+            <div class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">15:52</div>
+            <div class="flex items-center space-x-1">
+                <span>89%</span>
+                <!-- 电池图标 -->
+                <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                    <rect height="10" rx="2" ry="2" width="16" x="2" y="7"></rect>
+                    <line x1="22" x2="22" y1="11" y2="13"></line>
+                </svg>
+            </div>
+        </div>
+        <!-- 动态岛 -->
+        <button class="absolute left-1/2 -translate-x-1/2 bg-black transition-all duration-300 ease-out w-[126px] h-[37.5px] -top-0.5 rounded-b-[24px]"></button>
+        <!-- 主内容区域 -->
+        <div class="w-full h-[calc(100%-47px)] bg-white overflow-hidden relative">
+
+            <!-- 顶部白色导航区域 -->
+            <div class="absolute top-0 left-0 right-0 z-30">
+                <div class="bg-white text-black border-b border-gray-100">
+                    <!-- 顶部操作按钮 -->
+                    <div class="flex items-center justify-center px-4 relative h-[75px]">
+                        <!-- 返回按钮 -->
+                        <button class="absolute left-4 top-1/2 -translate-y-1/2 text-black/70 hover:text-black transition-colors" onclick="window.location.href='design.html'">
+                            <svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg">
+                                <path d="m15 18-6-6 6-6"></path>
+                            </svg>
+                        </button>
+                        <!-- 标题 -->
+                        <h1 class="text-base font-semibold text-black">设计方案</h1>
+                        <!-- 右侧按钮组 -->
+                        <div class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center space-x-3">
+                            <!-- 开始设计按钮 -->
+                            <button class="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 active:bg-gray-900 transition-all" onclick="window.location.href='design.html'">
+                                开始设计
+                            </button>
+                            <!-- 分享按钮 -->
+                            <button class="text-black/70 hover:text-black transition-colors" onclick="showShareModal()">
+                                <svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="18" cy="5" r="3"></circle>
+                                    <circle cx="6" cy="12" r="3"></circle>
+                                    <circle cx="18" cy="19" r="3"></circle>
+                                    <line x1="8.59" x2="15.42" y1="13.51" y2="17.49"></line>
+                                    <line x1="15.41" x2="8.59" y1="6.51" y2="10.49"></line>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 滚动内容区域 -->
+            <div class="absolute inset-0 top-[75px] bottom-[84px] overflow-y-auto scrollbar-none">
+                <!-- AI生成状态提示 -->
+                <section id="aiGeneratedBanner" class="bg-gradient-to-r from-blue-50 to-purple-50 mx-3 mt-4 rounded-xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]" style="display: none;">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                            <i class="fas fa-magic text-white text-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-semibold text-black">AI智能生成方案</h3>
+                            <p class="text-xs text-gray-600">基于您的需求智能生成，可进一步优化</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 方案概览 -->
+                <section class="bg-white mx-3 mt-4 rounded-xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+                    <div class="flex items-center space-x-3 mb-3">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=40&h=40&q=80" alt="设计师" class="w-10 h-10 rounded-full object-cover border-2 border-gray-200">
+                        <div>
+                            <h2 id="designTitle" class="text-sm font-semibold text-black">现代简约智能家居方案</h2>
+                            <p id="designInfo" class="text-xs text-gray-500">设计师：AI智能设计 | 120㎡ 三居室</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4 text-center">
+                        <div>
+                            <p id="equipmentPrice" class="text-lg font-bold text-black">¥15,800</p>
+                            <p class="text-xs text-gray-500">设备总价</p>
+                        </div>
+                        <div>
+                            <p id="constructionPrice" class="text-lg font-bold text-black">¥3,200</p>
+                            <p class="text-xs text-gray-500">施工费用</p>
+                        </div>
+                        <div>
+                            <p id="constructionDays" class="text-lg font-bold text-black">15天</p>
+                            <p class="text-xs text-gray-500">预计工期</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 方案详情标签 -->
+                <section class="bg-white mx-3 mt-4 rounded-xl px-4 py-3 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+                    <!-- YoupinTabComponent 方案详情导航 -->
+                    <div class="youpin-tab-component" id="design-detail-tabs">
+                        <!-- 滚动指示器 -->
+                        <div class="youpin-tab-indicator-left"></div>
+                        <div class="youpin-tab-indicator-right"></div>
+
+                        <!-- 滚动容器 -->
+                        <div class="youpin-tab-scrollable">
+                            <div class="youpin-tab-wrapper">
+                                <button class="youpin-tab active" data-tab="3d">3D效果图</button>
+                                <button class="youpin-tab" data-tab="drawings">项目图纸</button>
+                                <button class="youpin-tab" data-tab="construction">施工方案</button>
+                                <button class="youpin-tab" data-tab="pricing">报价明细</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 内容展示区域 -->
+                <section class="px-3 py-4">
+                    <!-- 3D效果图内容 -->
+                    <div id="content-3d" class="tab-content">
+                        <div class="space-y-4">
+                            <!-- 客厅效果图 -->
+                            <div class="design-card bg-white rounded-xl overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all">
+                                <img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=393&h=220&q=80" alt="客厅效果图" class="w-full h-55 object-cover">
+                                <div class="p-3">
+                                    <h3 class="text-sm font-medium mb-1 text-black">客厅智能化方案</h3>
+                                    <p class="text-xs text-gray-500">智能照明 + 智能影音 + 智能窗帘</p>
+                                </div>
+                            </div>
+
+                            <!-- 卧室效果图 -->
+                            <div class="design-card bg-white rounded-xl overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all">
+                                <img src="https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=393&h=220&q=80" alt="卧室效果图" class="w-full h-55 object-cover">
+                                <div class="p-3">
+                                    <h3 class="text-sm font-medium mb-1 text-black">主卧智能化方案</h3>
+                                    <p class="text-xs text-gray-500">智能照明 + 智能温控 + 智能窗帘</p>
+                                </div>
+                            </div>
+
+                            <!-- 厨房效果图 -->
+                            <div class="design-card bg-white rounded-xl overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all">
+                                <img src="https://images.unsplash.com/photo-1615529182904-14819c35db37?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=393&h=220&q=80" alt="厨房效果图" class="w-full h-55 object-cover">
+                                <div class="p-3">
+                                    <h3 class="text-sm font-medium mb-1 text-black">厨房智能化方案</h3>
+                                    <p class="text-xs text-gray-500">智能照明 + 智能插座 + 智能开关</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 项目图纸内容 -->
+                    <div id="content-drawings" class="tab-content hidden">
+                        <div class="space-y-4">
+                            <!-- 平面布局图 -->
+                            <div class="bg-white rounded-xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+                                <h3 class="text-sm font-medium mb-3 text-black">平面布局图</h3>
+                                <div class="bg-gray-100 rounded-lg h-48 flex items-center justify-center mb-3">
+                                    <div class="text-center text-gray-500">
+                                        <svg class="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                        </svg>
+                                        <p class="text-xs">平面布局图.pdf</p>
+                                    </div>
+                                </div>
+                                <button class="w-full py-2 bg-black text-white rounded-lg text-sm">查看详细图纸</button>
+                            </div>
+
+                            <!-- 电路布线图 -->
+                            <div class="bg-white rounded-xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+                                <h3 class="text-sm font-medium mb-3 text-black">电路布线图</h3>
+                                <div class="bg-gray-100 rounded-lg h-48 flex items-center justify-center mb-3">
+                                    <div class="text-center text-gray-500">
+                                        <svg class="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                        </svg>
+                                        <p class="text-xs">电路布线图.pdf</p>
+                                    </div>
+                                </div>
+                                <button class="w-full py-2 bg-black text-white rounded-lg text-sm">查看详细图纸</button>
+                            </div>
+
+                            <!-- 设备安装图 -->
+                            <div class="bg-white rounded-xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+                                <h3 class="text-sm font-medium mb-3 text-black">设备安装图</h3>
+                                <div class="bg-gray-100 rounded-lg h-48 flex items-center justify-center mb-3">
+                                    <div class="text-center text-gray-500">
+                                        <svg class="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                                        </svg>
+                                        <p class="text-xs">设备安装图.pdf</p>
+                                    </div>
+                                </div>
+                                <button class="w-full py-2 bg-black text-white rounded-lg text-sm">查看详细图纸</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 施工方案内容 -->
+                    <div id="content-construction" class="tab-content hidden">
+                        <div class="space-y-4">
+                            <!-- 施工流程说明 -->
+                            <div class="bg-white rounded-xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+                                <h3 class="text-sm font-medium mb-4 text-black">施工流程说明</h3>
+                                <div class="space-y-3">
+                                    <div class="text-sm text-gray-600">
+                                        <p class="mb-2">本项目施工流程包含以下阶段：</p>
+                                        <ul class="list-disc list-inside space-y-1 text-xs">
+                                            <li>交底：施工前技术交底和安全交底</li>
+                                            <li>布线：智能设备线路布置和预埋</li>
+                                            <li>安装：智能设备和系统安装</li>
+                                            <li>调试：系统联调和功能测试</li>
+                                            <li>售后：交付后的维护和服务</li>
+                                        </ul>
+                                        <p class="mt-3 text-xs text-gray-500">详细的施工进度和人员安排请在施工模块中查看。</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 施工要点 -->
+                            <div class="bg-white rounded-xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+                                <h3 class="text-sm font-medium mb-3 text-black">施工要点</h3>
+                                <div class="space-y-2">
+                                    <div class="flex items-start space-x-2">
+                                        <div class="w-1.5 h-1.5 bg-black rounded-full mt-2"></div>
+                                        <p class="text-xs text-gray-700">确保强弱电分离，避免信号干扰</p>
+                                    </div>
+                                    <div class="flex items-start space-x-2">
+                                        <div class="w-1.5 h-1.5 bg-black rounded-full mt-2"></div>
+                                        <p class="text-xs text-gray-700">预留足够的检修空间和线路冗余</p>
+                                    </div>
+                                    <div class="flex items-start space-x-2">
+                                        <div class="w-1.5 h-1.5 bg-black rounded-full mt-2"></div>
+                                        <p class="text-xs text-gray-700">严格按照设备安装规范进行施工</p>
+                                    </div>
+                                    <div class="flex items-start space-x-2">
+                                        <div class="w-1.5 h-1.5 bg-black rounded-full mt-2"></div>
+                                        <p class="text-xs text-gray-700">做好成品保护，避免后续装修损坏</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 报价明细内容 -->
+                    <div id="content-pricing" class="tab-content hidden">
+                        <div class="space-y-4">
+                            <!-- 设备费用 -->
+                            <div class="bg-white rounded-xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+                                <h3 class="text-sm font-medium mb-3 text-black">设备费用明细</h3>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                        <div>
+                                            <p class="text-sm text-black">智能网关主机</p>
+                                            <p class="text-xs text-gray-500">数量: 1台</p>
+                                        </div>
+                                        <p class="text-sm font-medium text-black">¥299</p>
+                                    </div>
+                                    <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                        <div>
+                                            <p class="text-sm text-black">智能门锁</p>
+                                            <p class="text-xs text-gray-500">数量: 1台</p>
+                                        </div>
+                                        <p class="text-sm font-medium text-black">¥1,299</p>
+                                    </div>
+                                    <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                        <div>
+                                            <p class="text-sm text-black">智能灯带</p>
+                                            <p class="text-xs text-gray-500">数量: 8条</p>
+                                        </div>
+                                        <p class="text-sm font-medium text-black">¥1,032</p>
+                                    </div>
+                                    <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                        <div>
+                                            <p class="text-sm text-black">智能摄像头</p>
+                                            <p class="text-xs text-gray-500">数量: 3台</p>
+                                        </div>
+                                        <p class="text-sm font-medium text-black">¥597</p>
+                                    </div>
+                                    <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                        <div>
+                                            <p class="text-sm text-black">智能开关面板</p>
+                                            <p class="text-xs text-gray-500">数量: 12个</p>
+                                        </div>
+                                        <p class="text-sm font-medium text-black">¥1,188</p>
+                                    </div>
+                                    <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                        <div>
+                                            <p class="text-sm text-black">其他配件</p>
+                                            <p class="text-xs text-gray-500">线材、辅料等</p>
+                                        </div>
+                                        <p class="text-sm font-medium text-black">¥585</p>
+                                    </div>
+                                    <div class="flex justify-between items-center py-2 pt-3 border-t border-gray-200">
+                                        <p class="text-sm font-medium text-black">设备小计</p>
+                                        <p class="text-lg font-bold text-black">¥15,800</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 施工费用 -->
+                            <div class="bg-white rounded-xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+                                <h3 class="text-sm font-medium mb-3 text-black">施工费用明细</h3>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                        <p class="text-sm text-black">电路改造费</p>
+                                        <p class="text-sm font-medium text-black">¥1,200</p>
+                                    </div>
+                                    <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                        <p class="text-sm text-black">设备安装费</p>
+                                        <p class="text-sm font-medium text-black">¥1,500</p>
+                                    </div>
+                                    <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                        <p class="text-sm text-black">系统调试费</p>
+                                        <p class="text-sm font-medium text-black">¥500</p>
+                                    </div>
+                                    <div class="flex justify-between items-center py-2 pt-3 border-t border-gray-200">
+                                        <p class="text-sm font-medium text-black">施工小计</p>
+                                        <p class="text-lg font-bold text-black">¥3,200</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 总计 -->
+                            <div class="bg-black rounded-xl p-4 text-white">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <p class="text-sm opacity-80">项目总价</p>
+                                        <p class="text-xs opacity-60">包含设备+施工+调试</p>
+                                    </div>
+                                    <p class="text-2xl font-bold">¥19,000</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 核心设备 -->
+                <section class="px-3 py-4">
+                    <h2 class="text-sm font-semibold mb-3 px-1 text-black">核心设备</h2>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-white rounded-xl p-3 shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all">
+                            <img src="https://images.unsplash.com/photo-1558089687-f282ffcbc0d4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=120&h=80&q=80" alt="智能网关" class="w-full h-20 object-cover rounded-lg mb-2">
+                            <h3 class="text-xs font-medium text-black">智能网关主机</h3>
+                            <p class="text-xs text-gray-500">¥299 x1</p>
+                        </div>
+                        <div class="bg-white rounded-xl p-3 shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all">
+                            <img src="https://images.unsplash.com/photo-1546054454-aa26e2b734c7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=120&h=80&q=80" alt="智能门锁" class="w-full h-20 object-cover rounded-lg mb-2">
+                            <h3 class="text-xs font-medium text-black">智能门锁</h3>
+                            <p class="text-xs text-gray-500">¥1299 x1</p>
+                        </div>
+                        <div class="bg-white rounded-xl p-3 shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all">
+                            <img src="https://images.unsplash.com/photo-1544256718-3bcf237f3974?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=120&h=80&q=80" alt="智能灯带" class="w-full h-20 object-cover rounded-lg mb-2">
+                            <h3 class="text-xs font-medium text-black">智能灯带</h3>
+                            <p class="text-xs text-gray-500">¥129 x8</p>
+                        </div>
+                        <div class="bg-white rounded-xl p-3 shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all">
+                            <img src="https://images.unsplash.com/photo-1573770012830-7c314f4fcc99?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=120&h=80&q=80" alt="智能摄像头" class="w-full h-20 object-cover rounded-lg mb-2">
+                            <h3 class="text-xs font-medium text-black">智能摄像头</h3>
+                            <p class="text-xs text-gray-500">¥199 x3</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 设计师建议 -->
+                <section class="px-3 py-4">
+                    <h2 class="text-sm font-semibold mb-3 px-1 text-black">设计师建议</h2>
+                    <div class="bg-white rounded-xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all">
+                        <div class="flex items-start space-x-3">
+                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=40&h=40&q=80" alt="设计师" class="w-10 h-10 rounded-full object-cover border-2 border-gray-200">
+                            <div class="flex-1">
+                                <h3 class="text-sm font-medium mb-1 text-black">张设计师</h3>
+                                <p class="text-xs text-gray-700">根据您的户型和需求，建议采用分区控制的智能化方案。客厅作为主要活动区域，配置智能影音系统；卧室注重舒适性，配置智能温控；全屋采用智能照明系统，营造不同场景氛围。</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 底部操作栏 -->
+                <div class="px-3 py-4 mb-4">
+                    <div class="bg-white rounded-xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+                        <div class="flex space-x-3">
+                            <button class="flex-1 py-3 border border-gray-300 rounded-lg text-sm text-black hover:bg-gray-50 active:bg-gray-100 transition-all">
+                                <i class="fas fa-heart mr-1"></i>收藏方案
+                            </button>
+                            <button class="flex-1 py-3 bg-black text-white rounded-lg text-sm hover:bg-gray-800 active:bg-gray-900 transition-all">
+                                立即下单
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        <!-- 底部导航栏 -->
+<div class="absolute bottom-0 left-0 right-0 h-[84px] bg-white/80 backdrop-blur-xl border-t border-white/20">
+<!-- 导航栏内容 -->
+<nav class="h-[49px] flex items-center px-2">
+<div class="flex justify-around w-full text-[12px]">
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="home.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+<polyline points="9 22 9 12 15 12 15 22"></polyline>
+</svg>
+</div>
+<span class="mt-1">首页</span>
+</a>
+<a class="flex flex-col items-center group text-black transition-colors" href="design-result.html" class="flex flex-col items-center group text-black transition-colors">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<circle cx="13.5" cy="6.5" fill="currentColor" r=".5"></circle>
+<circle cx="17.5" cy="10.5" fill="currentColor" r=".5"></circle>
+<circle cx="8.5" cy="7.5" fill="currentColor" r=".5"></circle>
+<circle cx="6.5" cy="12.5" fill="currentColor" r=".5"></circle>
+<path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+</svg>
+</div>
+<span class="mt-1">设计</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="mall.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+<path d="M3 6h18"></path>
+<path d="M16 10a4 4 0 0 1-8 0"></path>
+</svg>
+</div>
+<span class="mt-1">商城</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="spaces.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="m15 12-8.373 8.373a1 1 0 1 1-3-3L12 9"></path>
+<path d="m18 15 4-4"></path>
+<path d="m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172V7l-2.26-2.26a6 6 0 0 0-4.202-1.756L9 2.96l.92.82A6.18 6.18 0 0 1 12 8.4V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5"></path>
+</svg>
+</div>
+<span class="mt-1">施工</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="me.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+<circle cx="12" cy="7" r="4"></circle>
+</svg>
+</div>
+<span class="mt-1">我的</span>
+</a>
+</div>
+</nav>
+<!-- iPhone 16 Home Indicator -->
+<div class="h-[34px] flex items-center justify-center">
+<div class="w-[134px] h-[5px] bg-black rounded-full"></div>
+</div>
+</div>
+        </div>
+    </div>
+
+    <!-- 分享弹窗 -->
+    <div id="shareModal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close" onclick="hideShareModal()">×</button>
+            <div class="modal-header">
+                <div class="modal-title">分享设计方案</div>
+                <div class="modal-subtitle">选择分享方式，让更多人看到您的设计</div>
+            </div>
+
+            <div class="share-options">
+                <div class="share-option" onclick="shareToWechat()">
+                    <div class="share-option-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M8.5 12C9.32843 12 10 11.3284 10 10.5C10 9.67157 9.32843 9 8.5 9C7.67157 9 7 9.67157 7 10.5C7 11.3284 7.67157 12 8.5 12Z" fill="#07C160"/>
+                            <path d="M15.5 12C16.3284 12 17 11.3284 17 10.5C17 9.67157 16.3284 9 15.5 9C14.6716 9 14 9.67157 14 10.5C14 11.3284 14.6716 12 15.5 12Z" fill="#07C160"/>
+                            <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM8.5 13.5C7.12 13.5 6 12.38 6 11C6 9.62 7.12 8.5 8.5 8.5C9.88 8.5 11 9.62 11 11C11 12.38 9.88 13.5 8.5 13.5ZM15.5 13.5C14.12 13.5 13 12.38 13 11C13 9.62 14.12 8.5 15.5 8.5C16.88 8.5 18 9.62 18 11C18 12.38 16.88 13.5 15.5 13.5Z" fill="#07C160"/>
+                        </svg>
+                    </div>
+                    <div class="share-option-content">
+                        <div class="share-option-title">微信好友</div>
+                        <div class="share-option-desc">分享给微信好友或群聊</div>
+                    </div>
+                </div>
+
+                <div class="share-option" onclick="shareToMoments()">
+                    <div class="share-option-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="10" fill="#07C160"/>
+                            <path d="M8 12L11 15L16 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="share-option-content">
+                        <div class="share-option-title">朋友圈</div>
+                        <div class="share-option-desc">分享到朋友圈展示设计</div>
+                    </div>
+                </div>
+
+                <div class="share-option" onclick="copyShareLink()">
+                    <div class="share-option-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M10 13C10.4295 13.5741 10.9774 14.0491 11.6066 14.3929C12.2357 14.7367 12.9315 14.9411 13.6467 14.9923C14.3618 15.0435 15.0796 14.9403 15.7513 14.6897C16.4231 14.4392 17.0331 14.047 17.54 13.54L20.54 10.54C21.4508 9.59695 21.9548 8.33394 21.9434 7.02296C21.932 5.71198 21.4061 4.45791 20.4791 3.53087C19.5521 2.60383 18.298 2.07799 16.987 2.0666C15.676 2.0552 14.413 2.55918 13.47 3.47L11.75 5.18" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M14 11C13.5705 10.4259 13.0226 9.95086 12.3934 9.60712C11.7643 9.26339 11.0685 9.05895 10.3533 9.00775C9.63819 8.95655 8.92037 9.05972 8.24864 9.31026C7.5769 9.5608 6.96687 9.95303 6.46 10.46L3.46 13.46C2.54918 14.403 2.04520 15.6661 2.05660 16.977C2.06799 18.288 2.59383 19.5421 3.52087 20.4691C4.44791 21.3962 5.70198 21.922 7.01296 21.9334C8.32394 21.9448 9.58695 21.4408 10.53 20.53L12.24 18.82" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="share-option-content">
+                        <div class="share-option-title">复制链接</div>
+                        <div class="share-option-desc">复制分享链接到剪贴板</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 标签切换功能
+        function switchTab(tabName) {
+            try {
+                if (!tabName) {
+                    console.error('标签名称不能为空');
+                    return;
+                }
+
+                // 隐藏所有内容区域
+                const allContents = document.querySelectorAll('.tab-content');
+                allContents.forEach(content => {
+                    content.classList.add('hidden');
+                });
+
+                // YoupinTabComponent会自动处理tab状态，这里不需要手动操作
+
+                // 显示对应的内容区域
+                const targetContent = document.getElementById('content-' + tabName);
+                if (targetContent) {
+                    targetContent.classList.remove('hidden');
+                } else {
+                    console.error(`未找到内容区域: content-${tabName}`);
+                }
+
+                // YoupinTabComponent会自动处理tab激活状态
+            } catch (error) {
+                console.error('标签切换失败:', error);
+            }
+        }
+
+        // 页面初始化
+        function initPage() {
+            try {
+                // 默认显示3D效果图
+                switchTab('3d');
+
+                // 添加按钮点击事件监听
+                initButtonListeners();
+
+                console.log('设计结果页面初始化完成');
+            } catch (error) {
+                console.error('页面初始化失败:', error);
+            }
+        }
+
+        // 初始化按钮事件监听器
+        function initButtonListeners() {
+            try {
+                // 收藏方案按钮
+                const favoriteBtn = document.querySelector('button:has(.fa-heart)');
+                if (favoriteBtn) {
+                    favoriteBtn.addEventListener('click', function() {
+                        try {
+                            // 保存方案到本地存储
+                            saveDesignPlan();
+                            this.innerHTML = '<i class="fas fa-heart mr-1 text-red-500"></i>已收藏';
+                            this.disabled = true;
+                            this.classList.add('opacity-60');
+                        } catch (error) {
+                            console.error('收藏操作失败:', error);
+                        }
+                    });
+                }
+
+                // 立即下单按钮
+                const orderBtns = document.querySelectorAll('button');
+                const orderBtn = Array.from(orderBtns).find(btn => btn.textContent.includes('立即下单'));
+                if (orderBtn) {
+                    orderBtn.addEventListener('click', function() {
+                        try {
+                            // 跳转到订单确认页面
+                            window.location.href = 'order-confirm.html';
+                        } catch (error) {
+                            console.error('下单跳转失败:', error);
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('按钮事件初始化失败:', error);
+            }
+        }
+
+        // 保存设计方案到本地存储
+        function saveDesignPlan() {
+            try {
+                const designPlan = {
+                    id: 'plan_' + Date.now(),
+                    title: '现代简约智能家居方案',
+                    designer: '张设计师',
+                    area: '120㎡ 三居室',
+                    totalPrice: 19000,
+                    equipmentPrice: 15800,
+                    constructionPrice: 3200,
+                    duration: '15天',
+                    savedAt: new Date().toISOString(),
+                    images: [
+                        'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=393&h=220&q=80',
+                        'https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?ixlib=rb-4.0.3&auto=format&fit=crop&w=393&h=220&q=80',
+                        'https://images.unsplash.com/photo-1615529182904-14819c35db37?ixlib=rb-4.0.3&auto=format&fit=crop&w=393&h=220&q=80'
+                    ]
+                };
+
+                // 获取已保存的方案
+                let savedPlans = JSON.parse(localStorage.getItem('savedDesignPlans') || '[]');
+
+                // 检查是否已经保存过
+                const existingPlan = savedPlans.find(plan => plan.title === designPlan.title);
+                if (!existingPlan) {
+                    savedPlans.push(designPlan);
+                    localStorage.setItem('savedDesignPlans', JSON.stringify(savedPlans));
+                    console.log('设计方案已保存到本地');
+                }
+            } catch (error) {
+                console.error('保存设计方案失败:', error);
+            }
+        }
+
+        // 分享功能
+        function showShareModal() {
+            document.getElementById('shareModal').classList.add('show');
+            document.body.classList.add('popup-open');
+        }
+
+        function hideShareModal() {
+            document.getElementById('shareModal').classList.remove('show');
+            document.body.classList.remove('popup-open');
+        }
+
+        function shareToWechat() {
+            const shareData = {
+                title: '现代简约智能家居方案',
+                desc: '专业设计师打造的智能家居方案，设备总价¥15,800，施工费用¥3,200，预计工期15天',
+                link: window.location.href,
+                imgUrl: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=393&h=220&q=80'
+            };
+
+            // 模拟微信分享
+            if (navigator.share) {
+                navigator.share({
+                    title: shareData.title,
+                    text: shareData.desc,
+                    url: shareData.link
+                }).then(() => {
+                    console.log('分享成功');
+                    hideShareModal();
+                }).catch((error) => {
+                    console.log('分享失败:', error);
+                    fallbackShare(shareData);
+                });
+            } else {
+                fallbackShare(shareData);
+            }
+        }
+
+        function shareToMoments() {
+            const shareData = {
+                title: '我的智能家居设计方案',
+                desc: '现代简约风格，120㎡三居室智能化改造方案，总价¥19,000',
+                link: window.location.href,
+                imgUrl: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=393&h=220&q=80'
+            };
+
+            // 模拟朋友圈分享
+            if (navigator.share) {
+                navigator.share({
+                    title: shareData.title,
+                    text: shareData.desc,
+                    url: shareData.link
+                }).then(() => {
+                    console.log('分享到朋友圈成功');
+                    hideShareModal();
+                }).catch((error) => {
+                    console.log('分享失败:', error);
+                    fallbackShare(shareData);
+                });
+            } else {
+                fallbackShare(shareData);
+            }
+        }
+
+        function copyShareLink() {
+            const shareUrl = window.location.href;
+            const shareText = `现代简约智能家居方案 - 专业设计师打造\n\n设备总价：¥15,800\n施工费用：¥3,200\n预计工期：15天\n\n查看详情：${shareUrl}`;
+
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(shareText).then(() => {
+                    alert('分享链接已复制到剪贴板！');
+                    hideShareModal();
+                }).catch(() => {
+                    fallbackCopy(shareText);
+                });
+            } else {
+                fallbackCopy(shareText);
+            }
+        }
+
+        function fallbackShare(shareData) {
+            const shareText = `${shareData.title}\n\n${shareData.desc}\n\n查看详情：${shareData.link}`;
+            fallbackCopy(shareText);
+        }
+
+        function fallbackCopy(text) {
+            // 创建临时文本区域
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+
+            try {
+                document.execCommand('copy');
+                alert('分享内容已复制到剪贴板！');
+                hideShareModal();
+            } catch (err) {
+                alert(`分享内容：\n\n${text}`);
+                hideShareModal();
+            }
+
+            document.body.removeChild(textArea);
+        }
+
+        // 加载AI设计数据
+        function loadAIDesignData() {
+            try {
+                const aiDesignData = localStorage.getItem('aiDesignData');
+                if (aiDesignData) {
+                    const data = JSON.parse(aiDesignData);
+                    displayAIDesignResult(data);
+                    return true;
+                }
+            } catch (error) {
+                console.error('加载AI设计数据失败:', error);
+            }
+            return false;
+        }
+
+        // 显示AI设计结果
+        function displayAIDesignResult(data) {
+            // 显示AI生成标识
+            document.getElementById('aiGeneratedBanner').style.display = 'block';
+
+            // 更新设计标题和信息
+            const requirements = data.requirements;
+            const designTitle = `${requirements.style || '现代简约'}智能家居方案`;
+            const designInfo = `AI智能设计 | ${requirements.houseArea || '120'}㎡ ${requirements.roomType || '三居室'}`;
+
+            document.getElementById('designTitle').textContent = designTitle;
+            document.getElementById('designInfo').textContent = designInfo;
+
+            // 根据预算计算价格
+            const budgetRange = requirements.budget || '10-20万';
+            const prices = calculatePrices(budgetRange, requirements.houseArea || 120);
+
+            document.getElementById('equipmentPrice').textContent = `¥${prices.equipment.toLocaleString()}`;
+            document.getElementById('constructionPrice').textContent = `¥${prices.construction.toLocaleString()}`;
+            document.getElementById('constructionDays').textContent = `${prices.days}天`;
+
+            // 更新分享内容
+            updateShareContent(designTitle, prices);
+        }
+
+        // 根据预算和面积计算价格
+        function calculatePrices(budgetRange, area) {
+            const basePrice = {
+                '5-10万': { equipment: 8000, construction: 2000, days: 10 },
+                '10-20万': { equipment: 15000, construction: 3000, days: 15 },
+                '20-30万': { equipment: 25000, construction: 5000, days: 20 },
+                '30万以上': { equipment: 35000, construction: 8000, days: 25 }
+            };
+
+            const base = basePrice[budgetRange] || basePrice['10-20万'];
+            const areaFactor = area / 100; // 以100㎡为基准
+
+            return {
+                equipment: Math.round(base.equipment * areaFactor),
+                construction: Math.round(base.construction * areaFactor),
+                days: Math.round(base.days * Math.sqrt(areaFactor))
+            };
+        }
+
+        // 更新分享内容
+        function updateShareContent(title, prices) {
+            // 这里可以更新分享相关的内容
+            console.log('更新分享内容:', title, prices);
+        }
+
+        // 页面加载时执行初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 设置订单来源为设计服务
+            localStorage.setItem('orderSource', 'design');
+            console.log('设计结果页面：订单来源已设置为 design');
+
+            // 先尝试加载AI设计数据
+            const hasAIData = loadAIDesignData();
+
+            // 如果没有AI数据，显示默认内容
+            if (!hasAIData) {
+                console.log('未找到AI设计数据，显示默认方案');
+            }
+
+            initPage();
+
+            // 添加分享弹窗事件监听
+            document.getElementById('shareModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    hideShareModal();
+                }
+            });
+
+            // ESC键关闭弹窗
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    if (document.getElementById('shareModal').classList.contains('show')) {
+                        hideShareModal();
+                    }
+                }
+            });
+        });
+    </script>
+
+
+    <!-- 引入H5与小程序通信桥接工具 -->
+    <script src="../utils/h5-bridge.js"></script>
+    
+    <script>
+        // 小程序环境初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检查小程序环境并初始化通信
+            if (window.H5Bridge) {
+                console.log('H5Bridge已加载，当前环境:', window.H5Bridge.isInMiniProgram ? '小程序' : '浏览器');
+                
+                if (window.H5Bridge.isInMiniProgram) {
+                    initMiniProgramFeatures();
+                }
+            }
+        });
+
+        // 初始化小程序特有功能
+        function initMiniProgramFeatures() {
+            console.log('初始化小程序特有功能');
+            
+            // 替换所有页面跳转为小程序导航
+            replacePageNavigation();
+            
+            // 替换alert为小程序toast
+            replaceAlertWithToast();
+            
+            // 监听支付结果（如果页面有支付功能）
+            if (typeof handlePaymentSuccess === 'function') {
+                window.H5Bridge.on('paymentSuccess', handlePaymentSuccess);
+                window.H5Bridge.on('paymentFail', handlePaymentFailure || function(error) {
+                    window.H5Bridge.showToast('支付失败，请重试', 'error');
+                });
+            }
+            
+            // 监听用户信息获取结果（如果页面需要用户信息）
+            if (typeof handleUserInfoSuccess === 'function') {
+                window.H5Bridge.on('userInfoSuccess', handleUserInfoSuccess);
+                window.H5Bridge.on('userInfoFail', handleUserInfoFailure || function(error) {
+                    window.H5Bridge.showToast('获取用户信息失败', 'error');
+                });
+            }
+        }
+
+        // 替换页面跳转为小程序导航
+        function replacePageNavigation() {
+            // 处理所有HTML页面链接
+            document.querySelectorAll('a[href$=".html"]').forEach(link => {
+                const originalHref = link.getAttribute('href');
+                
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // 解析目标页面
+                    const pageName = originalHref.replace('.html', '').replace(/^.*//, '');
+                    
+                    // 特殊页面映射到小程序原生页面
+                    const nativePageMap = {
+                        'home': '/pages/home/index',
+                        'design-result': '/pages/design/index',
+                        'mall': '/pages/mall/index',
+                        'spaces': '/pages/construction/index',
+                        'me': '/pages/profile/index'
+                    };
+                    
+                    if (nativePageMap[pageName]) {
+                        // 跳转到小程序原生页面
+                        window.H5Bridge.navigateTo(nativePageMap[pageName]);
+                    } else {
+                        // 跳转到web-view页面
+                        window.H5Bridge.navigateTo(`/pages/webview/index?page=${pageName}`);
+                    }
+                });
+            });
+            
+            // 处理返回按钮
+            document.querySelectorAll('[onclick*="history.back"], [onclick*="window.history.back"]').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    window.H5Bridge.navigateBack();
+                });
+            });
+        }
+
+        // 替换alert为小程序toast
+        function replaceAlertWithToast() {
+            // 重写全局alert函数
+            if (window.H5Bridge && window.H5Bridge.isInMiniProgram) {
+                window.alert = function(message) {
+                    window.H5Bridge.showToast(message);
+                };
+                
+                window.confirm = function(message) {
+                    // 小程序中的confirm需要特殊处理
+                    window.H5Bridge.showToast(message);
+                    return true; // 简化处理，实际项目中可能需要更复杂的逻辑
+                };
+            }
+        }
+
+        // 通用分享功能
+        function shareToWechat(shareData) {
+            if (window.H5Bridge && window.H5Bridge.isInMiniProgram) {
+                // 在小程序中使用原生分享
+                window.H5Bridge.share(shareData || {
+                    title: document.title,
+                    desc: '智能家居设计与施工服务',
+                    path: `/pages/webview/index?page=${getCurrentPageName()}`
+                });
+            } else {
+                // 在浏览器中使用Web Share API或降级处理
+                if (navigator.share) {
+                    navigator.share({
+                        title: document.title,
+                        text: '智能家居设计与施工服务',
+                        url: window.location.href
+                    });
+                } else {
+                    alert('分享功能需要在支持的浏览器中使用');
+                }
+            }
+        }
+
+        // 获取当前页面名称
+        function getCurrentPageName() {
+            const pathname = window.location.pathname;
+            return pathname.substring(pathname.lastIndexOf('/') + 1).replace('.html', '');
+        }
+
+        // 通用错误处理
+        function handleError(error, context = '') {
+            console.error(`错误[${context}]:`, error);
+
+            if (window.H5Bridge && window.H5Bridge.isInMiniProgram) {
+                window.H5Bridge.showToast('操作失败，请重试', 'error');
+            } else {
+                alert('操作失败：' + (error.message || '未知错误'));
+            }
+        }
+    </script>
+
+    <!-- YoupinTabComponent -->
+    <script src="js/youpin-tab-component.js"></script>
+    <script>
+        // 初始化设计详情Tab组件
+        document.addEventListener('DOMContentLoaded', function() {
+            const designTabComponent = new YoupinTabComponent('#design-detail-tabs', {
+                enableKeyboard: true,
+                enableAutoScroll: true,
+                debug: false
+            });
+
+            // 监听Tab切换事件
+            document.getElementById('design-detail-tabs').addEventListener('youpinTabChange', (e) => {
+                const tabType = e.detail.data.tab;
+                const tabName = e.detail.tab.textContent.trim();
+
+                console.log('设计详情Tab切换:', { tabType, tabName, index: e.detail.index });
+
+                // 调用原有的switchTab函数
+                switchTab(tabType);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="智能家居需求提交页面，选择您需要的智能照明、监控、定制场景等智能家居产品和服务">
+  <meta name="keywords" content="智能家居,需求提交,智能照明,监控,定制场景,自动场景,安防,智能影音,AI语音,酒店民宿,商业场景">
+  <meta name="author" content="智能设计与施工平台">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>需求提交 - 智能设计与施工</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            'system': ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', '"SF Pro Icons"', '"Helvetica Neue"', 'Helvetica', 'Arial', 'sans-serif']
+          },
+          colors: {
+            'primary-text': '#1A1A1A',
+            'main-bg': '#F8F9FA'
+          }
+        }
+      }
+    }
+  </script>
+  <link href="css/styles.css" rel="stylesheet"/>
+  <link href="css/iphone16_fix.css" rel="stylesheet"/>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      -webkit-text-size-adjust: 100%;
+      -moz-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .scrollbar-none::-webkit-scrollbar {
+      display: none;
+    }
+
+    .scrollbar-none {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    :root {
+      --safe-area-inset-top: env(safe-area-inset-top);
+      --safe-area-inset-bottom: env(safe-area-inset-bottom);
+    }
+
+    /* 产品卡片样式 */
+    .product-card {
+      transition: all 0.2s ease;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .product-card:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .product-card.selected {
+      border: 2px solid #000000;
+      background: #f8f9fa;
+      transform: translateY(-1px);
+    }
+
+    .product-card:active {
+      transform: translateY(0);
+    }
+
+    .product-img {
+      width: 60px;
+      height: 60px;
+      border-radius: 8px;
+      background: #f1f3f4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: #666;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .product-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    /* Tab样式 */
+    .tab {
+      transition: all 0.2s ease;
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .tab.active {
+      color: #000000;
+      border-bottom: 2px solid #000000;
+      font-weight: 600;
+    }
+
+    .tab:hover {
+      color: #000000;
+      background: #f8f9fa;
+    }
+
+    .tab:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+      border-radius: 4px;
+    }
+
+    /* 表单样式 */
+    .input, .select, .textarea {
+      transition: border-color 0.2s ease;
+      font-family: inherit;
+    }
+
+    .input:focus, .select:focus, .textarea:focus {
+      border-color: #000000;
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .input:hover, .select:hover, .textarea:hover {
+      border-color: #9ca3af;
+    }
+
+    .input.error, .select.error, .textarea.error {
+      border-color: #ef4444;
+      background: #fef2f2;
+    }
+
+    /* 按钮样式 */
+    .submit-btn {
+      transition: all 0.2s ease;
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .submit-btn:hover {
+      background: #333;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .submit-btn:active {
+      background: #555;
+      transform: translateY(0);
+    }
+
+    .submit-btn:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .submit-btn:disabled {
+      background: #cccccc;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+      opacity: 0.6;
+    }
+
+    .loading {
+      width: 16px;
+      height: 16px;
+      border: 2px solid transparent;
+      border-top: 2px solid #ffffff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Toast样式 */
+    .toast {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: #ffffff;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+    }
+
+    /* 底部提交区样式 */
+    .submit-bar {
+      position: absolute;
+      bottom: 84px;
+      left: 0;
+      right: 0;
+      background: var(--bg-primary, white);
+      padding: 12px 16px;
+      box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
+      z-index: 1000;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+  </style>
+
+    <!-- 全局错误处理和兜底方案 -->
+    <script>
+        (function() {
+            'use strict';
+            
+            // 创建 Trace 对象的兜底实现
+            window.Trace = window.Trace || {
+                init: function() { console.log('Trace initialized (fallback)'); },
+                log: function() { console.log.apply(console, arguments); },
+                error: function() { console.error.apply(console, arguments); },
+                warn: function() { console.warn.apply(console, arguments); },
+                info: function() { console.info.apply(console, arguments); }
+            };
+
+            // 防止其他可能的调试工具错误
+            window.wx = window.wx || {};
+            window.my = window.my || {};
+            
+            // 防止 chartId 未定义错误
+            window.chartId = window.chartId || 'default-chart-id';
+            
+            // 全局错误处理
+            window.addEventListener('error', function(e) {
+                console.error('Global error caught:', e.error);
+                return true; // 阻止默认错误处理
+            });
+            
+            window.addEventListener('unhandledrejection', function(e) {
+                console.error('Unhandled promise rejection:', e.reason);
+                e.preventDefault(); // 阻止默认处理
+            });
+            
+            console.log('✅ 全局错误处理已初始化');
+        })();
+    </script>
+</head>
+<body class="min-h-screen w-full bg-[#000000] flex items-center justify-center font-system" style="display: flex !important; align-items: center !important; justify-content: center !important; min-height: 100vh !important; background: #000000 !important; margin: 0 !important; padding: 0 !important; width: 100% !important; height: 100% !important; overflow-x: hidden !important;">
+  <!-- iPhone 容器 -->
+  <div class="iphone-container w-full max-w-[393px] h-[852px] bg-[#1E1E1E] shadow-2xl overflow-hidden relative mx-auto rounded-[54px]" style="width: 393px !important; height: 852px !important; max-width: 393px !important; max-height: 852px !important; border-radius: 54px !important; overflow: hidden !important; position: relative !important; background: #1E1E1E !important; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important; margin: 0 auto !important; flex-shrink: 0 !important;">
+    <!-- iPhone 状态栏 -->
+    <div class="status-bar w-full h-[47px] bg-black px-5 flex items-center justify-between text-white text-[14px] font-medium" style="width: 100% !important; height: 47px !important; background: #000000 !important; display: flex !important; align-items: center !important; justify-content: space-between !important; padding: 0 20px !important; color: white !important; font-size: 14px !important; font-weight: 500 !important; position: relative !important; z-index: 100 !important;">
+      <div class="flex items-center space-x-1">
+        <!-- 信号图标 -->
+        <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 20h.01"></path>
+          <path d="M7 20v-4"></path>
+          <path d="M12 20v-8"></path>
+          <path d="M17 20V8"></path>
+          <path d="M22 4v16"></path>
+        </svg>
+        <span>中国移动</span>
+        <!-- WiFi图标 -->
+        <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 20h.01"></path>
+          <path d="M2 8.82a15 15 0 0 1 20 0"></path>
+          <path d="M5 12.859a10 10 0 0 1 14 0"></path>
+          <path d="M8.5 16.429a5 5 0 0 1 7 0"></path>
+        </svg>
+      </div>
+      <div class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">15:52</div>
+      <div class="flex items-center space-x-1">
+        <span>89%</span>
+        <!-- 电池图标 -->
+        <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+          <rect height="10" rx="2" ry="2" width="16" x="2" y="7"></rect>
+          <line x1="22" x2="22" y1="11" y2="13"></line>
+        </svg>
+      </div>
+    </div>
+    <!-- 动态岛 -->
+    <button class="dynamic-island absolute left-1/2 -translate-x-1/2 bg-black transition-all duration-300 ease-out w-[126px] h-[37.5px] -top-0.5 rounded-b-[24px]"></button>
+
+    <!-- 主内容区域 -->
+    <div class="main-content w-full h-[calc(100%-47px)] bg-white overflow-hidden relative">
+      <!-- 顶部导航区域 -->
+      <div class="absolute top-0 left-0 right-0 z-30">
+        <div class="bg-white text-black border-b border-gray-100">
+          <!-- 顶部标题栏 -->
+          <div class="flex items-center justify-center px-4 relative h-[60px]">
+            <!-- 返回按钮 -->
+            <button class="absolute left-4 top-1/2 -translate-y-1/2 text-black/70 hover:text-black transition-colors">
+              <svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg">
+                <path d="m15 18-6-6 6-6"></path>
+              </svg>
+            </button>
+            <!-- 页面标题 -->
+            <h1 class="text-lg font-semibold text-black">需求提交</h1>
+          </div>
+        </div>
+      </div>
+
+      <!-- 滚动内容区域 -->
+      <div class="absolute inset-0 top-[60px] bottom-[134px] overflow-y-auto scrollbar-none">
+        <!-- 顶部流程指引 -->
+        <div class="flex justify-around items-center bg-gray-50 px-4 py-6 border-b border-gray-100">
+          <div class="flex flex-col items-center flex-1">
+            <div class="w-10 h-10 mb-2 bg-black rounded-xl flex items-center justify-center text-white text-lg font-semibold">🎨</div>
+            <span class="text-xs text-gray-900 font-medium text-center">方案设计</span>
+          </div>
+          <div class="flex flex-col items-center flex-1">
+            <div class="w-10 h-10 mb-2 bg-black rounded-xl flex items-center justify-center text-white text-lg font-semibold">🔧</div>
+            <span class="text-xs text-gray-900 font-medium text-center">上门安装</span>
+          </div>
+          <div class="flex flex-col items-center flex-1">
+            <div class="w-10 h-10 mb-2 bg-black rounded-xl flex items-center justify-center text-white text-lg font-semibold">⚙️</div>
+            <span class="text-xs text-gray-900 font-medium text-center">场景配置</span>
+          </div>
+          <div class="flex flex-col items-center flex-1">
+            <div class="w-10 h-10 mb-2 bg-black rounded-xl flex items-center justify-center text-white text-lg font-semibold">🛠️</div>
+            <span class="text-xs text-gray-900 font-medium text-center">售后维护</span>
+          </div>
+        </div>
+
+        <!-- Tab切换区 -->
+        <div class="bg-white border-b border-gray-100 overflow-x-auto scrollbar-none">
+          <div class="flex min-w-[600px] px-4">
+            <button class="tab flex-none px-5 py-3 text-sm text-gray-600 border-b-2 border-transparent active" data-tab="lighting">智能照明</button>
+            <button class="tab flex-none px-5 py-3 text-sm text-gray-600 border-b-2 border-transparent" data-tab="security">监控类</button>
+            <button class="tab flex-none px-5 py-3 text-sm text-gray-600 border-b-2 border-transparent" data-tab="custom">定制场景</button>
+            <button class="tab flex-none px-5 py-3 text-sm text-gray-600 border-b-2 border-transparent" data-tab="auto">自动场景</button>
+            <button class="tab flex-none px-5 py-3 text-sm text-gray-600 border-b-2 border-transparent" data-tab="safety">安防类</button>
+            <button class="tab flex-none px-5 py-3 text-sm text-gray-600 border-b-2 border-transparent" data-tab="audio">智能影音</button>
+            <button class="tab flex-none px-5 py-3 text-sm text-gray-600 border-b-2 border-transparent" data-tab="ai">AI语音</button>
+            <button class="tab flex-none px-5 py-3 text-sm text-gray-600 border-b-2 border-transparent" data-tab="hotel">酒店民宿</button>
+            <button class="tab flex-none px-5 py-3 text-sm text-gray-600 border-b-2 border-transparent" data-tab="business">商业场景</button>
+          </div>
+        </div>
+
+        <!-- 内容区 -->
+        <div class="p-4">
+          <!-- 产品/功能勾选区 -->
+          <div class="product-list flex flex-col gap-3 mb-6" id="productList">
+            <!-- 产品列表将通过JavaScript动态生成 -->
+          </div>
+
+          <!-- 房型选择 -->
+          <div class="mb-6">
+            <label class="block text-sm font-semibold text-black mb-2">房型选择 <span class="text-red-500">*</span></label>
+            <div class="flex gap-3 mb-4">
+              <select class="input flex-1 border border-gray-200 rounded-lg px-3 py-3 text-base bg-white" id="rooms" required>
+                <option value="">请选择室</option>
+                <option value="1">1室</option>
+                <option value="2">2室</option>
+                <option value="3">3室</option>
+                <option value="4">4室</option>
+                <option value="5">5室及以上</option>
+              </select>
+              <select class="input flex-1 border border-gray-200 rounded-lg px-3 py-3 text-base bg-white" id="halls" required>
+                <option value="">请选择厅</option>
+                <option value="1">1厅</option>
+                <option value="2">2厅</option>
+                <option value="3">3厅</option>
+                <option value="4">4厅</option>
+                <option value="5">5厅及以上</option>
+              </select>
+              <select class="input flex-1 border border-gray-200 rounded-lg px-3 py-3 text-base bg-white" id="bathrooms" required>
+                <option value="">请选择卫</option>
+                <option value="1">1卫</option>
+                <option value="2">2卫</option>
+                <option value="3">3卫</option>
+                <option value="4">4卫</option>
+                <option value="5">5卫及以上</option>
+              </select>
+            </div>
+            <div class="text-red-500 text-xs mt-1 hidden" id="houseTypeError">请完整选择房型信息</div>
+          </div>
+
+          <!-- 小区/地址信息 -->
+          <div class="mb-6">
+            <label class="block text-sm font-semibold text-black mb-2" for="address">小区名称/地址信息 <span class="text-red-500">*</span></label>
+            <input class="input w-full border border-gray-200 rounded-lg px-3 py-3 text-base bg-white" type="text" id="address" placeholder="请输入小区名称、楼层、房号等详细地址" required>
+            <div class="text-red-500 text-xs mt-1 hidden" id="addressError">请输入地址信息</div>
+          </div>
+
+          <!-- 其他需求 -->
+          <div class="mb-6">
+            <label class="block text-sm font-semibold text-black mb-2" for="requirements">其他需求（选填）</label>
+            <textarea class="textarea w-full border border-gray-200 rounded-lg px-3 py-3 text-base bg-white min-h-[80px] resize-y" id="requirements" placeholder="请详细描述您的个性化需求，如特殊功能、预算范围、时间安排等" rows="4"></textarea>
+          </div>
+        </div>
+      </div>
+      </div>
+
+    <!-- 提交按钮栏 -->
+    <div class="submit-bar absolute left-0 right-0 bg-white/80 backdrop-blur-xl z-50 px-4 py-3 border-t border-gray-100" style="bottom: 84px;">
+      <button class="submit-btn w-full h-12 bg-black text-white rounded-lg text-base font-medium flex items-center justify-center gap-2" id="submitBtn">
+        <span class="btn-text">提交需求</span>
+      </button>
+    </div>
+
+    <!-- 底部导航栏 -->
+    <div class="absolute bottom-0 left-0 right-0 h-[84px] bg-white/80 backdrop-blur-xl border-t border-white/20">
+      <!-- 导航栏内容 -->
+      <nav class="h-[49px] flex items-center px-2">
+        <div class="flex justify-around w-full text-[12px]">
+          <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="home.html">
+            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+              <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+              </svg>
+            </div>
+            <span class="mt-1">首页</span>
+          </a>
+          <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="design-result.html">
+            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+              <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="13.5" cy="6.5" fill="currentColor" r=".5"></circle>
+                <circle cx="17.5" cy="10.5" fill="currentColor" r=".5"></circle>
+                <circle cx="8.5" cy="7.5" fill="currentColor" r=".5"></circle>
+                <circle cx="6.5" cy="12.5" fill="currentColor" r=".5"></circle>
+                <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+              </svg>
+            </div>
+            <span class="mt-1">设计</span>
+          </a>
+          <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="mall.html">
+            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+              <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+                <path d="M3 6h18"></path>
+                <path d="M16 10a4 4 0 0 1-8 0"></path>
+              </svg>
+            </div>
+            <span class="mt-1">商城</span>
+          </a>
+          <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="spaces.html">
+            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+              <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                <path d="m15 12-8.373 8.373a1 1 0 1 1-3-3L12 9"></path>
+                <path d="m18 15 4-4"></path>
+                <path d="m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172V7l-2.26-2.26a6 6 0 0 0-4.202-1.756L9 2.96l.92.82A6.18 6.18 0 0 1 12 8.4V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5"></path>
+              </svg>
+            </div>
+            <span class="mt-1">施工</span>
+          </a>
+          <a class="flex flex-col items-center group text-black transition-colors" href="me.html">
+            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+              <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </div>
+            <span class="mt-1">我的</span>
+          </a>
+        </div>
+      </nav>
+      <!-- iPhone 16 Home Indicator -->
+      <div class="h-[34px] flex items-center justify-center">
+        <div class="w-[134px] h-[5px] bg-black rounded-full"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 提示Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // 产品数据 - 使用在线图片地址作为示例
+    const productData = {
+      lighting: [
+        { id: 'lighting1', title: '客餐厅无主灯', desc: '无主灯设计的筒灯、射灯、灯带组合，色温亮度可调，缓开缓灭', image: 'https://via.placeholder.com/120x120/4A90E2/FFFFFF?text=💡', fallbackIcon: '💡' },
+        { id: 'lighting2', title: '智能调光系统', desc: '支持情景面板或语音控制，多场景切换，过度柔和', image: 'https://via.placeholder.com/120x120/4A90E2/FFFFFF?text=🔆', fallbackIcon: '🔆' },
+        { id: 'lighting3', title: '卧室智能照明', desc: '温馨、助眠、起夜、阅读等场景，帮助缓解压力放松休息', image: 'https://via.placeholder.com/120x120/4A90E2/FFFFFF?text=🛏️', fallbackIcon: '🛏️' },
+        { id: 'lighting4', title: '夏冬场景照明', desc: '四季如春亦可四季分明，带来舒适与放松的智能调光', image: 'https://via.placeholder.com/120x120/4A90E2/FFFFFF?text=🌞', fallbackIcon: '🌞' }
+      ],
+      security: [
+        { id: 'security1', title: '空气质量智能显示', desc: '显示CO2、tVoc、PM2.5、温湿度等参数，联动空净、新风等设备', image: 'https://via.placeholder.com/120x120/E74C3C/FFFFFF?text=🌬️', fallbackIcon: '🌬️' },
+        { id: 'security2', title: '中控屏监控视窗', desc: '中控屏直接显示监控实时画面，随时观看重要区域', image: 'https://via.placeholder.com/120x120/E74C3C/FFFFFF?text=📺', fallbackIcon: '📺' },
+        { id: 'security3', title: '监控双向对讲', desc: '无需APP即可实时对讲，与来访者语音沟通', image: 'https://via.placeholder.com/120x120/E74C3C/FFFFFF?text=📞', fallbackIcon: '📞' },
+        { id: 'security4', title: '摄像头磁吸供电', desc: '无绳安装，3C安全认证，支持侧装、顶装磁吸', image: 'https://via.placeholder.com/120x120/E74C3C/FFFFFF?text=📷', fallbackIcon: '📷' }
+      ],
+      custom: [
+        { id: 'custom1', title: '回家场景', desc: '开门自动开灯、开空调、播放音乐，营造温馨氛围', image: 'https://via.placeholder.com/120x120/9B59B6/FFFFFF?text=🏠', fallbackIcon: '🏠' },
+        { id: 'custom2', title: '离家场景', desc: '一键关闭所有灯光、家电，开启安防模式', image: 'https://via.placeholder.com/120x120/9B59B6/FFFFFF?text=🚪', fallbackIcon: '🚪' },
+        { id: 'custom3', title: '观影场景', desc: '自动关闭主灯、拉上窗帘、调节氛围灯、开启投影', image: 'https://via.placeholder.com/120x120/9B59B6/FFFFFF?text=🎬', fallbackIcon: '🎬' },
+        { id: 'custom4', title: '聚餐场景', desc: '调节餐厅灯光亮度，播放轻音乐，营造用餐氛围', image: 'https://via.placeholder.com/120x120/9B59B6/FFFFFF?text=🍽️', fallbackIcon: '🍽️' }
+      ],
+      auto: [
+        { id: 'auto1', title: '睡眠场景', desc: '一键睡眠开启安防，空调睡眠模式，窗帘拉上，床头灯模拟日落', image: 'https://via.placeholder.com/120x120/27AE60/FFFFFF?text=😴', fallbackIcon: '😴' },
+        { id: 'auto2', title: '中央空调智能化', desc: '多品牌支持，一键控制，语音调节风量温度', image: 'https://via.placeholder.com/120x120/27AE60/FFFFFF?text=❄️', fallbackIcon: '❄️' },
+        { id: 'auto3', title: '智能手表控制', desc: '小米/苹果手表控制全屋灯光、家电、智能场景', image: 'https://via.placeholder.com/120x120/27AE60/FFFFFF?text=⌚', fallbackIcon: '⌚' },
+        { id: 'auto4', title: '语音控制', desc: '躺在床上一句话控制，安静享受美妙时光', image: 'https://via.placeholder.com/120x120/27AE60/FFFFFF?text=🎤', fallbackIcon: '🎤' }
+      ],
+      safety: [
+        { id: 'safety1', title: '智能门锁', desc: '指纹、密码、刷卡多种开锁方式，远程监控开锁记录', image: 'https://via.placeholder.com/120x120/F39C12/FFFFFF?text=🔐', fallbackIcon: '🔐' },
+        { id: 'safety2', title: '燃气报警器', desc: '检测燃气泄漏，自动关闭燃气阀门，手机推送报警', image: 'https://via.placeholder.com/120x120/F39C12/FFFFFF?text=🔥', fallbackIcon: '🔥' },
+        { id: 'safety3', title: '烟雾报警器', desc: '火灾烟雾检测，声光报警，手机远程通知', image: 'https://via.placeholder.com/120x120/F39C12/FFFFFF?text=🚨', fallbackIcon: '🚨' },
+        { id: 'safety4', title: '水浸传感器', desc: '检测漏水情况，及时关闭水阀，避免财产损失', image: 'https://via.placeholder.com/120x120/F39C12/FFFFFF?text=💧', fallbackIcon: '💧' }
+      ],
+      audio: [
+        { id: 'audio1', title: '全屋背景音乐', desc: '每个房间独立控制，支持蓝牙、网络音源', image: 'https://via.placeholder.com/120x120/8E44AD/FFFFFF?text=🎵', fallbackIcon: '🎵' },
+        { id: 'audio2', title: '家庭影院系统', desc: '5.1/7.1环绕声，4K投影，沉浸式观影体验', image: 'https://via.placeholder.com/120x120/8E44AD/FFFFFF?text=🎭', fallbackIcon: '🎭' },
+        { id: 'audio3', title: '智能音响', desc: '语音助手，音乐播放，智能家居控制中心', image: 'https://via.placeholder.com/120x120/8E44AD/FFFFFF?text=🔊', fallbackIcon: '🔊' },
+        { id: 'audio4', title: 'KTV系统', desc: '专业K歌设备，海量曲库，家庭娱乐首选', image: 'https://via.placeholder.com/120x120/8E44AD/FFFFFF?text=🎤', fallbackIcon: '🎤' }
+      ],
+      ai: [
+        { id: 'ai1', title: 'AI语音助手', desc: '小爱同学、天猫精灵等，语音控制全屋设备', image: 'https://via.placeholder.com/120x120/34495E/FFFFFF?text=🤖', fallbackIcon: '🤖' },
+        { id: 'ai2', title: '智能中控屏', desc: '7寸/10寸触控屏，集成控制、监控、音乐等功能', image: 'https://via.placeholder.com/120x120/34495E/FFFFFF?text=📱', fallbackIcon: '📱' },
+        { id: 'ai3', title: '人体感应', desc: '自动感应人体活动，智能开关灯光和设备', image: 'https://via.placeholder.com/120x120/34495E/FFFFFF?text=👤', fallbackIcon: '👤' },
+        { id: 'ai4', title: '环境自适应', desc: 'AI学习用户习惯，自动调节温度、湿度、光照', image: 'https://via.placeholder.com/120x120/34495E/FFFFFF?text=🌡️', fallbackIcon: '🌡️' }
+      ],
+      hotel: [
+        { id: 'hotel1', title: '酒店客控系统', desc: '一键控制客房所有设备，提升客户体验', image: 'https://via.placeholder.com/120x120/16A085/FFFFFF?text=🏨', fallbackIcon: '🏨' },
+        { id: 'hotel2', title: '民宿智能化', desc: '远程管理，自助入住，降低运营成本', image: 'https://via.placeholder.com/120x120/16A085/FFFFFF?text=🏡', fallbackIcon: '🏡' },
+        { id: 'hotel3', title: '能耗管理', desc: '智能控制空调、照明，节能环保', image: 'https://via.placeholder.com/120x120/16A085/FFFFFF?text=⚡', fallbackIcon: '⚡' },
+        { id: 'hotel4', title: '客房服务', desc: '一键呼叫服务，提升服务效率和质量', image: 'https://via.placeholder.com/120x120/16A085/FFFFFF?text=🛎️', fallbackIcon: '🛎️' }
+      ],
+      business: [
+        { id: 'business1', title: '会议投影场景', desc: '一键开会关主灯、展开幕布、关窗帘、开氛围灯', image: 'https://via.placeholder.com/120x120/2C3E50/FFFFFF?text=📊', fallbackIcon: '📊' },
+        { id: 'business2', title: '商业照明场景', desc: '智能场景随心切换，超低待机功耗，节能环保', image: 'https://via.placeholder.com/120x120/2C3E50/FFFFFF?text=🏪', fallbackIcon: '🏪' },
+        { id: 'business3', title: '办公自动化', desc: '上下班自动化控制，提高工作效率', image: 'https://via.placeholder.com/120x120/2C3E50/FFFFFF?text=💼', fallbackIcon: '💼' },
+        { id: 'business4', title: '访客管理系统', desc: '智能门禁，访客登记，安全管控', image: 'https://via.placeholder.com/120x120/2C3E50/FFFFFF?text=👔', fallbackIcon: '👔' }
+      ]
+    };
+
+    // 当前选中的Tab和产品
+    let currentTab = 'lighting';
+    let selectedProducts = new Set();
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      renderProducts();
+      bindEvents();
+    });
+
+    // 渲染产品列表
+    function renderProducts() {
+      const productList = document.getElementById('productList');
+      const products = productData[currentTab] || [];
+
+      productList.innerHTML = products.map(product => `
+        <div class="product-card flex items-start bg-white rounded-xl p-4 gap-3 cursor-pointer border border-gray-100 shadow-sm" data-id="${product.id}" onclick="toggleProduct('${product.id}')">
+          <div class="product-img" id="img-${product.id}">
+            ${generateProductImage(product)}
+          </div>
+          <div class="product-info flex-1">
+            <div class="text-sm font-medium mb-1 text-black">${product.title}</div>
+            <div class="text-xs text-gray-600 leading-relaxed">${product.desc}</div>
+          </div>
+          <input type="checkbox" class="product-checkbox w-5 h-5 mt-1 accent-black cursor-pointer" ${selectedProducts.has(product.id) ? 'checked' : ''} onclick="event.stopPropagation()">
+        </div>
+      `).join('');
+    }
+
+    // 生成产品图片
+    function generateProductImage(product) {
+      if (product.image) {
+        return `
+          <img src="${product.image}" alt="${product.title}"
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+               style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+          <div style="display: none; width: 100%; height: 100%; align-items: center; justify-content: center; font-size: 24px; color: #666;">
+            ${product.fallbackIcon}
+          </div>
+        `;
+      }
+      return `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #666;">${product.fallbackIcon}</div>`;
+    }
+
+    // 切换Tab
+    function switchTab(tabId) {
+      currentTab = tabId;
+
+      // 更新Tab样式
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.remove('active');
+        tab.style.color = '#666666';
+        tab.style.borderBottomColor = 'transparent';
+        tab.style.fontWeight = '400';
+      });
+
+      const activeTab = document.querySelector(`[data-tab="${tabId}"]`);
+      if (activeTab) {
+        activeTab.classList.add('active');
+        activeTab.style.color = '#000000';
+        activeTab.style.borderBottomColor = '#000000';
+        activeTab.style.fontWeight = '600';
+      }
+
+      renderProducts();
+    }
+
+    // 切换产品选择
+    function toggleProduct(productId) {
+      const card = document.querySelector(`[data-id="${productId}"]`);
+      const checkbox = card.querySelector('.product-checkbox');
+
+      if (selectedProducts.has(productId)) {
+        selectedProducts.delete(productId);
+        checkbox.checked = false;
+        card.classList.remove('selected');
+        card.style.border = '1px solid #e5e7eb';
+        card.style.background = '#ffffff';
+      } else {
+        selectedProducts.add(productId);
+        checkbox.checked = true;
+        card.classList.add('selected');
+        card.style.border = '2px solid #000000';
+        card.style.background = '#f8f9fa';
+      }
+    }
+
+    // 绑定事件
+    function bindEvents() {
+      // Tab切换
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+          const tabId = this.dataset.tab;
+          switchTab(tabId);
+        });
+      });
+
+      // 表单提交
+      document.getElementById('submitBtn').addEventListener('click', handleSubmit);
+
+      // 实时验证
+      ['rooms', 'halls', 'bathrooms', 'address'].forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.addEventListener('blur', validateField);
+          element.addEventListener('input', clearError);
+        }
+      });
+    }
+
+    // 验证字段
+    function validateField(event) {
+      const field = event.target;
+      const fieldId = field.id;
+
+      if (fieldId === 'address') {
+        if (!field.value.trim()) {
+          showFieldError(field, '请输入地址信息');
+          return false;
+        }
+      }
+
+      clearFieldError(field);
+      return true;
+    }
+
+    // 清除错误
+    function clearError(event) {
+      clearFieldError(event.target);
+    }
+
+    // 显示字段错误
+    function showFieldError(field, message) {
+      field.classList.add('error');
+      const errorElement = document.getElementById(field.id + 'Error');
+      if (errorElement) {
+        errorElement.textContent = message;
+        errorElement.classList.remove('hidden');
+      }
+    }
+
+    // 清除字段错误
+    function clearFieldError(field) {
+      field.classList.remove('error');
+      const errorElement = document.getElementById(field.id + 'Error');
+      if (errorElement) {
+        errorElement.classList.add('hidden');
+      }
+    }
+
+    // 验证房型
+    function validateHouseType() {
+      const rooms = document.getElementById('rooms').value;
+      const halls = document.getElementById('halls').value;
+      const bathrooms = document.getElementById('bathrooms').value;
+
+      if (!rooms || !halls || !bathrooms) {
+        const errorElement = document.getElementById('houseTypeError');
+        if (errorElement) {
+          errorElement.classList.remove('hidden');
+        }
+        return false;
+      }
+
+      const errorElement = document.getElementById('houseTypeError');
+      if (errorElement) {
+        errorElement.classList.add('hidden');
+      }
+      return true;
+    }
+
+    // 提交表单
+    async function handleSubmit() {
+      const submitBtn = document.getElementById('submitBtn');
+      const btnText = submitBtn.querySelector('.btn-text');
+
+      // 验证必填项
+      let isValid = true;
+
+      // 验证房型
+      if (!validateHouseType()) {
+        isValid = false;
+      }
+
+      // 验证地址
+      const address = document.getElementById('address');
+      if (!address.value.trim()) {
+        showFieldError(address, '请输入地址信息');
+        isValid = false;
+      }
+
+      // 验证是否选择产品
+      if (selectedProducts.size === 0) {
+        showToast('请至少选择一个产品或服务', 'error');
+        isValid = false;
+      }
+
+      if (!isValid) {
+        showToast('请完善必填信息', 'error');
+        return;
+      }
+
+      // 提交Loading状态
+      submitBtn.disabled = true;
+      btnText.textContent = '提交中...';
+      submitBtn.insertAdjacentHTML('afterbegin', '<div class="loading"></div>');
+
+      try {
+        // 模拟API调用
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // 收集表单数据
+        const formData = {
+          selectedProducts: Array.from(selectedProducts),
+          houseType: {
+            rooms: document.getElementById('rooms').value,
+            halls: document.getElementById('halls').value,
+            bathrooms: document.getElementById('bathrooms').value
+          },
+          address: document.getElementById('address').value,
+          requirements: document.getElementById('requirements').value,
+          timestamp: new Date().toISOString()
+        };
+
+        console.log('提交的数据:', formData);
+
+        // 提交成功
+        showToast('需求提交成功！我们会尽快与您联系', 'success');
+
+      } catch (error) {
+        console.error('提交失败:', error);
+        showToast('提交失败，请重试', 'error');
+      } finally {
+        // 恢复按钮状态
+        submitBtn.disabled = false;
+        btnText.textContent = '提交需求';
+        const loading = submitBtn.querySelector('.loading');
+        if (loading) loading.remove();
+      }
+    }
+
+    // 显示Toast提示
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+  </script>
+</body>
+</html>

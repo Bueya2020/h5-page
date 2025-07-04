@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>项目团队 - 智能设计与施工</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'system': ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', '"SF Pro Icons"', '"Helvetica Neue"', 'Helvetica', 'Arial', 'sans-serif']
+                    },
+                    colors: {
+                        'primary-text': '#1A1A1A',
+                        'main-bg': '#F8F9FA'
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/iphone16_fix.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            -webkit-text-size-adjust: 100%;
+            -moz-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .scrollbar-none::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-none {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        :root {
+            --safe-area-inset-top: env(safe-area-inset-top);
+            --safe-area-inset-bottom: env(safe-area-inset-bottom);
+        }
+
+        /* 联系方式弹窗样式 */
+        .contact-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .contact-popup.show {
+            display: flex;
+        }
+
+        .contact-card {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            margin: 20px;
+            max-width: 320px;
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            transform: scale(0.9);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .contact-popup.show .contact-card {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .team-member {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .team-member:hover {
+            background-color: #f9fafb;
+            transform: translateY(-1px);
+        }
+
+        .role-badge {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+
+        .role-owner {
+            background: #1A1A1A;
+            color: white;
+        }
+
+        .role-designer {
+            background: #4A4A4A;
+            color: white;
+        }
+
+        .role-constructor {
+            background: #6A6A6A;
+            color: white;
+        }
+
+        .role-supervisor {
+            background: #2A2A2A;
+            color: white;
+        }
+    </style>
+
+    <!-- 全局错误处理和兜底方案 -->
+    <script>
+        (function() {
+            'use strict';
+            
+            // 创建 Trace 对象的兜底实现
+            window.Trace = window.Trace || {
+                init: function() { console.log('Trace initialized (fallback)'); },
+                log: function() { console.log.apply(console, arguments); },
+                error: function() { console.error.apply(console, arguments); },
+                warn: function() { console.warn.apply(console, arguments); },
+                info: function() { console.info.apply(console, arguments); }
+            };
+
+            // 防止其他可能的调试工具错误
+            window.wx = window.wx || {};
+            window.my = window.my || {};
+            
+            // 防止 chartId 未定义错误
+            window.chartId = window.chartId || 'default-chart-id';
+            
+            // 全局错误处理
+            window.addEventListener('error', function(e) {
+                console.error('Global error caught:', e.error);
+                return true; // 阻止默认错误处理
+            });
+            
+            window.addEventListener('unhandledrejection', function(e) {
+                console.error('Unhandled promise rejection:', e.reason);
+                e.preventDefault(); // 阻止默认处理
+            });
+            
+            console.log('✅ 全局错误处理已初始化');
+        })();
+    </script>
+</head>
+<body class="min-h-screen w-full bg-[#000000] flex items-center justify-center font-system">
+    <!-- iPhone 容器 -->
+    <div class="w-full max-w-[393px] h-[852px] bg-[#1E1E1E] shadow-2xl overflow-hidden relative mx-auto rounded-[54px]">
+        <!-- iPhone 状态栏 -->
+        <div class="w-full h-[47px] bg-black px-5 flex items-center justify-between text-white text-[14px] font-medium">
+            <div class="flex items-center space-x-1">
+                <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2 20h.01"></path>
+                    <path d="M7 20v-4"></path>
+                    <path d="M12 20v-8"></path>
+                    <path d="M17 20V8"></path>
+                    <path d="M22 4v16"></path>
+                </svg>
+                <span>中国移动</span>
+                <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 20h.01"></path>
+                    <path d="M2 8.82a15 15 0 0 1 20 0"></path>
+                    <path d="M5 12.859a10 10 0 0 1 14 0"></path>
+                    <path d="M8.5 16.429a5 5 0 0 1 7 0"></path>
+                </svg>
+            </div>
+            <div class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">9:41</div>
+            <div class="flex items-center space-x-1">
+                <span>89%</span>
+                <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                    <rect height="10" rx="2" ry="2" width="16" x="2" y="7"></rect>
+                    <line x1="22" x2="22" y1="11" y2="13"></line>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 动态岛 -->
+        <button class="absolute left-1/2 -translate-x-1/2 bg-black transition-all duration-300 ease-out w-[126px] h-[37.5px] -top-0.5 rounded-b-[24px]"></button>
+
+        <!-- 主内容区域 -->
+        <div class="w-full h-[calc(100%-47px)] bg-white overflow-hidden relative">
+            <!-- 滚动内容区域 -->
+            <div class="absolute inset-0 bottom-[84px] overflow-y-auto scrollbar-none">
+                <!-- 顶部导航栏 -->
+                <header class="bg-white border-b border-gray-100">
+                    <div class="flex items-center justify-between px-4 py-3">
+                        <a class="text-black/70 hover:text-black transition-colors" href="construction-project-detail.html">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m15 18-6-6 6-6"></path>
+                            </svg>
+                        </a>
+                        <h1 class="text-[16px] font-medium text-black">项目团队</h1>
+                        <a class="text-black/70 hover:text-black transition-colors" href="#">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 5v14"></path>
+                                <path d="M5 12h14"></path>
+                            </svg>
+                        </a>
+                    </div>
+                </header>
+
+                <!-- 项目信息 -->
+                <section class="px-3 py-4 bg-[#F8F9FA]">
+                    <div class="bg-white p-4 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all">
+                        <h2 class="text-[16px] font-semibold mb-2 text-[#1A1A1A]">天景金都智能项目空间</h2>
+                        <div class="text-[13px] text-gray-500 mb-1">项目编号: SG2024031501</div>
+                        <div class="text-[13px] text-gray-500">北京市朝阳区 · 120㎡ 三室两厅</div>
+                    </div>
+                </section>
+
+                <!-- 团队成员列表 -->
+                <section class="px-3 py-4 bg-white">
+                    <h3 class="text-[13px] font-medium mb-4 text-[#1A1A1A] px-1">团队成员 (4人)</h3>
+
+                    <div class="space-y-3">
+                        <!-- 业主 -->
+                        <div class="team-member bg-white p-3 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all" onclick="showContactInfo('张三', '业主', '13636669666', '项目业主，负责需求确认和验收', 'owner')">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-gray-100 rounded-full mr-3 flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600">
+                                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="12" cy="7" r="4"></circle>
+                                    </svg>
+                                </div>
+                                <div class="flex-grow">
+                                    <div class="flex items-center">
+                                        <span class="text-[14px] font-medium text-[#1A1A1A]">张三</span>
+                                        <span class="role-badge role-owner">业主</span>
+                                    </div>
+                                    <div class="text-[12px] text-gray-500 mt-1">项目业主，负责需求确认</div>
+                                    <div class="text-[11px] text-gray-400">在线 · 2分钟前</div>
+                                </div>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400">
+                                    <path d="m9 18 6-6-6-6"></path>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <!-- 设计师 -->
+                        <div class="team-member bg-white p-3 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all" onclick="showContactInfo('李四', '设计师', '13888888888', '资深室内设计师，8年设计经验', 'designer')">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-gray-200 rounded-full mr-3 flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-700">
+                                        <circle cx="13.5" cy="6.5" fill="currentColor" r=".5"></circle>
+                                        <circle cx="17.5" cy="10.5" fill="currentColor" r=".5"></circle>
+                                        <circle cx="8.5" cy="7.5" fill="currentColor" r=".5"></circle>
+                                        <circle cx="6.5" cy="12.5" fill="currentColor" r=".5"></circle>
+                                        <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+                                    </svg>
+                                </div>
+                                <div class="flex-grow">
+                                    <div class="flex items-center">
+                                        <span class="text-[14px] font-medium text-[#1A1A1A]">李四</span>
+                                        <span class="role-badge role-designer">设计师</span>
+                                    </div>
+                                    <div class="text-[12px] text-gray-500 mt-1">资深室内设计师，8年经验</div>
+                                    <div class="text-[11px] text-gray-400">在线 · 刚刚</div>
+                                </div>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400">
+                                    <path d="m9 18 6-6-6-6"></path>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <!-- 施工师傅 -->
+                        <div class="team-member bg-white p-3 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all" onclick="showContactInfo('王五', '施工师傅', '13999999999', '专业施工团队负责人，15年施工经验', 'constructor')">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-gray-300 rounded-full mr-3 flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-800">
+                                        <path d="m15 12-8.373 8.373a1 1 0 1 1-3-3L12 9"></path>
+                                        <path d="m18 15 4-4"></path>
+                                        <path d="m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172V7l-2.26-2.26a6 6 0 0 0-4.202-1.756L9 2.96l.92.82A6.18 6.18 0 0 1 12 8.4V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5"></path>
+                                    </svg>
+                                </div>
+                                <div class="flex-grow">
+                                    <div class="flex items-center">
+                                        <span class="text-[14px] font-medium text-[#1A1A1A]">王五</span>
+                                        <span class="role-badge role-constructor">施工师傅</span>
+                                    </div>
+                                    <div class="text-[12px] text-gray-500 mt-1">专业施工团队负责人</div>
+                                    <div class="text-[11px] text-gray-400">离线 · 1小时前</div>
+                                </div>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400">
+                                    <path d="m9 18 6-6-6-6"></path>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <!-- 监理 -->
+                        <div class="team-member bg-white p-3 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all" onclick="showContactInfo('赵六', '项目监理', '13777777777', '专业工程监理，负责质量把控', 'supervisor')">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-gray-400 rounded-full mr-3 flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-900">
+                                        <path d="M9 11l3 3L22 4"></path>
+                                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                                    </svg>
+                                </div>
+                                <div class="flex-grow">
+                                    <div class="flex items-center">
+                                        <span class="text-[14px] font-medium text-[#1A1A1A]">赵六</span>
+                                        <span class="role-badge role-supervisor">项目监理</span>
+                                    </div>
+                                    <div class="text-[12px] text-gray-500 mt-1">专业工程监理，质量把控</div>
+                                    <div class="text-[11px] text-gray-400">在线 · 5分钟前</div>
+                                </div>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400">
+                                    <path d="m9 18 6-6-6-6"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 团队协作工具 -->
+                <section class="px-3 py-4 bg-[#F8F9FA]">
+                    <h3 class="text-[13px] font-medium mb-3 text-[#1A1A1A] px-1">团队协作</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button class="bg-white p-3 rounded-xl text-center shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:bg-gray-50 active:bg-gray-100 transition-all group">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-700 mb-2 mx-auto transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                            <div class="text-[12px] font-medium text-[#1A1A1A] group-hover:text-black">群聊</div>
+                        </button>
+                        <button class="bg-white p-3 rounded-xl text-center shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:bg-gray-50 active:bg-gray-100 transition-all group">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-700 mb-2 mx-auto transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <path d="M23 7l-7 5 7 5V7z"></path>
+                                <rect width="15" height="9" x="1" y="8" rx="2" ry="2"></rect>
+                            </svg>
+                            <div class="text-[12px] font-medium text-[#1A1A1A] group-hover:text-black">视频会议</div>
+                        </button>
+                        <button class="bg-white p-3 rounded-xl text-center shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:bg-gray-50 active:bg-gray-100 transition-all group">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-700 mb-2 mx-auto transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path>
+                                <path d="M14 2v4a2 2 0 0 0 2 2h4"></path>
+                                <path d="M10 9H8"></path>
+                                <path d="M16 13H8"></path>
+                                <path d="M16 17H8"></path>
+                            </svg>
+                            <div class="text-[12px] font-medium text-[#1A1A1A] group-hover:text-black">共享文档</div>
+                        </button>
+                        <button class="bg-white p-3 rounded-xl text-center shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:bg-gray-50 active:bg-gray-100 transition-all group">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-700 mb-2 mx-auto transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <path d="M8 2v4"></path>
+                                <path d="M16 2v4"></path>
+                                <rect width="18" height="18" x="3" y="4" rx="2"></rect>
+                                <path d="M3 10h18"></path>
+                            </svg>
+                            <div class="text-[12px] font-medium text-[#1A1A1A] group-hover:text-black">日程安排</div>
+                        </button>
+                    </div>
+                </section>
+            </div>
+
+            <!-- 底部导航栏 -->
+            <div class="absolute bottom-0 left-0 right-0 h-[84px] bg-white/80 backdrop-blur-xl border-t border-white/20">
+                <nav class="h-[49px] flex items-center px-2">
+                    <div class="flex justify-around w-full text-[12px]">
+                        <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="home.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                                </svg>
+                            </div>
+                            <span class="mt-1">首页</span>
+                        </a>
+                        <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="design-result.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="13.5" cy="6.5" fill="currentColor" r=".5"></circle>
+                                    <circle cx="17.5" cy="10.5" fill="currentColor" r=".5"></circle>
+                                    <circle cx="8.5" cy="7.5" fill="currentColor" r=".5"></circle>
+                                    <circle cx="6.5" cy="12.5" fill="currentColor" r=".5"></circle>
+                                    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+                                </svg>
+                            </div>
+                            <span class="mt-1">设计</span>
+                        </a>
+                        <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="mall.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+                                    <path d="M3 6h18"></path>
+                                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                                </svg>
+                            </div>
+                            <span class="mt-1">商城</span>
+                        </a>
+                        <a class="flex flex-col items-center group text-black transition-colors" href="spaces.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="m15 12-8.373 8.373a1 1 0 1 1-3-3L12 9"></path>
+                                    <path d="m18 15 4-4"></path>
+                                    <path d="m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172V7l-2.26-2.26a6 6 0 0 0-4.202-1.756L9 2.96l.92.82A6.18 6.18 0 0 1 12 8.4V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5"></path>
+                                </svg>
+                            </div>
+                            <span class="mt-1">施工</span>
+                        </a>
+                        <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="me.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                            </div>
+                            <span class="mt-1">我的</span>
+                        </a>
+                    </div>
+                </nav>
+                <!-- iPhone 16 Home Indicator -->
+                <div class="h-[34px] flex items-center justify-center">
+                    <div class="w-[134px] h-[5px] bg-black rounded-full"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 联系方式弹窗 -->
+    <div id="contactPopup" class="contact-popup">
+        <div class="contact-card">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-[16px] font-semibold text-[#1A1A1A]">联系信息</h3>
+                <button onclick="hideContactInfo()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 6 6 18"></path>
+                        <path d="m6 6 12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-3 flex items-center justify-center" id="contactAvatar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-500">
+                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                </div>
+                <div class="text-[16px] font-medium text-[#1A1A1A]" id="contactNameDisplay">张三</div>
+                <div class="text-[13px] text-gray-500" id="contactRole">业主</div>
+                <div class="text-[12px] text-gray-400 mt-1" id="contactDescription">项目业主</div>
+            </div>
+
+            <div class="space-y-3">
+                <!-- 电话联系 -->
+                <div class="flex items-center p-3 bg-[#F8F9FA] rounded-xl cursor-pointer hover:bg-gray-100 active:bg-gray-200 transition-all group" onclick="callContact()">
+                    <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mr-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-700">
+                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                        </svg>
+                    </div>
+                    <div class="flex-grow">
+                        <div class="text-[14px] font-medium text-[#1A1A1A] group-hover:text-black">电话联系</div>
+                        <div class="text-[13px] text-gray-600" id="contactPhone">13636669666</div>
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400 transform transition-transform group-hover:translate-x-0.5">
+                        <path d="m9 18 6-6-6-6"></path>
+                    </svg>
+                </div>
+
+                <!-- 微信联系 -->
+                <div class="flex items-center p-3 bg-[#F8F9FA] rounded-xl cursor-pointer hover:bg-gray-100 active:bg-gray-200 transition-all group" onclick="addWechat()">
+                    <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center mr-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-700">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                    </div>
+                    <div class="flex-grow">
+                        <div class="text-[14px] font-medium text-[#1A1A1A] group-hover:text-black">微信联系</div>
+                        <div class="text-[13px] text-gray-600">点击添加微信</div>
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400 transform transition-transform group-hover:translate-x-0.5">
+                        <path d="m9 18 6-6-6-6"></path>
+                    </svg>
+                </div>
+
+                <!-- 发送消息 -->
+                <div class="flex items-center p-3 bg-[#F8F9FA] rounded-xl cursor-pointer hover:bg-gray-100 active:bg-gray-200 transition-all group" onclick="sendMessage()">
+                    <div class="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center mr-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-800">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                    </div>
+                    <div class="flex-grow">
+                        <div class="text-[14px] font-medium text-[#1A1A1A] group-hover:text-black">发送消息</div>
+                        <div class="text-[13px] text-gray-600">项目内部沟通</div>
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400 transform transition-transform group-hover:translate-x-0.5">
+                        <path d="m9 18 6-6-6-6"></path>
+                    </svg>
+                </div>
+
+                <!-- 查看详情 -->
+                <div class="flex items-center p-3 bg-[#F8F9FA] rounded-xl cursor-pointer hover:bg-gray-100 active:bg-gray-200 transition-all group" onclick="viewProfile()">
+                    <div class="w-10 h-10 bg-gray-400 rounded-full flex items-center justify-center mr-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-900">
+                            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                    <div class="flex-grow">
+                        <div class="text-[14px] font-medium text-[#1A1A1A] group-hover:text-black">查看详情</div>
+                        <div class="text-[13px] text-gray-600">个人资料和工作经历</div>
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400 transform transition-transform group-hover:translate-x-0.5">
+                        <path d="m9 18 6-6-6-6"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-gray-100">
+                <button onclick="hideContactInfo()" class="w-full py-2 text-gray-500 hover:text-gray-700 text-[13px] transition-colors">
+                    关闭
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 显示联系信息弹窗
+        function showContactInfo(name, role, phone, description, roleType) {
+            document.getElementById('contactNameDisplay').textContent = name;
+            document.getElementById('contactRole').textContent = role;
+            document.getElementById('contactPhone').textContent = phone;
+            document.getElementById('contactDescription').textContent = description;
+
+            // 根据角色设置头像图标和颜色
+            const avatar = document.getElementById('contactAvatar');
+            avatar.innerHTML = '';
+
+            switch(roleType) {
+                case 'owner':
+                    avatar.className = 'w-16 h-16 bg-gray-100 rounded-full mx-auto mb-3 flex items-center justify-center';
+                    avatar.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>';
+                    break;
+                case 'designer':
+                    avatar.className = 'w-16 h-16 bg-gray-200 rounded-full mx-auto mb-3 flex items-center justify-center';
+                    avatar.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-700"><circle cx="13.5" cy="6.5" fill="currentColor" r=".5"></circle><circle cx="17.5" cy="10.5" fill="currentColor" r=".5"></circle><circle cx="8.5" cy="7.5" fill="currentColor" r=".5"></circle><circle cx="6.5" cy="12.5" fill="currentColor" r=".5"></circle><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path></svg>';
+                    break;
+                case 'constructor':
+                    avatar.className = 'w-16 h-16 bg-gray-300 rounded-full mx-auto mb-3 flex items-center justify-center';
+                    avatar.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-800"><path d="m15 12-8.373 8.373a1 1 0 1 1-3-3L12 9"></path><path d="m18 15 4-4"></path><path d="m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172V7l-2.26-2.26a6 6 0 0 0-4.202-1.756L9 2.96l.92.82A6.18 6.18 0 0 1 12 8.4V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5"></path></svg>';
+                    break;
+                case 'supervisor':
+                    avatar.className = 'w-16 h-16 bg-gray-400 rounded-full mx-auto mb-3 flex items-center justify-center';
+                    avatar.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-900"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>';
+                    break;
+                default:
+                    avatar.className = 'w-16 h-16 bg-gray-100 rounded-full mx-auto mb-3 flex items-center justify-center';
+                    avatar.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-500"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>';
+            }
+
+            document.getElementById('contactPopup').classList.add('show');
+        }
+
+        // 隐藏联系信息弹窗
+        function hideContactInfo() {
+            document.getElementById('contactPopup').classList.remove('show');
+        }
+
+        // 拨打电话
+        function callContact() {
+            const phone = document.getElementById('contactPhone').textContent;
+            const name = document.getElementById('contactNameDisplay').textContent;
+            if (confirm(`确定要拨打 ${name} 的电话 ${phone} 吗？`)) {
+                window.location.href = `tel:${phone}`;
+            }
+        }
+
+        // 添加微信
+        function addWechat() {
+            const name = document.getElementById('contactNameDisplay').textContent;
+            alert(`正在跳转到微信添加 ${name} 为联系人...`);
+            // 这里可以集成微信SDK或跳转到微信
+        }
+
+        // 发送消息
+        function sendMessage() {
+            const name = document.getElementById('contactNameDisplay').textContent;
+            alert(`正在打开与 ${name} 的项目内部聊天...`);
+            // 这里可以跳转到聊天页面
+        }
+
+        // 查看个人资料
+        function viewProfile() {
+            const name = document.getElementById('contactNameDisplay').textContent;
+            alert(`正在查看 ${name} 的详细资料...`);
+            // 这里可以跳转到个人资料页面
+        }
+
+        // 点击弹窗背景关闭
+        document.getElementById('contactPopup').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideContactInfo();
+            }
+        });
+    </script>

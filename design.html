@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>设计页</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/iphone16_fix.css">
+    <script src="js/form-validator.js"></script>
+    <style>
+        .service-card {
+            transition: transform 0.2s;
+        }
+
+        .service-card:active {
+            transform: scale(0.98);
+        }
+    </style>
+
+    <!-- 全局错误处理和兜底方案 -->
+    <script>
+        (function() {
+            'use strict';
+            
+            // 创建 Trace 对象的兜底实现
+            window.Trace = window.Trace || {
+                init: function() { console.log('Trace initialized (fallback)'); },
+                log: function() { console.log.apply(console, arguments); },
+                error: function() { console.error.apply(console, arguments); },
+                warn: function() { console.warn.apply(console, arguments); },
+                info: function() { console.info.apply(console, arguments); }
+            };
+
+            // 防止其他可能的调试工具错误
+            window.wx = window.wx || {};
+            window.my = window.my || {};
+            
+            // 防止 chartId 未定义错误
+            window.chartId = window.chartId || 'default-chart-id';
+            
+            // 全局错误处理
+            window.addEventListener('error', function(e) {
+                console.error('Global error caught:', e.error);
+                return true; // 阻止默认错误处理
+            });
+            
+            window.addEventListener('unhandledrejection', function(e) {
+                console.error('Unhandled promise rejection:', e.reason);
+                e.preventDefault(); // 阻止默认处理
+            });
+            
+            console.log('✅ 全局错误处理已初始化');
+        })();
+    </script>
+</head>
+<body class="min-h-screen w-full bg-[#000000] flex items-center justify-center font-system">
+    <!-- iPhone 容器 -->
+    <div class="w-full max-w-[393px] h-[852px] bg-[#1E1E1E] shadow-2xl overflow-hidden relative mx-auto rounded-[54px]">
+        <!-- iPhone 状态栏 -->
+        <div class="w-full h-[47px] bg-black px-5 flex items-center justify-between text-white text-[14px] font-medium">
+            <div class="flex items-center space-x-1">
+                <!-- 信号图标 -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 20h.01"></path>
+                    <path d="M7 20v-4"></path>
+                    <path d="M12 20v-8"></path>
+                    <path d="M17 20V8"></path>
+                    <path d="M22 4v16"></path>
+                </svg>
+                <span>中国移动</span>
+                <!-- WiFi图标 -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h.01"></path>
+                    <path d="M2 8.82a15 15 0 0 1 20 0"></path>
+                    <path d="M5 12.859a10 10 0 0 1 14 0"></path>
+                    <path d="M8.5 16.429a5 5 0 0 1 7 0"></path>
+                </svg>
+            </div>
+            <div class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">9:41</div>
+            <div class="flex items-center space-x-1">
+                <span>89%</span>
+                <!-- 电池图标 -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="16" height="10" x="2" y="7" rx="2" ry="2"></rect>
+                    <line x1="22" x2="22" y1="11" y2="13"></line>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 动态岛 -->
+        <button class="absolute left-1/2 -translate-x-1/2 bg-black transition-all duration-300 ease-out w-[126px] h-[37.5px] -top-0.5 rounded-b-[24px]"></button>
+
+        <!-- 分享按钮 -->
+        <button onclick="shareToWechat()" class="absolute top-[60px] right-4 z-30 p-2 bg-black/10 backdrop-blur-sm rounded-full hover:bg-black/20 transition-all">
+            <svg class="w-5 h-5 text-black" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="18" cy="5" r="3"></circle>
+                <circle cx="6" cy="12" r="3"></circle>
+                <circle cx="18" cy="19" r="3"></circle>
+                <line x1="8.59" x2="15.42" y1="13.51" y2="17.49"></line>
+                <line x1="15.41" x2="8.59" y1="6.51" y2="10.49"></line>
+            </svg>
+        </button>
+
+        <!-- 分享按钮 -->
+        <button onclick="shareToWechat()" class="absolute top-[60px] right-4 z-30 p-2 bg-black/10 backdrop-blur-sm rounded-full hover:bg-black/20 transition-all">
+            <svg class="w-5 h-5 text-black" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="18" cy="5" r="3"></circle>
+                <circle cx="6" cy="12" r="3"></circle>
+                <circle cx="18" cy="19" r="3"></circle>
+                <line x1="8.59" x2="15.42" y1="13.51" y2="17.49"></line>
+                <line x1="15.41" x2="8.59" y1="6.51" y2="10.49"></line>
+            </svg>
+        </button>
+
+        <!-- 主内容区域 -->
+        <div class="w-full h-[calc(100%-47px)] bg-white overflow-hidden relative">
+            <!-- 滚动内容区域 -->
+            <div class="absolute inset-0 bottom-[84px] overflow-y-auto scrollbar-none">
+                <!-- 设计服务标题 -->
+                <section class="px-4 py-4 bg-white">
+                    <h1 class="text-sm font-semibold">智能设计服务</h1>
+                    <p class="text-xs text-gray-500 mt-1">专业设计师一对一服务，打造智能家居体验</p>
+                </section>
+
+                <!-- AI智能设计入口 -->
+                <section class="px-4 py-4 bg-gradient-to-r from-blue-50 to-purple-50 mt-2">
+                    <div class="bg-white rounded-xl p-4 shadow-sm">
+                        <div class="flex items-center mb-3">
+                            <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mr-3">
+                                <i class="fas fa-magic text-white text-lg"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-semibold">AI智能设计</h3>
+                                <p class="text-xs text-gray-500">3分钟生成专属设计方案</p>
+                            </div>
+                        </div>
+                        <button id="startAIDesign" class="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white text-sm py-3 rounded-lg font-medium">
+                            开始AI设计
+                        </button>
+                    </div>
+                </section>
+
+                <!-- 上传户型图 -->
+                <section id="uploadSection" class="px-4 py-4 bg-white mt-2" style="display: none;">
+                    <h3 class="text-sm font-semibold mb-3">第一步：上传户型图</h3>
+                    <div id="uploadArea" class="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center">
+                        <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                            <i class="fas fa-upload text-gray-500 text-xl"></i>
+                        </div>
+                        <p class="text-sm font-medium text-center mb-1">上传户型图</p>
+                        <p class="text-xs text-gray-500 text-center mb-3">支持JPG、PNG、PDF格式，最大10MB</p>
+                        <input type="file" id="floorPlanInput" accept=".jpg,.jpeg,.png,.pdf" style="display: none;">
+                        <button id="selectFileBtn" class="bg-black text-white text-sm py-2 px-4 rounded-lg">选择文件</button>
+                    </div>
+                    <div id="uploadedFile" class="mt-3" style="display: none;">
+                        <div class="flex items-center p-3 bg-green-50 rounded-lg">
+                            <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                            <span id="fileName" class="text-sm text-green-700"></span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 设计需求表单 -->
+                <section id="requirementsSection" class="px-4 py-4 bg-white mt-2" style="display: none;">
+                    <h3 class="text-sm font-semibold mb-3">第二步：填写设计需求</h3>
+                    <form id="designForm" class="space-y-4">
+                        <!-- 房屋信息 -->
+                        <div class="relative">
+                            <label class="block text-xs font-medium text-gray-700 mb-2">房屋面积 *</label>
+                            <div class="flex space-x-2">
+                                <input type="number" name="houseArea" id="houseArea" placeholder="请输入面积"
+                                       class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all"
+                                       min="10" max="1000">
+                                <span class="flex items-center text-sm text-gray-500">㎡</span>
+                            </div>
+                        </div>
+
+                        <!-- 房间类型 -->
+                        <div class="relative">
+                            <label class="block text-xs font-medium text-gray-700 mb-2">房间类型 *</label>
+                            <input type="hidden" name="roomType" id="roomType">
+                            <div class="grid grid-cols-3 gap-2">
+                                <button type="button" class="room-type-btn px-3 py-2 border border-gray-300 rounded-lg text-xs hover:border-gray-400 transition-colors" data-value="1室1厅">1室1厅</button>
+                                <button type="button" class="room-type-btn px-3 py-2 border border-gray-300 rounded-lg text-xs hover:border-gray-400 transition-colors" data-value="2室1厅">2室1厅</button>
+                                <button type="button" class="room-type-btn px-3 py-2 border border-gray-300 rounded-lg text-xs hover:border-gray-400 transition-colors" data-value="3室2厅">3室2厅</button>
+                                <button type="button" class="room-type-btn px-3 py-2 border border-gray-300 rounded-lg text-xs hover:border-gray-400 transition-colors" data-value="4室2厅">4室2厅</button>
+                                <button type="button" class="room-type-btn px-3 py-2 border border-gray-300 rounded-lg text-xs hover:border-gray-400 transition-colors" data-value="复式">复式</button>
+                                <button type="button" class="room-type-btn px-3 py-2 border border-gray-300 rounded-lg text-xs hover:border-gray-400 transition-colors" data-value="别墅">别墅</button>
+                            </div>
+                        </div>
+
+                        <!-- 设计风格 -->
+                        <div class="relative">
+                            <label class="block text-xs font-medium text-gray-700 mb-2">设计风格 *</label>
+                            <input type="hidden" name="designStyle" id="designStyle">
+                            <div class="grid grid-cols-2 gap-2">
+                                <button type="button" class="style-btn px-3 py-2 border border-gray-300 rounded-lg text-xs hover:border-gray-400 transition-colors" data-value="现代简约">现代简约</button>
+                                <button type="button" class="style-btn px-3 py-2 border border-gray-300 rounded-lg text-xs hover:border-gray-400 transition-colors" data-value="北欧风格">北欧风格</button>
+                                <button type="button" class="style-btn px-3 py-2 border border-gray-300 rounded-lg text-xs hover:border-gray-400 transition-colors" data-value="中式风格">中式风格</button>
+                                <button type="button" class="style-btn px-3 py-2 border border-gray-300 rounded-lg text-xs hover:border-gray-400 transition-colors" data-value="美式风格">美式风格</button>
+                                <button type="button" class="style-btn px-3 py-2 border border-gray-300 rounded-lg text-xs hover:border-gray-400 transition-colors" data-value="日式风格">日式风格</button>
+                                <button type="button" class="style-btn px-3 py-2 border border-gray-300 rounded-lg text-xs hover:border-gray-400 transition-colors" data-value="轻奢风格">轻奢风格</button>
+                            </div>
+                        </div>
+
+                        <!-- 预算范围 -->
+                        <div class="relative">
+                            <label class="block text-xs font-medium text-gray-700 mb-2">预算范围 *</label>
+                            <input type="hidden" name="budgetRange" id="budgetRange">
+                            <div class="grid grid-cols-2 gap-2">
+                                <button type="button" class="budget-btn px-3 py-2 border border-gray-300 rounded-lg text-xs hover:border-gray-400 transition-colors" data-value="5-10万">5-10万</button>
+                                <button type="button" class="budget-btn px-3 py-2 border border-gray-300 rounded-lg text-xs hover:border-gray-400 transition-colors" data-value="10-20万">10-20万</button>
+                                <button type="button" class="budget-btn px-3 py-2 border border-gray-300 rounded-lg text-xs hover:border-gray-400 transition-colors" data-value="20-30万">20-30万</button>
+                                <button type="button" class="budget-btn px-3 py-2 border border-gray-300 rounded-lg text-xs hover:border-gray-400 transition-colors" data-value="30万以上">30万以上</button>
+                            </div>
+                        </div>
+
+                        <!-- 特殊需求 -->
+                        <div class="relative">
+                            <label class="block text-xs font-medium text-gray-700 mb-2">特殊需求</label>
+                            <textarea name="specialRequirements" id="specialRequirements" placeholder="请描述您的特殊需求（选填，最多500字）..."
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm h-20 resize-none focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all"
+                                      maxlength="500"></textarea>
+                            <div class="flex justify-between items-center mt-1">
+                                <span class="text-xs text-gray-500">选填项目</span>
+                                <span id="requirementsCounter" class="text-xs text-gray-400">0/500</span>
+                            </div>
+                        </div>
+
+                        <button type="submit" id="generateDesignBtn" class="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white text-sm py-3 rounded-lg font-medium">
+                            生成AI设计方案
+                        </button>
+                    </form>
+                </section>
+
+                <!-- AI生成中状态 -->
+                <section id="generatingSection" class="px-4 py-4 bg-white mt-2" style="display: none;">
+                    <div class="text-center py-8">
+                        <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-magic text-white text-2xl animate-pulse"></i>
+                        </div>
+                        <h3 class="text-sm font-semibold mb-2">AI正在生成设计方案</h3>
+                        <p class="text-xs text-gray-500 mb-4">请稍候，预计需要30-60秒</p>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div id="progressBar" class="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-1000" style="width: 0%"></div>
+                        </div>
+                        <p id="progressText" class="text-xs text-gray-500 mt-2">正在分析户型图...</p>
+                    </div>
+                </section>
+
+                <!-- 设计服务卡片 -->
+                <section class="px-4 py-4">
+                    <div class="flex justify-between items-center mb-3">
+                        <h2 class="text-sm font-semibold">设计服务</h2>
+                        <a href="design-service-detail.html" class="text-xs text-gray-500">查看全部 <i class="fas fa-chevron-right text-xs"></i></a>
+                    </div>
+
+                    <div class="space-y-3">
+                        <!-- 服务卡片1 -->
+                        <div class="service-card bg-white p-4 rounded-lg shadow-sm" onclick="window.location.href='design-service-detail.html'">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h3 class="text-sm font-semibold mb-1">户型优化/平面方案</h3>
+                                    <p class="text-xs text-gray-500 mb-2">专业一对一定制</p>
+                                    <div class="flex space-x-1">
+                                        <span class="px-1.5 py-0.5 bg-gray-100 rounded text-xs">户型优化</span>
+                                        <span class="px-1.5 py-0.5 bg-gray-100 rounded text-xs">空间规划</span>
+                                    </div>
+                                </div>
+                                <div class="text-base font-bold">¥299</div>
+                            </div>
+                            <button class="w-full mt-3 py-2 bg-black text-white text-sm rounded-lg" onclick="event.stopPropagation(); window.location.href='design-service-detail.html'">立即购买</button>
+                        </div>
+
+                        <!-- 服务卡片2 -->
+                        <div class="service-card bg-white p-4 rounded-lg shadow-sm" onclick="window.location.href='design-service-detail.html'">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h3 class="text-sm font-semibold mb-1">全屋智能效果图设计</h3>
+                                    <p class="text-xs text-gray-500 mb-2">大师级3D效果图设计</p>
+                                    <div class="flex space-x-1">
+                                        <span class="px-1.5 py-0.5 bg-gray-100 rounded text-xs">效果图设计</span>
+                                        <span class="px-1.5 py-0.5 bg-gray-100 rounded text-xs">智能家居</span>
+                                    </div>
+                                </div>
+                                <div class="text-base font-bold">¥999</div>
+                            </div>
+                            <button class="w-full mt-3 py-2 bg-black text-white text-sm rounded-lg" onclick="event.stopPropagation(); window.location.href='design-service-detail.html'">立即购买</button>
+                        </div>
+
+                        <!-- 服务卡片3 -->
+                        <div class="service-card bg-white p-4 rounded-lg shadow-sm" onclick="window.location.href='design-service-detail.html'">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h3 class="text-sm font-semibold mb-1">大师自定制设计</h3>
+                                    <p class="text-xs text-gray-500 mb-2">1对1为您量身定制</p>
+                                    <div class="flex space-x-1">
+                                        <span class="px-1.5 py-0.5 bg-gray-100 rounded text-xs">全屋定制</span>
+                                        <span class="px-1.5 py-0.5 bg-gray-100 rounded text-xs">智能家居</span>
+                                    </div>
+                                </div>
+                                <div class="text-base font-bold">¥20/㎡起</div>
+                            </div>
+                            <button class="w-full mt-3 py-2 bg-black text-white text-sm rounded-lg" onclick="event.stopPropagation(); window.location.href='design-service-detail.html'">立即购买</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 设计案例 -->
+                <section class="px-4 py-4">
+                    <div class="flex justify-between items-center mb-3">
+                        <h2 class="text-sm font-semibold">设计案例</h2>
+                        <a href="#" class="text-xs text-gray-500">查看全部 <i class="fas fa-chevron-right text-xs"></i></a>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <!-- 案例1 -->
+                        <div class="bg-white rounded-lg overflow-hidden shadow-sm">
+                            <img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=180&h=120&q=80" alt="现代简约风" class="w-full h-28 object-cover">
+                            <div class="p-2">
+                                <h3 class="text-xs font-medium">现代简约风</h3>
+                                <p class="text-xxs text-gray-500">120㎡三居室</p>
+                            </div>
+                        </div>
+
+                        <!-- 案例2 -->
+                        <div class="bg-white rounded-lg overflow-hidden shadow-sm">
+                            <img src="https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=180&h=120&q=80" alt="北欧风格" class="w-full h-28 object-cover">
+                            <div class="p-2">
+                                <h3 class="text-xs font-medium">北欧风格</h3>
+                                <p class="text-xxs text-gray-500">89㎡两居室</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- 底部导航栏 -->
+<div class="absolute bottom-0 left-0 right-0 h-[84px] bg-white/80 backdrop-blur-xl border-t border-white/20">
+<!-- 导航栏内容 -->
+<nav class="h-[49px] flex items-center px-2">
+<div class="flex justify-around w-full text-[12px]">
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="home.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+<polyline points="9 22 9 12 15 12 15 22"></polyline>
+</svg>
+</div>
+<span class="mt-1">首页</span>
+</a>
+<a class="flex flex-col items-center group text-black transition-colors" href="design-result.html" class="flex flex-col items-center group text-black transition-colors">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<circle cx="13.5" cy="6.5" fill="currentColor" r=".5"></circle>
+<circle cx="17.5" cy="10.5" fill="currentColor" r=".5"></circle>
+<circle cx="8.5" cy="7.5" fill="currentColor" r=".5"></circle>
+<circle cx="6.5" cy="12.5" fill="currentColor" r=".5"></circle>
+<path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+</svg>
+</div>
+<span class="mt-1">设计</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="mall.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+<path d="M3 6h18"></path>
+<path d="M16 10a4 4 0 0 1-8 0"></path>
+</svg>
+</div>
+<span class="mt-1">商城</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="spaces.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="m15 12-8.373 8.373a1 1 0 1 1-3-3L12 9"></path>
+<path d="m18 15 4-4"></path>
+<path d="m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172V7l-2.26-2.26a6 6 0 0 0-4.202-1.756L9 2.96l.92.82A6.18 6.18 0 0 1 12 8.4V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5"></path>
+</svg>
+</div>
+<span class="mt-1">施工</span>
+</a>
+<a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="me.html">
+<div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+<svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+<circle cx="12" cy="7" r="4"></circle>
+</svg>
+</div>
+<span class="mt-1">我的</span>
+</a>
+</div>
+</nav>
+<!-- iPhone 16 Home Indicator -->
+<div class="h-[34px] flex items-center justify-center">
+<div class="w-[134px] h-[5px] bg-black rounded-full"></div>
+</div>
+</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // AI设计流程状态管理
+        let designState = {
+            step: 0, // 0: 初始, 1: 上传, 2: 需求, 3: 生成中, 4: 完成
+            floorPlan: null,
+            requirements: {}
+        };
+
+        let formValidator = null;
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeAIDesign();
+            initializeFormValidation();
+        });
+
+        // 初始化AI设计功能
+        function initializeAIDesign() {
+            // 开始AI设计按钮
+            document.getElementById('startAIDesign').addEventListener('click', startAIDesignFlow);
+
+            // 文件选择
+            document.getElementById('selectFileBtn').addEventListener('click', () => {
+                document.getElementById('floorPlanInput').click();
+            });
+
+            document.getElementById('floorPlanInput').addEventListener('change', handleFileUpload);
+
+            // 表单选择按钮
+            setupFormButtons();
+
+            // 设计表单提交
+            document.getElementById('designForm').addEventListener('submit', handleFormSubmit);
+        }
+
+        // 初始化表单验证
+        function initializeFormValidation() {
+            const designForm = document.getElementById('designForm');
+            if (!designForm) return;
+
+            // 创建表单验证器
+            formValidator = new FormValidator(designForm, {
+                validateOnInput: true,
+                validateOnBlur: true,
+                showErrorsImmediately: false
+            });
+
+            // 添加验证规则
+            formValidator
+                .addRule('houseArea', [
+                    ValidationRules.required('请输入房屋面积'),
+                    ValidationRules.range(10, 1000, '房屋面积应在10-1000㎡之间'),
+                    ValidationRules.custom((value) => {
+                        const num = parseFloat(value);
+                        return !isNaN(num) && num > 0 || '请输入有效的面积数值';
+                    })
+                ])
+                .addRule('roomType', [
+                    ValidationRules.required('请选择房间类型')
+                ])
+                .addRule('designStyle', [
+                    ValidationRules.required('请选择设计风格')
+                ])
+                .addRule('budgetRange', [
+                    ValidationRules.required('请选择预算范围')
+                ])
+                .addRule('specialRequirements', [
+                    ValidationRules.maxLength(500, '特殊需求不能超过500字')
+                ]);
+
+            // 初始化字符计数器
+            initializeCharacterCounter();
+
+            // 监听表单验证事件
+            designForm.addEventListener('formValid', handleFormValid);
+            designForm.addEventListener('formInvalid', handleFormInvalid);
+        }
+
+        // 初始化字符计数器
+        function initializeCharacterCounter() {
+            const textarea = document.getElementById('specialRequirements');
+            const counter = document.getElementById('requirementsCounter');
+
+            if (textarea && counter) {
+                textarea.addEventListener('input', function() {
+                    const length = this.value.length;
+                    counter.textContent = `${length}/500`;
+
+                    if (length > 450) {
+                        counter.classList.add('text-red-500');
+                        counter.classList.remove('text-gray-400');
+                    } else {
+                        counter.classList.remove('text-red-500');
+                        counter.classList.add('text-gray-400');
+                    }
+                });
+            }
+        }
+
+        // 处理表单验证成功
+        function handleFormValid(e) {
+            const formData = e.detail.formData;
+            console.log('表单验证通过:', formData);
+
+            // 保存表单数据到设计状态
+            designState.requirements = formData;
+
+            // 保存表单状态
+            FormStateManager.saveState('designRequirements', formData);
+
+            // 开始生成设计
+            startAIGeneration();
+        }
+
+        // 处理表单验证失败
+        function handleFormInvalid(e) {
+            const errors = e.detail.errors;
+            console.log('表单验证失败:', errors);
+
+            // 显示第一个错误信息
+            const firstError = Object.values(errors)[0];
+            if (firstError && firstError[0]) {
+                showToast(firstError[0], 'error');
+            }
+        }
+
+        // 开始AI设计流程
+        function startAIDesignFlow() {
+            designState.step = 1;
+            document.getElementById('uploadSection').style.display = 'block';
+            document.getElementById('startAIDesign').textContent = '重新开始';
+
+            // 滚动到上传区域
+            document.getElementById('uploadSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // 处理文件上传
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // 验证文件类型和大小
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+            const maxSize = 10 * 1024 * 1024; // 10MB
+
+            if (!allowedTypes.includes(file.type)) {
+                alert('请上传JPG、PNG或PDF格式的文件');
+                return;
+            }
+
+            if (file.size > maxSize) {
+                alert('文件大小不能超过10MB');
+                return;
+            }
+
+            // 显示上传成功
+            designState.floorPlan = file;
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('uploadedFile').style.display = 'block';
+            document.getElementById('uploadArea').style.borderColor = '#10b981';
+            document.getElementById('uploadArea').style.backgroundColor = '#f0fdf4';
+
+            // 延迟显示需求表单
+            setTimeout(() => {
+                designState.step = 2;
+                document.getElementById('requirementsSection').style.display = 'block';
+                document.getElementById('requirementsSection').scrollIntoView({ behavior: 'smooth' });
+            }, 1000);
+        }
+
+        // 设置表单按钮
+        function setupFormButtons() {
+            // 房间类型按钮
+            const roomTypeInput = document.getElementById('roomType');
+            document.querySelectorAll('.room-type-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    selectButton(btn, '.room-type-btn');
+
+                    // 更新隐藏输入框的值
+                    roomTypeInput.value = btn.dataset.value;
+                    designState.requirements.roomType = btn.dataset.value;
+
+                    // 触发验证
+                    if (formValidator) {
+                        formValidator.validateField(roomTypeInput);
+                    }
+                });
+            });
+
+            // 设计风格按钮
+            const styleInput = document.getElementById('designStyle');
+            document.querySelectorAll('.style-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    selectButton(btn, '.style-btn');
+
+                    // 更新隐藏输入框的值
+                    styleInput.value = btn.dataset.value;
+                    designState.requirements.style = btn.dataset.value;
+
+                    // 触发验证
+                    if (formValidator) {
+                        formValidator.validateField(styleInput);
+                    }
+                });
+            });
+
+            // 预算按钮
+            const budgetInput = document.getElementById('budgetRange');
+            document.querySelectorAll('.budget-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    selectButton(btn, '.budget-btn');
+
+                    // 更新隐藏输入框的值
+                    budgetInput.value = btn.dataset.value;
+                    designState.requirements.budget = btn.dataset.value;
+
+                    // 触发验证
+                    if (formValidator) {
+                        formValidator.validateField(budgetInput);
+                    }
+                });
+            });
+        }
+
+        // 选择按钮样式
+        function selectButton(selectedBtn, selector) {
+            document.querySelectorAll(selector).forEach(btn => {
+                btn.classList.remove('bg-blue-500', 'text-white');
+                btn.classList.add('border-gray-300', 'text-gray-700');
+            });
+
+            selectedBtn.classList.remove('border-gray-300', 'text-gray-700');
+            selectedBtn.classList.add('bg-blue-500', 'text-white');
+        }
+
+        // 处理表单提交
+        function handleFormSubmit(event) {
+            event.preventDefault();
+
+            // 使用表单验证器验证表单
+            if (formValidator && !formValidator.validateForm()) {
+                // 验证失败，错误信息已在handleFormInvalid中处理
+                return;
+            }
+
+            // 如果没有验证器，使用原有的简单验证
+            if (!formValidator) {
+                const houseArea = document.getElementById('houseArea').value;
+                const roomType = document.getElementById('roomType').value;
+                const designStyle = document.getElementById('designStyle').value;
+                const budgetRange = document.getElementById('budgetRange').value;
+
+                if (!houseArea || !roomType || !designStyle || !budgetRange) {
+                    showToast('请填写完整的设计需求', 'error');
+                    return;
+                }
+
+                // 收集表单数据
+                designState.requirements = {
+                    houseArea: houseArea,
+                    roomType: roomType,
+                    designStyle: designStyle,
+                    budgetRange: budgetRange,
+                    specialRequirements: document.getElementById('specialRequirements').value
+                };
+
+                // 开始生成设计
+                startAIGeneration();
+            }
+            // 如果有验证器，验证成功的处理在handleFormValid中
+        }
+
+        // 开始AI生成
+        function startAIGeneration() {
+            designState.step = 3;
+
+            // 隐藏表单，显示生成状态
+            document.getElementById('requirementsSection').style.display = 'none';
+            document.getElementById('generatingSection').style.display = 'block';
+            document.getElementById('generatingSection').scrollIntoView({ behavior: 'smooth' });
+
+            // 模拟AI生成过程
+            simulateAIGeneration();
+        }
+
+        // 模拟AI生成过程
+        function simulateAIGeneration() {
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+
+            const steps = [
+                { progress: 20, text: '正在分析户型图...' },
+                { progress: 40, text: '正在匹配设计风格...' },
+                { progress: 60, text: '正在生成设备清单...' },
+                { progress: 80, text: '正在计算预算方案...' },
+                { progress: 100, text: '设计方案生成完成！' }
+            ];
+
+            let currentStep = 0;
+
+            const updateProgress = () => {
+                if (currentStep < steps.length) {
+                    const step = steps[currentStep];
+                    progressBar.style.width = step.progress + '%';
+                    progressText.textContent = step.text;
+                    currentStep++;
+
+                    setTimeout(updateProgress, 1500);
+                } else {
+                    // 生成完成，跳转到结果页面
+                    setTimeout(() => {
+                        saveDesignData();
+                        window.location.href = 'design-result.html';
+                    }, 1000);
+                }
+            };
+
+            updateProgress();
+        }
+
+        // 保存设计数据到localStorage
+        function saveDesignData() {
+            const designData = {
+                timestamp: new Date().toISOString(),
+                floorPlan: designState.floorPlan ? designState.floorPlan.name : null,
+                requirements: designState.requirements,
+                status: 'completed'
+            };
+
+            localStorage.setItem('aiDesignData', JSON.stringify(designData));
+        }
+
+        // 分享功能
+        function shareToWechat() {
+            // 生成分享链接，指向design-result.html页面
+            const shareUrl = `${window.location.origin}${window.location.pathname.replace('design.html', 'design-result.html')}`;
+            const shareTitle = '智能家居设计服务';
+            const shareDesc = '专业设计师一对一服务，打造智能家居体验';
+
+            // 模拟微信分享
+            if (navigator.share) {
+                // 使用Web Share API（如果支持）
+                navigator.share({
+                    title: shareTitle,
+                    text: shareDesc,
+                    url: shareUrl
+                }).then(() => {
+                    console.log('分享成功');
+                }).catch((error) => {
+                    console.log('分享失败:', error);
+                    fallbackShare(shareUrl, shareTitle, shareDesc);
+                });
+            } else {
+                // 降级处理
+                fallbackShare(shareUrl, shareTitle, shareDesc);
+            }
+        }
+
+        function fallbackShare(url, title, desc) {
+            // 复制链接到剪贴板
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(url).then(() => {
+                    alert(`链接已复制到剪贴板！\n\n${title}\n${desc}\n\n点击链接进入设计结果页面：\n${url}`);
+                }).catch(() => {
+                    showShareInfo(url, title, desc);
+                });
+            } else {
+                showShareInfo(url, title, desc);
+            }
+        }
+
+        function showShareInfo(url, title, desc) {
+            alert(`分享信息：\n\n${title}\n${desc}\n\n链接：${url}\n\n点击链接进入小程序design-result.html页面`);
+        }
+
+        // 显示提示信息
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-20 left-1/2 transform -translate-x-1/2 z-50 px-4 py-2 rounded-lg text-white text-sm max-w-xs text-center transition-all duration-300`;
+
+            if (type === 'error') {
+                toast.classList.add('bg-red-500');
+            } else if (type === 'success') {
+                toast.classList.add('bg-green-500');
+            } else {
+                toast.classList.add('bg-blue-500');
+            }
+
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '1';
+                toast.style.transform = 'translate(-50%, 0)';
+            }, 100);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translate(-50%, -20px)';
+                setTimeout(() => {
+                    if (document.body.contains(toast)) {
+                        document.body.removeChild(toast);
+                    }
+                }, 300);
+            }, 3000);
+        }
+    </script>
+
+    <!-- 引入H5与小程序通信桥接工具 -->
+    <script src="../utils/h5-bridge.js"></script>
+    
+    <script>
+        // 小程序环境初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检查小程序环境并初始化通信
+            if (window.H5Bridge) {
+                console.log('H5Bridge已加载，当前环境:', window.H5Bridge.isInMiniProgram ? '小程序' : '浏览器');
+                
+                if (window.H5Bridge.isInMiniProgram) {
+                    initMiniProgramFeatures();
+                }
+            }
+        });
+
+        // 初始化小程序特有功能
+        function initMiniProgramFeatures() {
+            console.log('初始化小程序特有功能');
+            
+            // 替换所有页面跳转为小程序导航
+            replacePageNavigation();
+            
+            // 替换alert为小程序toast
+            replaceAlertWithToast();
+            
+            // 监听支付结果（如果页面有支付功能）
+            if (typeof handlePaymentSuccess === 'function') {
+                window.H5Bridge.on('paymentSuccess', handlePaymentSuccess);
+                window.H5Bridge.on('paymentFail', handlePaymentFailure || function(error) {
+                    window.H5Bridge.showToast('支付失败，请重试', 'error');
+                });
+            }
+            
+            // 监听用户信息获取结果（如果页面需要用户信息）
+            if (typeof handleUserInfoSuccess === 'function') {
+                window.H5Bridge.on('userInfoSuccess', handleUserInfoSuccess);
+                window.H5Bridge.on('userInfoFail', handleUserInfoFailure || function(error) {
+                    window.H5Bridge.showToast('获取用户信息失败', 'error');
+                });
+            }
+        }
+
+        // 替换页面跳转为小程序导航
+        function replacePageNavigation() {
+            // 处理所有HTML页面链接
+            document.querySelectorAll('a[href$=".html"]').forEach(link => {
+                const originalHref = link.getAttribute('href');
+                
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // 解析目标页面
+                    const pageName = originalHref.replace('.html', '').replace(/^.*//, '');
+                    
+                    // 特殊页面映射到小程序原生页面
+                    const nativePageMap = {
+                        'home': '/pages/home/index',
+                        'design-result': '/pages/design/index',
+                        'mall': '/pages/mall/index',
+                        'spaces': '/pages/construction/index',
+                        'me': '/pages/profile/index'
+                    };
+                    
+                    if (nativePageMap[pageName]) {
+                        // 跳转到小程序原生页面
+                        window.H5Bridge.navigateTo(nativePageMap[pageName]);
+                    } else {
+                        // 跳转到web-view页面
+                        window.H5Bridge.navigateTo(`/pages/webview/index?page=${pageName}`);
+                    }
+                });
+            });
+            
+            // 处理返回按钮
+            document.querySelectorAll('[onclick*="history.back"], [onclick*="window.history.back"]').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    window.H5Bridge.navigateBack();
+                });
+            });
+        }
+
+        // 替换alert为小程序toast
+        function replaceAlertWithToast() {
+            // 重写全局alert函数
+            if (window.H5Bridge && window.H5Bridge.isInMiniProgram) {
+                window.alert = function(message) {
+                    window.H5Bridge.showToast(message);
+                };
+                
+                window.confirm = function(message) {
+                    // 小程序中的confirm需要特殊处理
+                    window.H5Bridge.showToast(message);
+                    return true; // 简化处理，实际项目中可能需要更复杂的逻辑
+                };
+            }
+        }
+
+        // 通用分享功能
+        function shareToWechat(shareData) {
+            if (window.H5Bridge && window.H5Bridge.isInMiniProgram) {
+                // 在小程序中使用原生分享
+                window.H5Bridge.share(shareData || {
+                    title: document.title,
+                    desc: '智能家居设计与施工服务',
+                    path: `/pages/webview/index?page=${getCurrentPageName()}`
+                });
+            } else {
+                // 在浏览器中使用Web Share API或降级处理
+                if (navigator.share) {
+                    navigator.share({
+                        title: document.title,
+                        text: '智能家居设计与施工服务',
+                        url: window.location.href
+                    });
+                } else {
+                    alert('分享功能需要在支持的浏览器中使用');
+                }
+            }
+        }
+
+        // 获取当前页面名称
+        function getCurrentPageName() {
+            const pathname = window.location.pathname;
+            return pathname.substring(pathname.lastIndexOf('/') + 1).replace('.html', '');
+        }
+
+        // 通用错误处理
+        function handleError(error, context = '') {
+            console.error(`错误[${context}]:`, error);
+            
+            if (window.H5Bridge && window.H5Bridge.isInMiniProgram) {
+                window.H5Bridge.showToast('操作失败，请重试', 'error');
+            } else {
+                alert('操作失败：' + (error.message || '未知错误'));
+            }
+        }
+    </script>
+</body>
+</html>

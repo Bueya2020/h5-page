@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>我的项目 - 智能设计与施工</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'system': ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', '"SF Pro Icons"', '"Helvetica Neue"', 'Helvetica', 'Arial', 'sans-serif']
+                    },
+                    colors: {
+                        'primary-text': '#1A1A1A',
+                        'main-bg': '#F8F9FA'
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/iphone16_fix.css">
+    <link rel="stylesheet" href="css/youpin-tab-component.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            -webkit-text-size-adjust: 100%;
+            -moz-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .scrollbar-none::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-none {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        :root {
+            --safe-area-inset-top: env(safe-area-inset-top);
+            --safe-area-inset-bottom: env(safe-area-inset-bottom);
+        }
+
+        .project-card {
+            transition: transform 0.2s;
+        }
+
+        .project-card:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary:active {
+            background-color: #333;
+        }
+
+        /* 旧的tab-item样式已移除，使用YoupinTabComponent样式 */
+
+        .text-shadow {
+            text-shadow: 0 1px 0 rgb(0 0 0 / 40%);
+        }
+
+        .tab-content {
+            transition: opacity 0.3s ease;
+        }
+
+        .tab-content.hidden {
+            display: none;
+        }
+
+        .team-member {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .team-member:hover {
+            background-color: #f8f9fa;
+            transform: translateY(-2px);
+        }
+
+        .contact-tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a1a1a;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1001;
+            margin-bottom: 8px;
+        }
+
+        .contact-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: #1a1a1a;
+        }
+
+        .team-member:hover .contact-tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .role-badge {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 500;
+        }
+    </style>
+
+    <!-- 全局错误处理和兜底方案 -->
+    <script>
+        (function() {
+            'use strict';
+            
+            // 创建 Trace 对象的兜底实现
+            window.Trace = window.Trace || {
+                init: function() { console.log('Trace initialized (fallback)'); },
+                log: function() { console.log.apply(console, arguments); },
+                error: function() { console.error.apply(console, arguments); },
+                warn: function() { console.warn.apply(console, arguments); },
+                info: function() { console.info.apply(console, arguments); }
+            };
+
+            // 防止其他可能的调试工具错误
+            window.wx = window.wx || {};
+            window.my = window.my || {};
+            
+            // 防止 chartId 未定义错误
+            window.chartId = window.chartId || 'default-chart-id';
+            
+            // 全局错误处理
+            window.addEventListener('error', function(e) {
+                console.error('Global error caught:', e.error);
+                return true; // 阻止默认错误处理
+            });
+            
+            window.addEventListener('unhandledrejection', function(e) {
+                console.error('Unhandled promise rejection:', e.reason);
+                e.preventDefault(); // 阻止默认处理
+            });
+            
+            console.log('✅ 全局错误处理已初始化');
+        })();
+    </script>
+</head>
+<body class="min-h-screen w-full bg-[#000000] flex items-center justify-center font-system">
+    <!-- iPhone 容器 -->
+    <div class="w-full max-w-[393px] h-[852px] bg-white shadow-2xl overflow-hidden relative mx-auto rounded-[54px]">
+        <!-- iPhone 状态栏 -->
+        <div class="w-full h-[47px] bg-black px-5 flex items-center justify-between text-white text-[14px] font-medium">
+            <div class="flex items-center space-x-1">
+                <!-- 信号图标 -->
+                <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2 20h.01"></path>
+                    <path d="M7 20v-4"></path>
+                    <path d="M12 20v-8"></path>
+                    <path d="M17 20V8"></path>
+                    <path d="M22 4v16"></path>
+                </svg>
+                <span>中国移动</span>
+                <!-- WiFi图标 -->
+                <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 20h.01"></path>
+                    <path d="M2 8.82a15 15 0 0 1 20 0"></path>
+                    <path d="M5 12.859a10 10 0 0 1 14 0"></path>
+                    <path d="M8.5 16.429a5 5 0 0 1 7 0"></path>
+                </svg>
+            </div>
+            <div class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">15:52</div>
+            <div class="flex items-center space-x-1">
+                <span>89%</span>
+                <!-- 电池图标 -->
+                <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                    <rect height="10" rx="2" ry="2" width="16" x="2" y="7"></rect>
+                    <line x1="22" x2="22" y1="11" y2="13"></line>
+                </svg>
+            </div>
+        </div>
+        <!-- 动态岛 -->
+        <button class="absolute left-1/2 -translate-x-1/2 bg-black transition-all duration-300 ease-out w-[126px] h-[37.5px] -top-0.5 rounded-b-[24px]"></button>
+        <!-- 主内容区域 -->
+        <div class="w-full h-[calc(100%-47px)] bg-white overflow-hidden relative">
+
+            <!-- 顶部白色导航区域 -->
+            <div class="absolute top-0 left-0 right-0 z-30">
+                <div class="bg-white text-black border-b border-gray-100">
+                    <!-- 顶部操作按钮 -->
+                    <div class="flex items-center justify-center px-4 relative h-[75px]">
+                        <!-- 返回按钮 -->
+                        <button class="absolute left-4 top-1/2 -translate-y-1/2 text-black/70 hover:text-black transition-colors" onclick="window.location.href='me.html'">
+                            <svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg">
+                                <path d="m15 18-6-6 6-6"></path>
+                            </svg>
+                        </button>
+                        <!-- 标题 -->
+                        <h1 class="text-base font-semibold text-black">我的项目</h1>
+                        <!-- 右侧按钮组 -->
+                        <div class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center space-x-3">
+                            <!-- 分享按钮 -->
+                            <button class="text-black/70 hover:text-black transition-colors">
+                                <svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="18" cy="5" r="3"></circle>
+                                    <circle cx="6" cy="12" r="3"></circle>
+                                    <circle cx="18" cy="19" r="3"></circle>
+                                    <line x1="8.59" x2="15.42" y1="13.51" y2="17.49"></line>
+                                    <line x1="15.41" x2="8.59" y1="6.51" y2="10.49"></line>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 滚动内容区域 -->
+            <div class="absolute inset-0 top-[75px] bottom-[84px] overflow-y-auto scrollbar-none">
+                <!-- 项目概览 -->
+                <section class="bg-white mx-3 mt-4 rounded-xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+                    <div class="flex items-center space-x-3 mb-3">
+                        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=40&h=40&q=80" alt="业主头像" class="w-10 h-10 rounded-full object-cover border-2 border-gray-200">
+                        <div>
+                            <h2 class="text-sm font-semibold text-black">朝阳明园智能家居项目</h2>
+                            <p class="text-xs text-gray-500">业主：李先生 | 北京市朝阳区 | 120㎡ 三居室</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4 text-center">
+                        <div>
+                            <p class="text-lg font-bold text-black">60%</p>
+                            <p class="text-xs text-gray-500">施工进度</p>
+                        </div>
+                        <div>
+                            <p class="text-lg font-bold text-black">12/20</p>
+                            <p class="text-xs text-gray-500">设备安装</p>
+                        </div>
+                        <div>
+                            <p class="text-lg font-bold text-black">5天</p>
+                            <p class="text-xs text-gray-500">剩余工期</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 项目详情标签 - 使用YoupinTabComponent -->
+                <section class="bg-white mx-3 mt-4 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+                    <div class="youpin-tab-component" id="project-tabs">
+                        <!-- 滚动指示器 -->
+                        <div class="youpin-tab-indicator-left"></div>
+                        <div class="youpin-tab-indicator-right"></div>
+
+                        <!-- 滚动容器 -->
+                        <div class="youpin-tab-scrollable">
+                            <div class="youpin-tab-wrapper">
+                                <button class="youpin-tab active" data-tab="progress">施工进度</button>
+                                <button class="youpin-tab" data-tab="statistics">数据统计</button>
+                                <button class="youpin-tab" data-tab="drawings">项目图纸</button>
+                                <button class="youpin-tab" data-tab="equipment">设备清单</button>
+                                <button class="youpin-tab" data-tab="team">施工团队</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 内容展示区域 -->
+                <section class="px-3 py-4">
+                    <!-- 施工进度内容 -->
+                    <div id="content-progress" class="tab-content">
+                        <div class="space-y-4">
+                            <!-- 当前阶段 -->
+                            <div class="bg-white rounded-xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+                                <h3 class="text-sm font-medium mb-3 text-black">当前施工阶段</h3>
+                                <div class="flex items-center space-x-3 mb-3">
+                                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-sm font-medium text-black">设备安装阶段</h4>
+                                        <p class="text-xs text-gray-500">预计完成时间: 2025-06-20</p>
+                                    </div>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-blue-600 h-2 rounded-full" style="width: 60%"></div>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-2">进度: 60% (12/20 设备已安装)</p>
+                            </div>
+
+                            <!-- 施工时间线 -->
+                            <div class="bg-white rounded-xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+                                <h3 class="text-sm font-medium mb-3 text-black">施工时间线</h3>
+                                <div class="space-y-3">
+                                    <div class="flex items-start space-x-3">
+                                        <div class="w-3 h-3 bg-green-500 rounded-full mt-1"></div>
+                                        <div>
+                                            <p class="text-sm text-black">交底阶段</p>
+                                            <p class="text-xs text-gray-500">2025-05-15 已完成</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start space-x-3">
+                                        <div class="w-3 h-3 bg-green-500 rounded-full mt-1"></div>
+                                        <div>
+                                            <p class="text-sm text-black">布线阶段</p>
+                                            <p class="text-xs text-gray-500">2025-05-20 已完成</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start space-x-3">
+                                        <div class="w-3 h-3 bg-blue-500 rounded-full mt-1"></div>
+                                        <div>
+                                            <p class="text-sm text-black">设备安装</p>
+                                            <p class="text-xs text-gray-500">2025-06-01 进行中</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start space-x-3">
+                                        <div class="w-3 h-3 bg-gray-300 rounded-full mt-1"></div>
+                                        <div>
+                                            <p class="text-sm text-gray-400">系统调试</p>
+                                            <p class="text-xs text-gray-400">2025-06-25 待开始</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start space-x-3">
+                                        <div class="w-3 h-3 bg-gray-300 rounded-full mt-1"></div>
+                                        <div>
+                                            <p class="text-sm text-gray-400">项目交付</p>
+                                            <p class="text-xs text-gray-400">2025-07-05 待开始</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 施工指导 -->
+                            <div class="bg-white rounded-xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+                                <h3 class="text-sm font-medium mb-3 text-black">施工指导</h3>
+                                <p class="text-xs text-gray-600 mb-3">查看详细的施工步骤说明和注意事项</p>
+                                <div class="flex items-center space-x-3 mb-3">
+                                    <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                                        <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-sm font-medium text-black">施工说明文档</h4>
+                                        <p class="text-xs text-gray-500">包含5个施工阶段的详细指导</p>
+                                    </div>
+                                </div>
+                                <button class="w-full py-2 bg-black text-white rounded-lg text-sm" onclick="window.location.href='project-construction-guide.html'">查看施工指导</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 数据统计内容 -->
+                    <div id="content-statistics" class="tab-content hidden">
+                        <div class="space-y-4">
+                            <!-- 项目概览数据 -->
+                            <div class="bg-white rounded-xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+                                <h3 class="text-sm font-medium mb-4 text-black">项目概览数据</h3>
+                                <div class="grid grid-cols-2 gap-3 mb-4">
+                                    <div class="text-center p-3 bg-blue-50 rounded-lg">
+                                        <div class="text-xl font-bold text-blue-600">¥14,800</div>
+                                        <div class="text-xs text-gray-600">项目总投资</div>
+                                    </div>
+                                    <div class="text-center p-3 bg-green-50 rounded-lg">
+                                        <div class="text-xl font-bold text-green-600">60%</div>
+                                        <div class="text-xs text-gray-600">完成进度</div>
+                                    </div>
+                                    <div class="text-center p-3 bg-orange-50 rounded-lg">
+                                        <div class="text-xl font-bold text-orange-600">25天</div>
+                                        <div class="text-xs text-gray-600">已用工期</div>
+                                    </div>
+                                    <div class="text-center p-3 bg-purple-50 rounded-lg">
+                                        <div class="text-xl font-bold text-purple-600">5天</div>
+                                        <div class="text-xs text-gray-600">剩余工期</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 施工进度图表 -->
+                            <div class="bg-white rounded-xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+                                <h3 class="text-sm font-medium mb-3 text-black">施工进度分析</h3>
+                                <div style="position: relative; height: 200px;">
+                                    <canvas id="progressChart"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- 设备安装统计 -->
+                            <div class="bg-white rounded-xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+                                <h3 class="text-sm font-medium mb-3 text-black">设备安装统计</h3>
+                                <div style="position: relative; height: 180px;">
+                                    <canvas id="equipmentChart"></canvas>
+                                </div>
+                                <div class="flex justify-center space-x-4 mt-3 text-xs">
+                                    <div class="flex items-center">
+                                        <div class="w-3 h-3 bg-green-500 rounded mr-1"></div>
+                                        <span>已安装 (60%)</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div class="w-3 h-3 bg-orange-500 rounded mr-1"></div>
+                                        <span>待安装 (40%)</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 成本分析 -->
+                            <div class="bg-white rounded-xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+                                <h3 class="text-sm font-medium mb-3 text-black">成本分析</h3>
+                                <div style="position: relative; height: 180px;">
+                                    <canvas id="costChart"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- 工期分析 -->
+                            <div class="bg-white rounded-xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+                                <h3 class="text-sm font-medium mb-3 text-black">工期分析</h3>
+                                <div style="position: relative; height: 160px;">
+                                    <canvas id="scheduleChart"></canvas>
+                                </div>
+                                <div class="mt-3 text-xs text-gray-600">
+                                    <div class="flex justify-between">
+                                        <span>计划工期: 30天</span>
+                                        <span>预计完成: 30天</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 项目图纸内容 -->
+                    <div id="content-drawings" class="tab-content hidden">
+                        <div class="space-y-4">
+                            <!-- 平面布局图 -->
+                            <div class="bg-white rounded-xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+                                <h3 class="text-sm font-medium mb-3 text-black">平面布局图</h3>
+                                <div class="bg-gray-100 rounded-lg h-48 flex items-center justify-center mb-3">
+                                    <div class="text-center text-gray-500">
+                                        <svg class="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                        </svg>
+                                        <p class="text-xs">朝阳明园_平面布局图.pdf</p>
+                                    </div>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button class="flex-1 py-2 bg-gray-100 text-black rounded-lg text-sm" onclick="showContent('drawings', '平面布局图')">预览</button>
+                                    <button class="flex-1 py-2 bg-black text-white rounded-lg text-sm" onclick="window.location.href='project-drawings.html'">查看详细图纸</button>
+                                </div>
+                            </div>
+
+                            <!-- 电路布线图 -->
+                            <div class="bg-white rounded-xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+                                <h3 class="text-sm font-medium mb-3 text-black">电路布线图</h3>
+                                <div class="bg-gray-100 rounded-lg h-48 flex items-center justify-center mb-3">
+                                    <div class="text-center text-gray-500">
+                                        <svg class="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                        </svg>
+                                        <p class="text-xs">朝阳明园_电路布线图.pdf</p>
+                                    </div>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button class="flex-1 py-2 bg-gray-100 text-black rounded-lg text-sm" onclick="showContent('drawings', '电路布线图')">预览</button>
+                                    <button class="flex-1 py-2 bg-black text-white rounded-lg text-sm" onclick="window.location.href='project-drawings.html'">查看详细图纸</button>
+                                </div>
+                            </div>
+
+                            <!-- 3D效果图 -->
+                            <div class="bg-white rounded-xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+                                <h3 class="text-sm font-medium mb-3 text-black">3D效果图</h3>
+                                <div class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg h-48 flex items-center justify-center mb-3">
+                                    <div class="text-center text-gray-600">
+                                        <svg class="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 2v4a2 2 0 002 2h4"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 13H8"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 17H8"></path>
+                                        </svg>
+                                        <p class="text-xs">朝阳明园_3D效果图.jpg</p>
+                                    </div>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button class="flex-1 py-2 bg-gray-100 text-black rounded-lg text-sm" onclick="showContent('effects', '3D效果图')">预览</button>
+                                    <button class="flex-1 py-2 bg-black text-white rounded-lg text-sm" onclick="window.location.href='project-3d-effects.html'">查看3D效果</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 设备清单内容 -->
+                    <div id="content-equipment" class="tab-content hidden">
+                        <div class="space-y-4">
+                            <!-- 设备统计 -->
+                            <div class="bg-white rounded-xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+                                <h3 class="text-sm font-medium mb-3 text-black">设备统计</h3>
+                                <div class="grid grid-cols-3 gap-4 text-center">
+                                    <div>
+                                        <p class="text-lg font-bold text-black">20</p>
+                                        <p class="text-xs text-gray-500">总设备数</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-lg font-bold text-green-600">12</p>
+                                        <p class="text-xs text-gray-500">已安装</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-lg font-bold text-orange-600">8</p>
+                                        <p class="text-xs text-gray-500">待安装</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 设备列表 -->
+                            <div class="bg-white rounded-xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h3 class="text-sm font-medium text-black">设备清单</h3>
+                                    <button class="text-xs text-blue-600" onclick="window.location.href='project-equipment-list.html'">查看详情</button>
+                                </div>
+                                <div class="space-y-3">
+                                    <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                                        <div class="flex items-center space-x-3">
+                                            <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=40&h=40&fit=crop" alt="智能网关" class="w-8 h-8 rounded object-cover">
+                                            <div>
+                                                <p class="text-sm text-black">智能网关主机</p>
+                                                <p class="text-xs text-gray-500">数量: 1台</p>
+                                            </div>
+                                        </div>
+                                        <span class="text-xs bg-green-100 text-green-600 px-2 py-1 rounded">已安装</span>
+                                    </div>
+                                    <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                                        <div class="flex items-center space-x-3">
+                                            <img src="https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=40&h=40&fit=crop" alt="智能开关" class="w-8 h-8 rounded object-cover">
+                                            <div>
+                                                <p class="text-sm text-black">智能开关面板</p>
+                                                <p class="text-xs text-gray-500">数量: 4个</p>
+                                            </div>
+                                        </div>
+                                        <span class="text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded">待安装</span>
+                                    </div>
+                                </div>
+                                <div class="flex space-x-2 mt-3">
+                                    <button class="flex-1 py-2 bg-gray-100 text-black rounded-lg text-sm" onclick="showContent('equipment', '设备清单')">预览清单</button>
+                                    <button class="flex-1 py-2 bg-black text-white rounded-lg text-sm" onclick="window.location.href='project-equipment-list.html'">查看完整清单</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 施工团队内容 -->
+                    <div id="content-team" class="tab-content hidden">
+                        <div class="space-y-4">
+                            <!-- 项目负责人 -->
+                            <div class="bg-white rounded-xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+                                <h3 class="text-sm font-medium mb-3 text-black">项目负责人</h3>
+                                <div class="flex items-center space-x-3">
+                                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=50&h=50&fit=crop" alt="项目经理" class="w-12 h-12 rounded-full object-cover">
+                                    <div>
+                                        <h4 class="text-sm font-medium text-black">张工程师</h4>
+                                        <p class="text-xs text-gray-500">项目经理 | 8年经验</p>
+                                        <p class="text-xs text-blue-600">电话: 138-0000-1234</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 施工团队 -->
+                            <div class="bg-white rounded-xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+                                <h3 class="text-sm font-medium mb-3 text-black">施工团队</h3>
+                                <div class="space-y-3">
+                                    <div class="team-member flex items-center space-x-3 p-2 rounded-lg">
+                                        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop" alt="安装师傅" class="w-10 h-10 rounded-full object-cover">
+                                        <div>
+                                            <h4 class="text-sm font-medium text-black">李师傅</h4>
+                                            <p class="text-xs text-gray-500">安装工程师</p>
+                                        </div>
+                                        <div class="contact-tooltip">
+                                            <p>微信: li_master</p>
+                                            <p>电话: 139-0000-5678</p>
+                                        </div>
+                                    </div>
+                                    <div class="team-member flex items-center space-x-3 p-2 rounded-lg">
+                                        <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=40&h=40&fit=crop" alt="调试工程师" class="w-10 h-10 rounded-full object-cover">
+                                        <div>
+                                            <h4 class="text-sm font-medium text-black">王工程师</h4>
+                                            <p class="text-xs text-gray-500">调试工程师</p>
+                                        </div>
+                                        <div class="contact-tooltip">
+                                            <p>微信: wang_engineer</p>
+                                            <p>电话: 137-0000-9012</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="w-full py-2 bg-black text-white rounded-lg text-sm mt-3" onclick="showContent('team', '施工团队')">查看完整团队</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- 底部导航栏 -->
+            <div class="absolute bottom-0 left-0 right-0 h-[84px] bg-white/80 backdrop-blur-xl border-t border-white/20">
+                <!-- 导航栏内容 -->
+                <nav class="h-[49px] flex items-center px-2">
+                    <div class="flex justify-around w-full text-[12px]">
+                        <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="home.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                                </svg>
+                            </div>
+                            <span class="mt-1">首页</span>
+                        </a>
+                        <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="design-result.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="13.5" cy="6.5" fill="currentColor" r=".5"></circle>
+                                    <circle cx="17.5" cy="10.5" fill="currentColor" r=".5"></circle>
+                                    <circle cx="8.5" cy="7.5" fill="currentColor" r=".5"></circle>
+                                    <circle cx="6.5" cy="12.5" fill="currentColor" r=".5"></circle>
+                                    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+                                </svg>
+                            </div>
+                            <span class="mt-1">设计</span>
+                        </a>
+                        <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="mall.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+                                    <path d="M3 6h18"></path>
+                                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                                </svg>
+                            </div>
+                            <span class="mt-1">商城</span>
+                        </a>
+                        <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="spaces.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="m15 12-8.373 8.373a1 1 0 1 1-3-3L12 9"></path>
+                                    <path d="m18 15 4-4"></path>
+                                    <path d="m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172V7l-2.26-2.26a6 6 0 0 0-4.202-1.756L9 2.96l.92.82A6.18 6.18 0 0 1 12 8.4V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5"></path>
+                                </svg>
+                            </div>
+                            <span class="mt-1">施工</span>
+                        </a>
+                        <a class="flex flex-col items-center group text-black transition-colors" href="me.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                            </div>
+                            <span class="mt-1">我的</span>
+                        </a>
+                    </div>
+                </nav>
+                <!-- iPhone 16 Home Indicator -->
+                <div class="h-[34px] flex items-center justify-center">
+                    <div class="w-[134px] h-[5px] bg-black rounded-full"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 项目统计图表
+        let projectCharts = {};
+
+        // 标签切换功能 - 使用YoupinTabComponent
+        let projectTabComponent = null;
+
+        function switchTab(tabName) {
+            // 隐藏所有内容
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+
+            // 显示选中的内容
+            document.getElementById('content-' + tabName).classList.remove('hidden');
+
+            // 如果切换到数据统计标签，初始化图表
+            if (tabName === 'statistics') {
+                setTimeout(() => {
+                    initializeProjectCharts();
+                }, 100);
+            }
+        }
+
+        // 初始化项目Tab组件
+        function initProjectTabs() {
+            projectTabComponent = new YoupinTabComponent('#project-tabs', {
+                enableKeyboard: true,
+                enableAutoScroll: true,
+                debug: false
+            });
+
+            // 监听Tab切换事件
+            document.getElementById('project-tabs').addEventListener('youpinTabChange', (e) => {
+                const tabName = e.detail.data.tab;
+                console.log('项目Tab切换:', { tabName, index: e.detail.index });
+
+                // 调用原有的切换逻辑
+                switchTab(tabName);
+            });
+        }
+
+        // 初始化项目统计图表
+        function initializeProjectCharts() {
+            try {
+                if (typeof Chart === 'undefined') {
+                    console.error('Chart.js未加载');
+                    return;
+                }
+
+                // 施工进度图表
+                initProgressChart();
+
+            // 设备安装统计图表
+            initEquipmentChart();
+
+            // 成本分析图表
+            initCostChart();
+
+            // 工期分析图表
+            initScheduleChart();
+
+            console.log('✅ 项目图表初始化完成');
+            } catch (error) {
+                console.error('❌ 项目图表初始化失败:', error);
+                // 显示友好的错误提示
+                showProjectChartError('图表加载失败，请刷新页面重试');
+            }
+        }
+
+        // 显示项目图表错误提示
+        function showProjectChartError(message) {
+            const chartContainers = document.querySelectorAll('.chart-container');
+            chartContainers.forEach(container => {
+                container.innerHTML = `
+                    <div class="flex items-center justify-center h-full text-gray-500">
+                        <div class="text-center">
+                            <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
+                            <p class="text-sm">${message}</p>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // 施工进度图表
+        function initProgressChart() {
+            const ctx = document.getElementById('progressChart');
+            if (!ctx) return;
+
+            if (projectCharts.progressChart) {
+                projectCharts.progressChart.destroy();
+            }
+
+            projectCharts.progressChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['第1周', '第2周', '第3周', '第4周', '第5周'],
+                    datasets: [{
+                        label: '计划进度',
+                        data: [20, 40, 60, 80, 100],
+                        borderColor: '#94a3b8',
+                        backgroundColor: 'rgba(148, 163, 184, 0.1)',
+                        borderDash: [5, 5],
+                        borderWidth: 2,
+                        fill: false,
+                        tension: 0.4
+                    }, {
+                        label: '实际进度',
+                        data: [15, 35, 60, 60, null],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#3b82f6',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                },
+                                font: {
+                                    size: 10
+                                }
+                            },
+                            grid: {
+                                color: '#f1f5f9'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 设备安装统计图表
+        function initEquipmentChart() {
+            const ctx = document.getElementById('equipmentChart');
+            if (!ctx) return;
+
+            if (projectCharts.equipmentChart) {
+                projectCharts.equipmentChart.destroy();
+            }
+
+            projectCharts.equipmentChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['已安装', '待安装'],
+                    datasets: [{
+                        data: [12, 8],
+                        backgroundColor: ['#10b981', '#f59e0b'],
+                        borderWidth: 0,
+                        cutout: '60%'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value}台 (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 成本分析图表
+        function initCostChart() {
+            const ctx = document.getElementById('costChart');
+            if (!ctx) return;
+
+            if (projectCharts.costChart) {
+                projectCharts.costChart.destroy();
+            }
+
+            projectCharts.costChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['设计费用', '设备费用', '安装费用', '其他费用'],
+                    datasets: [{
+                        label: '费用',
+                        data: [3200, 9600, 2000, 800],
+                        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'],
+                        borderRadius: 4,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `费用: ¥${context.parsed.y.toLocaleString()}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '¥' + value.toLocaleString();
+                                },
+                                font: {
+                                    size: 10
+                                }
+                            },
+                            grid: {
+                                color: '#f1f5f9'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 工期分析图表
+        function initScheduleChart() {
+            const ctx = document.getElementById('scheduleChart');
+            if (!ctx) return;
+
+            if (projectCharts.scheduleChart) {
+                projectCharts.scheduleChart.destroy();
+            }
+
+            projectCharts.scheduleChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['交底', '布线', '安装', '调试', '交付'],
+                    datasets: [{
+                        label: '计划天数',
+                        data: [3, 7, 12, 5, 3],
+                        backgroundColor: '#94a3b8',
+                        borderRadius: 4
+                    }, {
+                        label: '实际天数',
+                        data: [3, 7, 15, null, null],
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '天';
+                                },
+                                font: {
+                                    size: 10
+                                }
+                            },
+                            grid: {
+                                color: '#f1f5f9'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 页面卸载时清理图表
+        window.addEventListener('beforeunload', function() {
+            Object.values(projectCharts).forEach(chart => {
+                if (chart && typeof chart.destroy === 'function') {
+                    chart.destroy();
+                }
+            });
+        });
+
+        // 显示内容详情（按钮点击时的展开功能）
+        function showContent(type, title) {
+            // 这里可以添加展开显示详细内容的逻辑
+            // 或者跳转到对应的详情页面
+            switch(type) {
+                case 'drawings':
+                    // 可以跳转到图纸详情页面或显示弹窗
+                    alert('查看' + title + '详情');
+                    break;
+                case 'equipment':
+                    window.location.href = 'equipment-list.html';
+                    break;
+                case 'team':
+                    // 可以跳转到团队详情页面
+                    alert('查看' + title + '详情');
+                    break;
+                default:
+                    alert('查看' + title + '详情');
+            }
+        }
+
+        // 页面加载完成后的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化项目Tab组件
+            initProjectTabs();
+
+            // 检查URL参数，决定显示哪个标签页
+            const urlParams = new URLSearchParams(window.location.search);
+            const hash = window.location.hash.substring(1); // 去掉#号
+
+            let activeTab = 'progress'; // 默认标签
+
+            // 根据hash参数决定显示的标签
+            if (hash === 'drawings') {
+                activeTab = 'drawings';
+            } else if (hash === 'effects') {
+                // 3D效果图暂时显示在drawings标签下，或者可以新增一个标签
+                activeTab = 'drawings';
+            } else if (hash === 'equipment') {
+                activeTab = 'equipment';
+            } else if (hash === 'guide') {
+                // 施工指导暂时显示在progress标签下
+                activeTab = 'progress';
+            }
+
+            // 显示对应的标签
+            switchTab(activeTab);
+
+            // 如果不是默认tab，需要更新YoupinTabComponent的激活状态
+            if (activeTab !== 'progress' && projectTabComponent) {
+                setTimeout(() => {
+                    const targetTab = document.querySelector(`[data-tab="${activeTab}"]`);
+                    if (targetTab) {
+                        targetTab.click();
+                    }
+                }, 100);
+            }
+        });
+    </script>
+
+    <!-- 引入H5与小程序通信桥接工具 -->
+    <script src="../utils/h5-bridge.js"></script>
+
+    <!-- 引入YoupinTabComponent -->
+    <script src="js/youpin-tab-component.js"></script>
+    
+    <script>
+        // 小程序环境初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检查小程序环境并初始化通信
+            if (window.H5Bridge) {
+                console.log('H5Bridge已加载，当前环境:', window.H5Bridge.isInMiniProgram ? '小程序' : '浏览器');
+                
+                if (window.H5Bridge.isInMiniProgram) {
+                    initMiniProgramFeatures();
+                }
+            }
+        });
+
+        // 初始化小程序特有功能
+        function initMiniProgramFeatures() {
+            console.log('初始化小程序特有功能');
+            
+            // 替换所有页面跳转为小程序导航
+            replacePageNavigation();
+            
+            // 替换alert为小程序toast
+            replaceAlertWithToast();
+            
+            // 监听支付结果（如果页面有支付功能）
+            if (typeof handlePaymentSuccess === 'function') {
+                window.H5Bridge.on('paymentSuccess', handlePaymentSuccess);
+                window.H5Bridge.on('paymentFail', handlePaymentFailure || function(error) {
+                    window.H5Bridge.showToast('支付失败，请重试', 'error');
+                });
+            }
+            
+            // 监听用户信息获取结果（如果页面需要用户信息）
+            if (typeof handleUserInfoSuccess === 'function') {
+                window.H5Bridge.on('userInfoSuccess', handleUserInfoSuccess);
+                window.H5Bridge.on('userInfoFail', handleUserInfoFailure || function(error) {
+                    window.H5Bridge.showToast('获取用户信息失败', 'error');
+                });
+            }
+        }
+
+        // 替换页面跳转为小程序导航
+        function replacePageNavigation() {
+            // 处理所有HTML页面链接
+            document.querySelectorAll('a[href$=".html"]').forEach(link => {
+                const originalHref = link.getAttribute('href');
+                
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // 解析目标页面
+                    const pageName = originalHref.replace('.html', '').replace(/^.*//, '');
+                    
+                    // 特殊页面映射到小程序原生页面
+                    const nativePageMap = {
+                        'home': '/pages/home/index',
+                        'design-result': '/pages/design/index',
+                        'mall': '/pages/mall/index',
+                        'spaces': '/pages/construction/index',
+                        'me': '/pages/profile/index'
+                    };
+                    
+                    if (nativePageMap[pageName]) {
+                        // 跳转到小程序原生页面
+                        window.H5Bridge.navigateTo(nativePageMap[pageName]);
+                    } else {
+                        // 跳转到web-view页面
+                        window.H5Bridge.navigateTo(`/pages/webview/index?page=${pageName}`);
+                    }
+                });
+            });
+            
+            // 处理返回按钮
+            document.querySelectorAll('[onclick*="history.back"], [onclick*="window.history.back"]').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    window.H5Bridge.navigateBack();
+                });
+            });
+        }
+
+        // 替换alert为小程序toast
+        function replaceAlertWithToast() {
+            // 重写全局alert函数
+            if (window.H5Bridge && window.H5Bridge.isInMiniProgram) {
+                window.alert = function(message) {
+                    window.H5Bridge.showToast(message);
+                };
+                
+                window.confirm = function(message) {
+                    // 小程序中的confirm需要特殊处理
+                    window.H5Bridge.showToast(message);
+                    return true; // 简化处理，实际项目中可能需要更复杂的逻辑
+                };
+            }
+        }
+
+        // 通用分享功能
+        function shareToWechat(shareData) {
+            if (window.H5Bridge && window.H5Bridge.isInMiniProgram) {
+                // 在小程序中使用原生分享
+                window.H5Bridge.share(shareData || {
+                    title: document.title,
+                    desc: '智能家居设计与施工服务',
+                    path: `/pages/webview/index?page=${getCurrentPageName()}`
+                });
+            } else {
+                // 在浏览器中使用Web Share API或降级处理
+                if (navigator.share) {
+                    navigator.share({
+                        title: document.title,
+                        text: '智能家居设计与施工服务',
+                        url: window.location.href
+                    });
+                } else {
+                    alert('分享功能需要在支持的浏览器中使用');
+                }
+            }
+        }
+
+        // 获取当前页面名称
+        function getCurrentPageName() {
+            const pathname = window.location.pathname;
+            return pathname.substring(pathname.lastIndexOf('/') + 1).replace('.html', '');
+        }
+
+        // 通用错误处理
+        function handleError(error, context = '') {
+            console.error(`错误[${context}]:`, error);
+            
+            if (window.H5Bridge && window.H5Bridge.isInMiniProgram) {
+                window.H5Bridge.showToast('操作失败，请重试', 'error');
+            } else {
+                alert('操作失败：' + (error.message || '未知错误'));
+            }
+        }
+    </script>
+</body>
+</html>

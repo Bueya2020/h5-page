@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>确认订单</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
+    <script src="js/form-validator.js"></script>
+    <style>
+        * {
+            margin: 0 !important;
+            padding: 0 !important;
+            box-sizing: border-box !important;
+        }
+
+        html, body {
+            width: 100% !important;
+            height: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background-color: #000000 !important;
+            overflow: hidden !important;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            -webkit-text-size-adjust: 100%;
+            -moz-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+            -webkit-overflow-scrolling: touch;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+        }
+
+        .scrollbar-none::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-none {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        :root {
+            --safe-area-inset-top: env(safe-area-inset-top);
+            --safe-area-inset-bottom: env(safe-area-inset-bottom);
+        }
+
+        .payment-option.active {
+            border-color: #000;
+            background-color: #f9fafb;
+        }
+
+        .btn-primary {
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary:active {
+            background-color: #333;
+        }
+
+
+    </style>
+
+    <!-- 全局错误处理和兜底方案 -->
+    <script>
+        (function() {
+            'use strict';
+
+            // 创建 Trace 对象的兜底实现
+            window.Trace = window.Trace || {
+                init: function() { console.log('Trace initialized (fallback)'); },
+                log: function() { console.log.apply(console, arguments); },
+                error: function() { console.error.apply(console, arguments); },
+                warn: function() { console.warn.apply(console, arguments); },
+                info: function() { console.info.apply(console, arguments); }
+            };
+
+            // 防止其他可能的调试工具错误
+            window.wx = window.wx || {};
+            window.my = window.my || {};
+
+            // 防止 chartId 未定义错误
+            window.chartId = window.chartId || 'default-chart-id';
+
+            // 全局错误捕获
+            window.addEventListener('error', function(e) {
+                console.error('全局错误:', e.error);
+                e.preventDefault(); // 阻止默认处理
+            });
+
+            console.log('✅ 全局错误处理已初始化');
+        })();
+    </script>
+</head>
+<body>
+    <!-- iPhone 容器 -->
+    <div style="width: 393px; height: 852px; background-color: #1E1E1E; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow: hidden; position: relative; border-radius: 54px; flex-shrink: 0;">
+        <!-- iPhone 状态栏 -->
+        <div class="w-full h-[47px] bg-black px-5 flex items-center justify-between text-white text-[14px] font-medium">
+            <div class="flex items-center space-x-1">
+                <!-- 信号图标 -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 20h.01"></path>
+                    <path d="M7 20v-4"></path>
+                    <path d="M12 20v-8"></path>
+                    <path d="M17 20V8"></path>
+                    <path d="M22 4v16"></path>
+                </svg>
+                <span>中国移动</span>
+                <!-- WiFi图标 -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h.01"></path>
+                    <path d="M2 8.82a15 15 0 0 1 20 0"></path>
+                    <path d="M5 12.859a10 10 0 0 1 14 0"></path>
+                    <path d="M8.5 16.429a5 5 0 0 1 7 0"></path>
+                </svg>
+            </div>
+            <div class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">9:41</div>
+            <div class="flex items-center space-x-1">
+                <span>89%</span>
+                <!-- 电池图标 -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="16" height="10" x="2" y="7" rx="2" ry="2"></rect>
+                    <line x1="22" x2="22" y1="11" y2="13"></line>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 动态岛 -->
+        <button class="absolute left-1/2 -translate-x-1/2 bg-black transition-all duration-300 ease-out w-[126px] h-[37.5px] -top-0.5 rounded-b-[24px]"></button>
+
+        <!-- 主内容区域 -->
+        <div class="w-full h-[calc(100%-47px)] bg-white overflow-hidden relative">
+            <!-- 滚动内容区域 -->
+            <div class="absolute top-0 left-0 right-0 bottom-[84px] overflow-y-auto scrollbar-none" style="padding-bottom: 20px;">
+
+                <!-- 顶部导航栏 -->
+                <header class="bg-white border-b border-gray-100 sticky top-0 z-10">
+                    <div class="flex items-center justify-between px-4 py-3">
+                        <a href="javascript:history.back()" class="text-black hover:text-gray-600 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m15 18-6-6 6-6"></path>
+                            </svg>
+                        </a>
+                        <h1 id="orderTitle" class="text-[16px] font-medium text-black">确认订单</h1>
+                        <div class="w-5"></div>
+                    </div>
+                </header>
+
+                <!-- 收货地址 -->
+                <section class="order-section">
+                    <div class="address-selector" onclick="selectAddress()">
+                        <div class="flex items-center">
+                            <div class="address-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+                                    <circle cx="12" cy="10" r="3"></circle>
+                                </svg>
+                            </div>
+                            <div class="address-info" id="addressInfo">
+                                <div class="flex items-center">
+                                    <span class="address-name" id="addressName">请选择收货地址</span>
+                                    <span class="address-phone" id="addressPhone"></span>
+                                </div>
+                                <p class="address-detail" id="addressDetail">点击选择或添加收货地址</p>
+                            </div>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400">
+                            <path d="m9 18 6-6-6-6"></path>
+                        </svg>
+                    </div>
+                </section>
+
+                <!-- 商品列表 -->
+                <section class="order-section" id="orderItems">
+                    <!-- 商品项将通过JavaScript动态生成 -->
+                </section>
+
+                <!-- 配送方式 -->
+                <section class="bg-white mt-2 px-4 py-4">
+                    <h3 class="text-sm font-medium mb-3">配送方式</h3>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <span class="text-sm">标准配送</span>
+                            <p class="text-xs text-gray-500">预计3-5个工作日送达</p>
+                        </div>
+                        <span class="text-sm">免运费</span>
+                    </div>
+                </section>
+
+                <!-- 支付方式 -->
+                <section class="bg-white mt-2 px-4 py-4">
+                    <h3 class="text-sm font-medium mb-3">支付方式</h3>
+                    <div class="space-y-3">
+                        <div class="payment-option active flex items-center justify-between p-3 border border-gray-200 rounded-lg cursor-pointer" data-payment="wechat">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="white">
+                                        <path d="M8.5 12.5c0 .5-.4.9-.9.9s-.9-.4-.9-.9.4-.9.9-.9.9.4.9.9zm8.9-.9c-.5 0-.9.4-.9.9s.4.9.9.9.9-.4.9-.9-.4-.9-.9-.9zm-4.5-6.5c-5.5 0-10 3.6-10 8 0 2.3 1.2 4.4 3.1 5.9l-.8 2.4c-.1.3.2.6.5.5l2.9-1.5c1.4.4 2.9.6 4.3.6 5.5 0 10-3.6 10-8s-4.5-8-10-8z"/>
+                                    </svg>
+                                </div>
+                                <span class="text-sm">微信支付</span>
+                            </div>
+                            <div class="w-4 h-4 border-2 border-black rounded-full flex items-center justify-center">
+                                <div class="w-2 h-2 bg-black rounded-full"></div>
+                            </div>
+                        </div>
+
+                        <div class="payment-option flex items-center justify-between p-3 border border-gray-200 rounded-lg cursor-pointer" data-payment="alipay">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="white">
+                                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                                        <path d="M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"/>
+                                    </svg>
+                                </div>
+                                <span class="text-sm">支付宝</span>
+                            </div>
+                            <div class="w-4 h-4 border-2 border-gray-300 rounded-full"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 发票信息 -->
+                <section class="bg-white mt-2 px-4 py-4">
+                    <div class="flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors" onclick="selectInvoice()">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14,2 14,8 20,8"></polyline>
+                                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                                    <polyline points="10,9 9,9 8,9"></polyline>
+                                </svg>
+                            </div>
+                            <div id="invoiceInfo">
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-sm font-medium" id="invoiceTitle">不需要发票</span>
+                                    <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full" id="invoiceType">默认</span>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1" id="invoiceDetail">点击选择发票信息</p>
+                            </div>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400">
+                            <path d="m9 18 6-6-6-6"></path>
+                        </svg>
+                    </div>
+                </section>
+
+                <!-- 订单表单 -->
+                <form id="orderForm" class="space-y-2">
+
+                    <!-- 订单备注 -->
+                    <section class="bg-white mt-2 px-4 py-4">
+                        <h3 class="text-sm font-medium mb-3">订单备注</h3>
+                        <div class="relative">
+                            <textarea name="orderNote" id="orderNote" rows="3"
+                                      class="w-full p-3 border border-gray-300 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all"
+                                      placeholder="选填，请输入您的需求或备注信息（最多200字）"></textarea>
+                            <div class="flex justify-between items-center mt-1">
+                                <span class="text-xs text-gray-500">选填项目</span>
+                                <span id="noteCounter" class="text-xs text-gray-400">0/200</span>
+                            </div>
+                        </div>
+                    </section>
+                </form>
+
+                <!-- 费用明细 -->
+                <section class="cost-detail">
+                    <h3 class="text-sm font-medium mb-3">费用明细</h3>
+                    <div class="cost-item">
+                        <span class="cost-label">商品总价</span>
+                        <span class="cost-value" id="subtotal">¥0</span>
+                    </div>
+                    <div class="cost-item">
+                        <span class="cost-label">运费</span>
+                        <span class="cost-value free">免运费</span>
+                    </div>
+                    <div class="cost-item">
+                        <span class="cost-label">优惠券</span>
+                        <span class="cost-value discount">-¥0</span>
+                    </div>
+                    <div class="cost-item">
+                        <span class="cost-label">实付款</span>
+                        <span class="cost-value total" id="totalAmount">¥0</span>
+                    </div>
+                </section>
+
+            </div>
+
+            <!-- 底部提交栏 -->
+            <div class="submit-bar">
+                <div class="submit-info">
+                    <p class="submit-quantity">共<span id="totalQuantity">0</span>件商品</p>
+                    <p class="submit-total">合计: <span id="finalTotal">¥0</span></p>
+                </div>
+                <button id="submitOrderBtn" class="submit-btn">
+                    提交订单
+                </button>
+            </div>
+
+            <!-- 底部导航栏 -->
+            <div class="absolute bottom-0 left-0 right-0 h-[84px] bg-white/80 backdrop-blur-xl border-t border-white/20">
+                <!-- 导航栏内容 -->
+                <nav class="h-[49px] flex items-center px-2">
+                    <div class="flex justify-around w-full text-[12px]">
+                        <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="home.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                                </svg>
+                            </div>
+                            <span class="mt-1">首页</span>
+                        </a>
+                        <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="design-result.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="13.5" cy="6.5" fill="currentColor" r=".5"></circle>
+                                    <circle cx="17.5" cy="10.5" fill="currentColor" r=".5"></circle>
+                                    <circle cx="8.5" cy="7.5" fill="currentColor" r=".5"></circle>
+                                    <circle cx="6.5" cy="12.5" fill="currentColor" r=".5"></circle>
+                                    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+                                </svg>
+                            </div>
+                            <span class="mt-1">设计</span>
+                        </a>
+                        <a class="flex flex-col items-center group text-black transition-colors" href="mall.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+                                    <path d="M3 6h18"></path>
+                                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                                </svg>
+                            </div>
+                            <span class="mt-1">商城</span>
+                        </a>
+                        <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="spaces.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="m15 12-8.373 8.373a1 1 0 1 1-3-3L12 9"></path>
+                                    <path d="m18 15 4-4"></path>
+                                    <path d="m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172V7l-2.26-2.26a6 6 0 0 0-4.202-1.756L9 2.96l.92.82A6.18 6.18 0 0 1 12 8.4V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5"></path>
+                                </svg>
+                            </div>
+                            <span class="mt-1">施工</span>
+                        </a>
+                        <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="me.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                            </div>
+                            <span class="mt-1">我的</span>
+                        </a>
+                    </div>
+                </nav>
+                <!-- iPhone 16 Home Indicator -->
+                <div class="h-[34px] flex items-center justify-center">
+                    <div class="w-[134px] h-[5px] bg-black rounded-full"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 支付成功弹窗 -->
+    <div id="paymentModal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center">
+        <div class="bg-white rounded-lg p-6 mx-4 max-w-sm w-full">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 6 9 17l-5-5"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-medium mb-2">支付成功</h3>
+                <p class="text-gray-600 text-sm mb-2">您的订单已提交，我们会尽快为您安排发货</p>
+                <p id="autoJumpText" class="text-gray-500 text-xs mb-4">3秒后自动跳转到订单页面...</p>
+                <div class="space-y-2">
+                    <button id="viewOrderBtn" class="w-full py-2 bg-black text-white rounded-lg text-sm">查看订单</button>
+                    <button id="continueShoppingBtn" class="w-full py-2 border border-gray-300 text-gray-700 rounded-lg text-sm">继续购物</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 订单确认页面功能
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM元素
+            const orderItemsContainer = document.getElementById('orderItems');
+            const subtotalElement = document.getElementById('subtotal');
+            const totalAmountElement = document.getElementById('totalAmount');
+            const totalQuantityElement = document.getElementById('totalQuantity');
+            const finalTotalElement = document.getElementById('finalTotal');
+            const submitOrderBtn = document.getElementById('submitOrderBtn');
+            const paymentModal = document.getElementById('paymentModal');
+            const viewOrderBtn = document.getElementById('viewOrderBtn');
+            const continueShoppingBtn = document.getElementById('continueShoppingBtn');
+            const paymentOptions = document.querySelectorAll('.payment-option');
+            const orderForm = document.getElementById('orderForm');
+
+            let orderData = [];
+            let selectedPayment = 'wechat';
+            let formValidator = null;
+
+            // 基于来源页面检测订单类型的函数
+            function detectOrderTypeFromSource() {
+                // 1. 优先检查URL参数中的来源页面
+                const urlParams = new URLSearchParams(window.location.search);
+                const source = urlParams.get('source') || urlParams.get('from');
+
+                if (source) {
+                    const sourceMap = {
+                        'design': 'design',
+                        'design-result': 'design',
+                        'design-service': 'design',
+                        'mall': 'mall',
+                        'shop': 'mall',
+                        'store': 'mall',
+                        'knowledge': 'knowledge',
+                        'course': 'knowledge',
+                        'education': 'knowledge'
+                    };
+
+                    if (sourceMap[source]) {
+                        console.log(`从URL参数检测到订单类型: ${sourceMap[source]} (来源: ${source})`);
+                        return sourceMap[source];
+                    }
+                }
+
+                // 2. 检查document.referrer（上一个页面）
+                const referrer = document.referrer;
+                if (referrer) {
+                    if (referrer.includes('design') || referrer.includes('Design')) {
+                        console.log(`从referrer检测到设计订单类型: ${referrer}`);
+                        return 'design';
+                    }
+                    if (referrer.includes('knowledge') || referrer.includes('course') || referrer.includes('education')) {
+                        console.log(`从referrer检测到知识订单类型: ${referrer}`);
+                        return 'knowledge';
+                    }
+                    if (referrer.includes('mall') || referrer.includes('shop') || referrer.includes('store')) {
+                        console.log(`从referrer检测到商城订单类型: ${referrer}`);
+                        return 'mall';
+                    }
+                }
+
+                // 3. 检查localStorage中的来源标记
+                const storedSource = localStorage.getItem('orderSource');
+                if (storedSource) {
+                    console.log(`从localStorage检测到订单类型: ${storedSource}`);
+                    return storedSource;
+                }
+
+                // 4. 默认为商城订单
+                console.log('未检测到明确来源，默认为商城订单');
+                return 'mall';
+            }
+
+            // 初始化页面
+            function initPage() {
+                loadOrderData();
+                renderOrderItems();
+                calculateTotal();
+                initPaymentOptions();
+                loadSelectedAddress();
+                loadSelectedInvoice();
+                initNoteCounter();
+                updateOrderTypeDisplay();
+            }
+
+            // 更新订单类型显示
+            function updateOrderTypeDisplay() {
+                const orderType = window.currentOrderType || 'mall';
+
+                // 更新页面标题显示订单类型
+                const headerTitle = document.getElementById('orderTitle');
+                if (headerTitle) {
+                    const typeNames = {
+                        'design': '确认设计订单',
+                        'knowledge': '确认知识订单',
+                        'mall': '确认订单'
+                    };
+                    headerTitle.textContent = typeNames[orderType] || '确认订单';
+                }
+
+                // 在控制台显示详细信息
+                console.log('=== 订单类型信息 ===');
+                console.log('当前订单类型:', orderType);
+                console.log('预期订单号前缀:', {
+                    'mall': 'SH',
+                    'design': 'DS',
+                    'knowledge': 'KN'
+                }[orderType]);
+                console.log('存储键:', {
+                    'mall': 'smartHomeOrders',
+                    'design': 'designOrders',
+                    'knowledge': 'knowledgeOrders'
+                }[orderType]);
+                console.log('==================');
+            }
+
+            // 初始化表单验证
+            function initFormValidation() {
+                formValidator = new FormValidator(orderForm, {
+                    validateOnInput: true,
+                    validateOnBlur: true,
+                    showErrorsImmediately: false
+                });
+
+                // 添加验证规则
+                formValidator
+                    .addRule('receiverName', [
+                        ValidationRules.required('请输入收货人姓名'),
+                        ValidationRules.minLength(2, '姓名至少需要2个字符'),
+                        ValidationRules.maxLength(20, '姓名不能超过20个字符'),
+                        ValidationRules.pattern(/^[\u4e00-\u9fa5a-zA-Z\s]+$/, '姓名只能包含中文、英文和空格')
+                    ])
+                    .addRule('receiverPhone', [
+                        ValidationRules.required('请输入联系电话'),
+                        ValidationRules.phone('请输入正确的手机号码格式')
+                    ])
+                    .addRule('receiverAddress', [
+                        ValidationRules.required('请输入收货地址'),
+                        ValidationRules.minLength(10, '地址信息过于简单，请输入详细地址'),
+                        ValidationRules.maxLength(200, '地址不能超过200个字符')
+                    ])
+                    .addRule('invoiceTitle', [
+                        ValidationRules.custom((value, field) => {
+                            const invoiceType = document.querySelector('input[name="invoiceType"]:checked').value;
+                            if (invoiceType !== 'none' && !value.trim()) {
+                                return '请输入发票抬头';
+                            }
+                            if (value.trim() && value.trim().length < 2) {
+                                return '发票抬头至少需要2个字符';
+                            }
+                            return true;
+                        })
+                    ])
+                    .addRule('taxNumber', [
+                        ValidationRules.custom((value, field) => {
+                            const invoiceType = document.querySelector('input[name="invoiceType"]:checked').value;
+                            if (invoiceType === 'company' && !value.trim()) {
+                                return '请输入纳税人识别号';
+                            }
+                            if (value.trim() && !/^[A-Z0-9]{15,20}$/.test(value.trim())) {
+                                return '纳税人识别号格式不正确';
+                            }
+                            return true;
+                        })
+                    ])
+                    .addRule('companyPhone', [
+                        ValidationRules.custom((value, field) => {
+                            if (value.trim() && !/^[\d-\s()]+$/.test(value.trim())) {
+                                return '请输入正确的电话号码格式';
+                            }
+                            return true;
+                        })
+                    ])
+                    .addRule('bankAccount', [
+                        ValidationRules.custom((value, field) => {
+                            if (value.trim() && !/^\d{10,25}$/.test(value.trim())) {
+                                return '请输入正确的银行账号';
+                            }
+                            return true;
+                        })
+                    ])
+                    .addRule('orderNote', [
+                        ValidationRules.maxLength(200, '备注不能超过200个字符')
+                    ]);
+
+                // 监听表单验证事件
+                orderForm.addEventListener('formValid', (e) => {
+                    console.log('表单验证通过', e.detail.formData);
+                });
+
+                orderForm.addEventListener('formInvalid', (e) => {
+                    console.log('表单验证失败', e.detail.errors);
+
+                    // 显示第一个错误信息
+                    const firstError = Object.values(e.detail.errors)[0];
+                    if (firstError && firstError[0]) {
+                        showToast(firstError[0], 'error');
+                    }
+                });
+            }
+
+            // 初始化发票处理
+            function initInvoiceHandlers() {
+                const invoiceRadios = document.querySelectorAll('input[name="invoiceType"]');
+                const invoiceDetails = document.getElementById('invoiceDetails');
+                const companyDetails = document.getElementById('companyDetails');
+
+                invoiceRadios.forEach(radio => {
+                    radio.addEventListener('change', function() {
+                        if (this.value === 'none') {
+                            invoiceDetails.classList.add('hidden');
+                            companyDetails.classList.add('hidden');
+                        } else {
+                            invoiceDetails.classList.remove('hidden');
+
+                            if (this.value === 'company') {
+                                companyDetails.classList.remove('hidden');
+                            } else {
+                                companyDetails.classList.add('hidden');
+                            }
+                        }
+
+                        // 重新验证相关字段
+                        if (formValidator) {
+                            const invoiceTitle = document.getElementById('invoiceTitle');
+                            const taxNumber = document.getElementById('taxNumber');
+                            if (invoiceTitle) formValidator.validateField(invoiceTitle);
+                            if (taxNumber) formValidator.validateField(taxNumber);
+                        }
+                    });
+                });
+            }
+
+            // 初始化备注字符计数
+            function initNoteCounter() {
+                const noteTextarea = document.getElementById('orderNote');
+                const noteCounter = document.getElementById('noteCounter');
+
+                if (noteTextarea && noteCounter) {
+                    noteTextarea.addEventListener('input', function() {
+                        const length = this.value.length;
+                        noteCounter.textContent = `${length}/200`;
+
+                        if (length > 180) {
+                            noteCounter.classList.add('text-red-500');
+                            noteCounter.classList.remove('text-gray-400');
+                        } else {
+                            noteCounter.classList.remove('text-red-500');
+                            noteCounter.classList.add('text-gray-400');
+                        }
+                    });
+                }
+            }
+
+            // 加载选中的地址
+            function loadSelectedAddress() {
+                const selectedAddress = localStorage.getItem('selectedAddress');
+                if (selectedAddress) {
+                    const address = JSON.parse(selectedAddress);
+                    document.getElementById('addressName').textContent = address.name || '收货人';
+                    document.getElementById('addressPhone').textContent = address.phone || '';
+                    document.getElementById('addressDetail').textContent = address.address || '地址信息';
+                } else {
+                    // 使用默认地址
+                    document.getElementById('addressName').textContent = '请选择收货地址';
+                    document.getElementById('addressPhone').textContent = '';
+                    document.getElementById('addressDetail').textContent = '点击选择或添加收货地址';
+                }
+            }
+
+            // 加载选中的发票信息
+            function loadSelectedInvoice() {
+                const selectedInvoice = localStorage.getItem('selectedInvoice');
+                if (selectedInvoice) {
+                    const invoice = JSON.parse(selectedInvoice);
+                    document.getElementById('invoiceTitle').textContent = invoice.title || '不需要发票';
+                    document.getElementById('invoiceType').textContent = invoice.type === 'company' ? '企业' : (invoice.type === 'personal' ? '个人' : '默认');
+                    document.getElementById('invoiceDetail').textContent = invoice.type === 'none' ? '不开具发票' : '已选择发票信息';
+                } else {
+                    // 使用默认设置
+                    document.getElementById('invoiceTitle').textContent = '不需要发票';
+                    document.getElementById('invoiceType').textContent = '默认';
+                    document.getElementById('invoiceDetail').textContent = '点击选择发票信息';
+                }
+            }
+
+            // 选择地址
+            function selectAddress() {
+                window.location.href = 'profile-address.html?from=order';
+            }
+
+            // 选择发票
+            function selectInvoice() {
+                window.location.href = 'profile-invoice.html?from=order';
+            }
+
+            // 显示提示信息
+            function showToast(message, type = 'info') {
+                // 创建提示框
+                const toast = document.createElement('div');
+                toast.className = `fixed top-20 left-1/2 transform -translate-x-1/2 z-50 px-4 py-2 rounded-lg text-white text-sm max-w-xs text-center transition-all duration-300`;
+
+                if (type === 'error') {
+                    toast.classList.add('bg-red-500');
+                } else if (type === 'success') {
+                    toast.classList.add('bg-green-500');
+                } else {
+                    toast.classList.add('bg-blue-500');
+                }
+
+                toast.textContent = message;
+                document.body.appendChild(toast);
+
+                // 显示动画
+                setTimeout(() => {
+                    toast.style.opacity = '1';
+                    toast.style.transform = 'translate(-50%, 0)';
+                }, 100);
+
+                // 自动隐藏
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translate(-50%, -20px)';
+                    setTimeout(() => {
+                        document.body.removeChild(toast);
+                    }, 300);
+                }, 3000);
+            }
+
+            // 加载订单数据
+            function loadOrderData() {
+                // 首先基于来源页面确定订单类型
+                const orderType = detectOrderTypeFromSource();
+
+                // 根据订单类型确定要加载的localStorage键
+                const storageKeyMap = {
+                    'mall': 'smartHomeOrder',
+                    'design': 'designServiceOrder',
+                    'knowledge': 'knowledgeOrder'
+                };
+
+                const primaryKey = storageKeyMap[orderType];
+                let loadedData = null;
+
+                // 优先从对应类型的键加载数据
+                const storedOrder = localStorage.getItem(primaryKey);
+                if (storedOrder) {
+                    loadedData = JSON.parse(storedOrder);
+                    console.log(`从 ${primaryKey} 加载${orderType}订单数据`);
+                } else {
+                    // 如果没有找到对应类型的数据，尝试从通用键加载
+                    const fallbackKeys = ['smartHomeOrder', 'designServiceOrder', 'knowledgeOrder'];
+                    for (const key of fallbackKeys) {
+                        const fallbackData = localStorage.getItem(key);
+                        if (fallbackData) {
+                            loadedData = JSON.parse(fallbackData);
+                            console.log(`从备用键 ${key} 加载订单数据，但订单类型仍为: ${orderType}`);
+                            break;
+                        }
+                    }
+                }
+
+                if (loadedData) {
+                    orderData = Array.isArray(loadedData) ? loadedData : [loadedData];
+                } else {
+                    // 如果没有订单数据，根据检测到的订单类型生成对应的测试数据
+                    const testData = {
+                        mall: [
+                            {
+                                id: 'test-mall-001',
+                                name: '智能家居套装',
+                                price: 299,
+                                quantity: 1,
+                                image: 'https://via.placeholder.com/64x64?text=商品',
+                                specs: '标准版',
+                                source: 'mall'
+                            }
+                        ],
+                        design: [
+                            {
+                                id: 'test-design-001',
+                                name: '全屋设计方案',
+                                price: 1999,
+                                quantity: 1,
+                                image: 'https://via.placeholder.com/64x64?text=设计',
+                                specs: '120㎡三居室',
+                                source: 'design'
+                            }
+                        ],
+                        knowledge: [
+                            {
+                                id: 'test-knowledge-001',
+                                name: '智能家居入门课程',
+                                price: 99,
+                                quantity: 1,
+                                image: 'https://via.placeholder.com/64x64?text=课程',
+                                specs: '30节课程',
+                                source: 'knowledge'
+                            }
+                        ]
+                    };
+
+                    orderData = testData[orderType] || testData.mall;
+                    console.log(`使用模拟${orderType}订单数据进行测试`);
+                }
+
+                // 确保所有商品都标记为当前订单类型
+                orderData.forEach(item => {
+                    item.orderType = orderType; // 统一设置为检测到的订单类型
+                    item.source = orderType; // 记录来源
+                });
+
+                // 存储确定的订单类型
+                window.currentOrderType = orderType;
+
+                // 验证订单一致性：确保所有商品都来自同一来源
+                const sources = [...new Set(orderData.map(item => item.source || item.orderType))];
+                if (sources.length > 1) {
+                    console.warn('警告：订单中包含来自不同来源的商品:', sources);
+                    // 在实际应用中，这里应该阻止订单提交或分离订单
+                }
+
+                console.log(`订单类型确定: ${orderType}`);
+                console.log(`商品数量: ${orderData.length}`);
+                console.log(`商品来源验证:`, sources);
+            }
+
+            // 渲染订单商品
+            function renderOrderItems() {
+                if (orderData.length === 0) return;
+
+                const itemsHTML = orderData.map(item => {
+                    // 处理商品规格显示
+                    let specsText = '';
+                    if (item.specs && typeof item.specs === 'object') {
+                        specsText = Object.values(item.specs).filter(spec => spec).join(' | ');
+                    } else if (item.specs && typeof item.specs === 'string') {
+                        specsText = item.specs;
+                    }
+
+                    return `
+                    <div class="order-item">
+                        <img src="${item.image || 'https://via.placeholder.com/64x64?text=商品'}" alt="${item.name}" class="order-item-image">
+                        <div class="order-item-info">
+                            <h3 class="order-item-title">${item.name}</h3>
+                            ${specsText ? `<p class="order-item-specs">${specsText}</p>` : ''}
+                            <div class="order-item-price">
+                                <span class="order-item-price-text">¥${item.price}</span>
+                                <span class="order-item-quantity">x${item.quantity}</span>
+                            </div>
+                        </div>
+                    </div>
+                    `;
+                }).join('');
+
+                orderItemsContainer.innerHTML = itemsHTML;
+            }
+
+            // 计算总价
+            function calculateTotal() {
+                let subtotal = 0;
+                let totalQuantity = 0;
+
+                orderData.forEach(item => {
+                    subtotal += item.price * item.quantity;
+                    totalQuantity += item.quantity;
+                });
+
+                subtotalElement.textContent = `¥${subtotal}`;
+                totalAmountElement.textContent = `¥${subtotal}`;
+                totalQuantityElement.textContent = totalQuantity;
+                finalTotalElement.textContent = `¥${subtotal}`;
+            }
+
+            // 初始化支付方式选择
+            function initPaymentOptions() {
+                paymentOptions.forEach(option => {
+                    option.addEventListener('click', function() {
+                        // 移除所有active状态
+                        paymentOptions.forEach(opt => {
+                            opt.classList.remove('active');
+                            const radio = opt.querySelector('.w-4.h-4 div');
+                            if (radio) {
+                                radio.style.display = 'none';
+                            }
+                        });
+
+                        // 添加当前选项的active状态
+                        this.classList.add('active');
+                        const radio = this.querySelector('.w-4.h-4 div');
+                        if (radio) {
+                            radio.style.display = 'block';
+                        }
+
+                        selectedPayment = this.dataset.payment;
+                        console.log('选择支付方式:', selectedPayment);
+                    });
+                });
+            }
+
+            // 提交订单
+            submitOrderBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                // 验证支付方式
+                if (!selectedPayment) {
+                    showToast('请选择支付方式', 'error');
+                    return;
+                }
+
+                // 验证表单
+                if (!formValidator.validateForm()) {
+                    showToast('请检查并完善订单信息', 'error');
+                    return;
+                }
+
+                // 禁用提交按钮，防止重复提交
+                submitOrderBtn.disabled = true;
+                submitOrderBtn.textContent = '处理中...';
+
+                // 获取表单数据
+                const formData = formValidator.getFormData();
+
+                // 生成订单号（使用页面加载时确定的订单类型）
+                const orderType = window.currentOrderType;
+                if (!orderType) {
+                    console.error('错误：订单类型未确定，无法生成订单号');
+                    showToast('订单类型错误，请重新提交', 'error');
+                    return;
+                }
+
+                const orderNumber = OrderUtils.generateOrderNumber(orderType);
+                console.log(`=== 订单创建 ===`);
+                console.log(`订单类型: ${orderType}`);
+                console.log(`订单号: ${orderNumber}`);
+                console.log(`前缀验证: ${orderNumber.substring(0, 2)}`);
+
+                // 验证订单号前缀是否正确
+                const expectedPrefix = {
+                    'mall': 'SH',
+                    'design': 'DS',
+                    'knowledge': 'KN'
+                }[orderType];
+
+                if (!orderNumber.startsWith(expectedPrefix)) {
+                    console.error(`订单号前缀错误: 期望${expectedPrefix}, 实际${orderNumber.substring(0, 2)}`);
+                    showToast('订单号生成错误，请重试', 'error');
+                    return;
+                }
+                const totalAmount = orderData.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+                // 创建订单对象
+                const order = {
+                    orderNumber: orderNumber,
+                    orderType: orderType, // 添加订单类型字段
+                    items: orderData,
+                    totalAmount: totalAmount,
+                    totalQuantity: orderData.reduce((sum, item) => sum + item.quantity, 0),
+                    paymentMethod: selectedPayment,
+                    status: 'pending',
+                    createTime: new Date().toISOString(),
+                    receiverInfo: {
+                        name: formData.receiverName,
+                        phone: formData.receiverPhone,
+                        address: formData.receiverAddress
+                    },
+                    invoiceInfo: {
+                        type: formData.invoiceType,
+                        title: formData.invoiceTitle || '',
+                        taxNumber: formData.taxNumber || '',
+                        companyAddress: formData.companyAddress || '',
+                        companyPhone: formData.companyPhone || '',
+                        bankName: formData.bankName || '',
+                        bankAccount: formData.bankAccount || ''
+                    },
+                    orderNote: formData.orderNote || ''
+                };
+
+                // 保存订单到localStorage（状态为pending）
+                // 根据订单类型获取正确的存储键
+                const orderTypeInfo = OrderUtils.getOrderTypeInfo(orderNumber);
+                const storageKey = orderTypeInfo ? orderTypeInfo.storageKey : 'smartHomeOrders';
+
+                let orders = JSON.parse(localStorage.getItem(storageKey) || '[]');
+                orders.unshift(order);
+                localStorage.setItem(storageKey, JSON.stringify(orders));
+
+                console.log(`订单已保存到 ${storageKey}:`, order);
+
+                // 调用支付处理
+                processPayment(order, selectedPayment);
+            });
+
+            // 支付处理函数
+            function processPayment(order, paymentMethod) {
+                console.log('开始支付处理:', order.orderNumber, paymentMethod);
+
+                // 模拟不同支付方式的处理
+                switch(paymentMethod) {
+                    case 'wechat':
+                        processWechatPay(order);
+                        break;
+                    case 'alipay':
+                        processAlipay(order);
+                        break;
+                    case 'unionpay':
+                        processUnionPay(order);
+                        break;
+                    case 'credit':
+                        processCreditCard(order);
+                        break;
+                    default:
+                        handlePaymentError('不支持的支付方式');
+                }
+            }
+
+            // 微信支付处理
+            function processWechatPay(order) {
+                console.log('处理微信支付...');
+
+                // 模拟微信支付API调用
+                setTimeout(() => {
+                    // 模拟支付成功（90%概率）
+                    if (Math.random() > 0.1) {
+                        handlePaymentSuccess(order, {
+                            transactionId: 'WX' + Date.now(),
+                            paymentTime: new Date().toISOString()
+                        });
+                    } else {
+                        handlePaymentError('微信支付失败，请重试');
+                    }
+                }, 2000);
+            }
+
+            // 支付宝支付处理
+            function processAlipay(order) {
+                console.log('处理支付宝支付...');
+
+                setTimeout(() => {
+                    if (Math.random() > 0.1) {
+                        handlePaymentSuccess(order, {
+                            transactionId: 'ALI' + Date.now(),
+                            paymentTime: new Date().toISOString()
+                        });
+                    } else {
+                        handlePaymentError('支付宝支付失败，请重试');
+                    }
+                }, 1800);
+            }
+
+            // 银联支付处理
+            function processUnionPay(order) {
+                console.log('处理银联支付...');
+
+                setTimeout(() => {
+                    if (Math.random() > 0.1) {
+                        handlePaymentSuccess(order, {
+                            transactionId: 'UP' + Date.now(),
+                            paymentTime: new Date().toISOString()
+                        });
+                    } else {
+                        handlePaymentError('银联支付失败，请重试');
+                    }
+                }, 2500);
+            }
+
+            // 信用卡支付处理
+            function processCreditCard(order) {
+                console.log('处理信用卡支付...');
+
+                setTimeout(() => {
+                    if (Math.random() > 0.1) {
+                        handlePaymentSuccess(order, {
+                            transactionId: 'CC' + Date.now(),
+                            paymentTime: new Date().toISOString()
+                        });
+                    } else {
+                        handlePaymentError('信用卡支付失败，请检查卡片信息');
+                    }
+                }, 3000);
+            }
+
+            // 支付成功处理
+            function handlePaymentSuccess(order, paymentResult) {
+                console.log('支付成功:', paymentResult);
+
+                // 更新订单状态
+                order.status = 'paid';
+                order.transactionId = paymentResult.transactionId;
+                order.paymentTime = paymentResult.paymentTime;
+
+                // 更新localStorage中的订单
+                // 根据订单号获取正确的存储键
+                const orderTypeInfo = OrderUtils.getOrderTypeInfo(order.orderNumber);
+                const storageKey = orderTypeInfo ? orderTypeInfo.storageKey : 'smartHomeOrders';
+
+                let orders = JSON.parse(localStorage.getItem(storageKey) || '[]');
+                const orderIndex = orders.findIndex(o => o.orderNumber === order.orderNumber);
+                if (orderIndex !== -1) {
+                    orders[orderIndex] = order;
+                    localStorage.setItem(storageKey, JSON.stringify(orders));
+                    console.log(`订单状态已更新到 ${storageKey}:`, order);
+                }
+
+                // 清除临时订单数据
+                localStorage.removeItem('smartHomeOrder');
+
+                // 显示支付成功弹窗
+                paymentModal.classList.remove('hidden');
+                paymentModal.classList.add('flex');
+
+                // 重置提交按钮
+                submitOrderBtn.disabled = false;
+                submitOrderBtn.textContent = '提交订单';
+
+                // 倒计时自动跳转
+                let countdown = 3;
+                const autoJumpText = document.getElementById('autoJumpText');
+                const countdownInterval = setInterval(() => {
+                    countdown--;
+                    if (autoJumpText) {
+                        autoJumpText.textContent = `${countdown}秒后自动跳转到订单页面...`;
+                    }
+                    if (countdown <= 0) {
+                        clearInterval(countdownInterval);
+                        window.location.href = 'mall-order.html';
+                    }
+                }, 1000);
+            }
+
+            // 支付失败处理
+            function handlePaymentError(errorMessage) {
+                console.error('支付失败:', errorMessage);
+
+                // 显示错误信息
+                alert(errorMessage);
+
+                // 重置提交按钮
+                submitOrderBtn.disabled = false;
+                submitOrderBtn.textContent = '提交订单';
+
+                // 可以选择删除pending状态的订单或保留
+                // 这里选择保留，让用户可以重新尝试支付
+            }
+
+            // 查看订单按钮
+            viewOrderBtn.addEventListener('click', function() {
+                window.location.href = 'mall-order.html';
+            });
+
+            // 继续购物按钮
+            continueShoppingBtn.addEventListener('click', function() {
+                window.location.href = 'mall.html';
+            });
+
+            // 初始化页面
+            initPage();
+
+            console.log('订单确认页面初始化完成');
+
+            // 暴露全局函数供其他页面使用
+            window.setOrderSource = function(source) {
+                localStorage.setItem('orderSource', source);
+                console.log(`订单来源已设置为: ${source}`);
+            };
+
+            window.clearOrderSource = function() {
+                localStorage.removeItem('orderSource');
+                console.log('订单来源已清除');
+            };
+            console.log('订单确认页面初始化完成，订单类型:', window.currentOrderType);
+
+            // 开发环境调试信息（仅在控制台显示）
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                console.log('=== 开发环境调试信息 ===');
+                console.log('当前订单类型:', window.currentOrderType);
+                console.log('URL参数:', window.location.search);
+                console.log('========================');
+            }
+        });
+    </script>
+
+    <!-- 引入H5与小程序通信桥接工具 -->
+    <script src="../utils/h5-bridge.js"></script>
+    <!-- 引入订单工具函数 -->
+    <script src="js/order-utils.js"></script>
+    
+    <script>
+        // 小程序环境初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检查小程序环境并初始化通信
+            if (window.H5Bridge) {
+                console.log('H5Bridge已加载，当前环境:', window.H5Bridge.isInMiniProgram ? '小程序' : '浏览器');
+                
+                if (window.H5Bridge.isInMiniProgram) {
+                    initMiniProgramFeatures();
+                }
+            }
+        });
+
+        // 初始化小程序特有功能
+        function initMiniProgramFeatures() {
+            console.log('初始化小程序特有功能');
+            
+            // 替换所有页面跳转为小程序导航
+            replacePageNavigation();
+            
+            // 替换alert为小程序toast
+            replaceAlertWithToast();
+            
+            // 监听支付结果（如果页面有支付功能）
+            if (typeof handlePaymentSuccess === 'function') {
+                window.H5Bridge.on('paymentSuccess', handlePaymentSuccess);
+                window.H5Bridge.on('paymentFail', handlePaymentFailure || function(error) {
+                    window.H5Bridge.showToast('支付失败，请重试', 'error');
+                });
+            }
+            
+            // 监听用户信息获取结果（如果页面需要用户信息）
+            if (typeof handleUserInfoSuccess === 'function') {
+                window.H5Bridge.on('userInfoSuccess', handleUserInfoSuccess);
+                window.H5Bridge.on('userInfoFail', handleUserInfoFailure || function(error) {
+                    window.H5Bridge.showToast('获取用户信息失败', 'error');
+                });
+            }
+        }
+
+        // 替换页面跳转为小程序导航
+        function replacePageNavigation() {
+            // 处理所有HTML页面链接
+            document.querySelectorAll('a[href$=".html"]').forEach(link => {
+                const originalHref = link.getAttribute('href');
+                
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // 解析目标页面
+                    const pageName = originalHref.replace('.html', '').replace(/^.*//, '');
+                    
+                    // 特殊页面映射到小程序原生页面
+                    const nativePageMap = {
+                        'home': '/pages/home/index',
+                        'design-result': '/pages/design/index',
+                        'mall': '/pages/mall/index',
+                        'spaces': '/pages/construction/index',
+                        'me': '/pages/profile/index'
+                    };
+                    
+                    if (nativePageMap[pageName]) {
+                        // 跳转到小程序原生页面
+                        window.H5Bridge.navigateTo(nativePageMap[pageName]);
+                    } else {
+                        // 跳转到web-view页面
+                        window.H5Bridge.navigateTo(`/pages/webview/index?page=${pageName}`);
+                    }
+                });
+            });
+            
+            // 处理返回按钮
+            document.querySelectorAll('[onclick*="history.back"], [onclick*="window.history.back"]').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    window.H5Bridge.navigateBack();
+                });
+            });
+        }
+
+        // 替换alert为小程序toast
+        function replaceAlertWithToast() {
+            // 重写全局alert函数
+            if (window.H5Bridge && window.H5Bridge.isInMiniProgram) {
+                window.alert = function(message) {
+                    window.H5Bridge.showToast(message);
+                };
+                
+                window.confirm = function(message) {
+                    // 小程序中的confirm需要特殊处理
+                    window.H5Bridge.showToast(message);
+                    return true; // 简化处理，实际项目中可能需要更复杂的逻辑
+                };
+            }
+        }
+
+        // 通用分享功能
+        function shareToWechat(shareData) {
+            if (window.H5Bridge && window.H5Bridge.isInMiniProgram) {
+                // 在小程序中使用原生分享
+                window.H5Bridge.share(shareData || {
+                    title: document.title,
+                    desc: '智能家居设计与施工服务',
+                    path: `/pages/webview/index?page=${getCurrentPageName()}`
+                });
+            } else {
+                // 在浏览器中使用Web Share API或降级处理
+                if (navigator.share) {
+                    navigator.share({
+                        title: document.title,
+                        text: '智能家居设计与施工服务',
+                        url: window.location.href
+                    });
+                } else {
+                    alert('分享功能需要在支持的浏览器中使用');
+                }
+            }
+        }
+
+        // 获取当前页面名称
+        function getCurrentPageName() {
+            const pathname = window.location.pathname;
+            return pathname.substring(pathname.lastIndexOf('/') + 1).replace('.html', '');
+        }
+
+        // 通用错误处理
+        function handleError(error, context = '') {
+            console.error(`错误[${context}]:`, error);
+            
+            if (window.H5Bridge && window.H5Bridge.isInMiniProgram) {
+                window.H5Bridge.showToast('操作失败，请重试', 'error');
+            } else {
+                alert('操作失败：' + (error.message || '未知错误'));
+            }
+        }
+    </script>
+
+        // 订单确认页面特定集成
+        function submitOrder() {
+            // 订单提交逻辑
+            if (window.H5Bridge && window.H5Bridge.isInMiniProgram) {
+                // 在小程序中可能需要调用支付
+                const orderData = getOrderData();
+                if (orderData.needPayment) {
+                    window.H5Bridge.requestPayment(orderData.paymentData);
+                } else {
+                    window.H5Bridge.showToast('订单提交成功');
+                    window.H5Bridge.navigateTo('/pages/webview/index?page=order-detail');
+                }
+            } else {
+                // 浏览器中的处理逻辑
+                alert('订单提交成功');
+                window.location.href = 'order-detail.html';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>消息中心 - 智能设计与施工</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'system': ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', '"SF Pro Icons"', '"Helvetica Neue"', 'Helvetica', 'Arial', 'sans-serif']
+                    },
+                    colors: {
+                        'primary-text': '#1A1A1A',
+                        'main-bg': '#F8F9FA'
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/iphone16_fix.css">
+
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            -webkit-text-size-adjust: 100%;
+            -moz-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .scrollbar-none::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-none {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        :root {
+            --safe-area-inset-top: env(safe-area-inset-top);
+            --safe-area-inset-bottom: env(safe-area-inset-bottom);
+        }
+
+        .message-item {
+            transition: all 0.2s ease;
+        }
+
+        .message-item:hover {
+            background-color: #f8fafc;
+        }
+
+        .message-item.unread {
+            background-color: #f8f9fa;
+            border-left: 3px solid #000;
+        }
+
+        .message-item.unread:hover {
+            background-color: #f0f0f0;
+        }
+
+        .message-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #ef4444;
+            border-radius: 50%;
+            position: absolute;
+            top: 8px;
+            right: 8px;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .message-time {
+            font-size: 9px;
+            color: #6b7280;
+        }
+
+        .filter-tab {
+            transition: all 0.2s ease;
+        }
+
+        .filter-tab.active {
+            background-color: #000;
+            color: white;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background-color: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .empty-state {
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .message-actions {
+            display: none;
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            gap: 8px;
+        }
+
+        .message-item:hover .message-actions {
+            display: flex;
+        }
+
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: white;
+            border: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+    </style>
+
+    <!-- 全局错误处理和兜底方案 -->
+    <script>
+        (function() {
+            'use strict';
+            
+            // 创建 Trace 对象的兜底实现
+            window.Trace = window.Trace || {
+                init: function() { console.log('Trace initialized (fallback)'); },
+                log: function() { console.log.apply(console, arguments); },
+                error: function() { console.error.apply(console, arguments); },
+                warn: function() { console.warn.apply(console, arguments); },
+                info: function() { console.info.apply(console, arguments); }
+            };
+
+            // 防止其他可能的调试工具错误
+            window.wx = window.wx || {};
+            window.my = window.my || {};
+            
+            // 防止 chartId 未定义错误
+            window.chartId = window.chartId || 'default-chart-id';
+            
+            // 全局错误处理
+            window.addEventListener('error', function(e) {
+                console.error('Global error caught:', e.error);
+                return true; // 阻止默认错误处理
+            });
+            
+            window.addEventListener('unhandledrejection', function(e) {
+                console.error('Unhandled promise rejection:', e.reason);
+                e.preventDefault(); // 阻止默认处理
+            });
+            
+            console.log('✅ 全局错误处理已初始化');
+        })();
+    </script>
+</head>
+<body class="min-h-screen w-full bg-[#000000] flex items-center justify-center font-system">
+    <!-- iPhone 容器 -->
+    <div class="w-full max-w-[393px] h-[852px] bg-[#1E1E1E] shadow-2xl overflow-hidden relative mx-auto rounded-[54px]">
+        <!-- iPhone 状态栏 -->
+        <div class="w-full h-[47px] bg-black px-5 flex items-center justify-between text-white text-[14px] font-medium">
+            <div class="flex items-center space-x-1">
+                <!-- 信号图标 -->
+                <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2 20h.01"></path>
+                    <path d="M7 20v-4"></path>
+                    <path d="M12 20v-8"></path>
+                    <path d="M17 20V8"></path>
+                    <path d="M22 4v16"></path>
+                </svg>
+                <span>中国移动</span>
+                <!-- WiFi图标 -->
+                <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 20h.01"></path>
+                    <path d="M2 8.82a15 15 0 0 1 20 0"></path>
+                    <path d="M5 12.859a10 10 0 0 1 14 0"></path>
+                    <path d="M8.5 16.429a5 5 0 0 1 7 0"></path>
+                </svg>
+            </div>
+            <div class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">15:52</div>
+            <div class="flex items-center space-x-1">
+                <span>89%</span>
+                <!-- 电池图标 -->
+                <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                    <rect height="10" rx="2" ry="2" width="16" x="2" y="7"></rect>
+                    <line x1="22" x2="22" y1="11" y2="13"></line>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 动态岛 -->
+        <button class="absolute left-1/2 -translate-x-1/2 bg-black transition-all duration-300 ease-out w-[126px] h-[37.5px] -top-0.5 rounded-b-[24px]"></button>
+
+        <!-- 主内容区域 -->
+        <div class="w-full h-[calc(100%-47px)] bg-white overflow-hidden relative">
+            <!-- 顶部白色导航区域 -->
+            <div class="absolute top-0 left-0 right-0 z-30">
+                <div class="bg-white text-black border-b border-gray-100">
+                    <!-- 顶部操作按钮 -->
+                    <div class="flex items-center justify-between px-4 relative h-[60px]">
+                        <!-- 返回按钮 -->
+                        <a href="me.html" class="text-black/70 hover:text-black transition-colors">
+                            <svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg">
+                                <path d="m15 18-6-6 6-6"></path>
+                            </svg>
+                        </a>
+                        <!-- 页面标题 -->
+                        <h1 class="text-lg font-semibold text-black">消息中心</h1>
+                        <!-- 右侧按钮组 -->
+                        <div class="flex items-center space-x-3">
+                            <button id="markAllRead" class="text-xs text-gray-500 hover:text-black transition-colors">
+                                全部已读
+                            </button>
+                            <button id="messageSettings" class="text-black/70 hover:text-black transition-colors">
+                                <svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                    <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 滚动内容区域 -->
+            <div class="absolute inset-0 top-[60px] bottom-[84px] overflow-y-auto scrollbar-none">
+
+                <!-- 消息统计卡片 -->
+                <section class="px-4 py-4 bg-white">
+                    <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-900 mb-1">消息概览</h3>
+                                <div class="flex items-center space-x-4 text-[10px] text-gray-600">
+                                    <span>未读 <span id="unreadCount" class="font-semibold text-black">5</span> 条</span>
+                                    <span>今日 <span id="todayCount" class="font-semibold text-black">8</span> 条</span>
+                                </div>
+                            </div>
+                            <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center border border-gray-200">
+                                <i class="fas fa-bell text-gray-600 text-lg"></i>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 消息筛选标签 -->
+                <section class="px-4 py-3 bg-white border-b border-gray-100">
+                    <div class="flex items-center space-x-2 overflow-x-auto scrollbar-none">
+                        <button class="filter-tab active px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap bg-black text-white" data-filter="all">
+                            全部消息
+                        </button>
+                        <button class="filter-tab px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap border border-gray-200 bg-gray-50 text-gray-700" data-filter="system">
+                            系统通知
+                        </button>
+                        <button class="filter-tab px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap border border-gray-200 bg-gray-50 text-gray-700" data-filter="project">
+                            项目消息
+                        </button>
+                        <button class="filter-tab px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap border border-gray-200 bg-gray-50 text-gray-700" data-filter="order">
+                            订单消息
+                        </button>
+                        <button class="filter-tab px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap border border-gray-200 bg-gray-50 text-gray-700" data-filter="service">
+                            服务消息
+                        </button>
+                    </div>
+                </section>
+
+                <!-- 消息列表 -->
+                <section class="px-4 py-2">
+                    <div id="messagesList" class="space-y-1">
+                        <!-- 消息项将通过JavaScript动态生成 -->
+                    </div>
+
+                    <!-- 空状态 -->
+                    <div id="emptyState" class="empty-state hidden">
+                        <div class="text-gray-400 mb-4">
+                            <i class="fas fa-inbox text-4xl"></i>
+                        </div>
+                        <h3 class="text-base font-medium text-gray-600 mb-2">暂无消息</h3>
+                        <p class="text-xs text-gray-500">当前筛选条件下没有找到消息</p>
+                    </div>
+                </section>
+            </div>
+
+            <!-- 底部导航栏 -->
+            <div class="absolute bottom-0 left-0 right-0 h-[84px] bg-white/80 backdrop-blur-xl border-t border-white/20">
+                <!-- 导航栏内容 -->
+                <nav class="h-[49px] flex items-center px-2">
+                    <div class="flex justify-around w-full text-[12px]">
+                        <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="home.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                                </svg>
+                            </div>
+                            <span class="mt-1">首页</span>
+                        </a>
+                        <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="design-result.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="13.5" cy="6.5" fill="currentColor" r=".5"></circle>
+                                    <circle cx="17.5" cy="10.5" fill="currentColor" r=".5"></circle>
+                                    <circle cx="8.5" cy="7.5" fill="currentColor" r=".5"></circle>
+                                    <circle cx="6.5" cy="12.5" fill="currentColor" r=".5"></circle>
+                                    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+                                </svg>
+                            </div>
+                            <span class="mt-1">设计</span>
+                        </a>
+                        <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="mall.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+                                    <path d="M3 6h18"></path>
+                                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                                </svg>
+                            </div>
+                            <span class="mt-1">商城</span>
+                        </a>
+                        <a class="flex flex-col items-center group text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors" href="spaces.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="m15 12-8.373 8.373a1 1 0 1 1-3-3L12 9"></path>
+                                    <path d="m18 15 4-4"></path>
+                                    <path d="m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172V7l-2.26-2.26a6 6 0 0 0-4.202-1.756L9 2.96l.92.82A6.18 6.18 0 0 1 12 8.4V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5"></path>
+                                </svg>
+                            </div>
+                            <span class="mt-1">施工</span>
+                        </a>
+                        <a class="flex flex-col items-center group text-black transition-colors" href="me.html">
+                            <div class="transform transition-transform group-hover:scale-110 group-active:scale-95">
+                                <svg class="w-[22px] h-[22px] stroke-[1.5]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                            </div>
+                            <span class="mt-1">我的</span>
+                        </a>
+                    </div>
+                </nav>
+                <!-- iPhone 16 Home Indicator -->
+                <div class="h-[34px] flex items-center justify-center">
+                    <div class="w-[134px] h-[5px] bg-black rounded-full"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 消息中心管理器
+        class MessageCenterManager {
+            constructor() {
+                this.messages = [];
+                this.currentFilter = 'all';
+                this.unreadCount = 0;
+                this.init();
+            }
+
+            init() {
+                this.loadMessages();
+                this.initFilterTabs();
+                this.initActions();
+                this.renderMessages();
+                this.updateCounts();
+            }
+
+            // 加载消息数据
+            loadMessages() {
+                // 从localStorage加载消息，如果没有则使用模拟数据
+                const savedMessages = localStorage.getItem('appMessages');
+                if (savedMessages) {
+                    this.messages = JSON.parse(savedMessages);
+                } else {
+                    this.messages = this.generateMockMessages();
+                    this.saveMessages();
+                }
+            }
+
+            // 保存消息到localStorage
+            saveMessages() {
+                localStorage.setItem('appMessages', JSON.stringify(this.messages));
+            }
+
+            // 生成模拟消息数据
+            generateMockMessages() {
+                const now = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+                return [
+                    {
+                        id: 1,
+                        type: 'project',
+                        title: '设计方案已完成',
+                        content: '您的智能家居设计方案已完成，请查看详细内容并确认。',
+                        sender: '设计师小王',
+                        avatar: '设',
+                        time: new Date(now.getTime() - 30 * 60 * 1000), // 30分钟前
+                        isRead: false,
+                        priority: 'high'
+                    },
+                    {
+                        id: 2,
+                        type: 'system',
+                        title: '系统维护通知',
+                        content: '系统将于今晚23:00-01:00进行维护升级，期间可能影响部分功能使用。',
+                        sender: '系统通知',
+                        avatar: '系',
+                        time: new Date(now.getTime() - 2 * 60 * 60 * 1000), // 2小时前
+                        isRead: false,
+                        priority: 'medium'
+                    },
+                    {
+                        id: 3,
+                        type: 'order',
+                        title: '订单支付成功',
+                        content: '您的订单 #202401160001 已支付成功，商品将在1-3个工作日内发货。',
+                        sender: '订单系统',
+                        avatar: '订',
+                        time: new Date(now.getTime() - 4 * 60 * 60 * 1000), // 4小时前
+                        isRead: true,
+                        priority: 'medium'
+                    },
+                    {
+                        id: 4,
+                        type: 'project',
+                        title: '施工进度更新',
+                        content: '您的项目施工进度已更新至60%，预计还需5天完成。',
+                        sender: '项目经理',
+                        avatar: '项',
+                        time: new Date(now.getTime() - 6 * 60 * 60 * 1000), // 6小时前
+                        isRead: false,
+                        priority: 'high'
+                    },
+                    {
+                        id: 5,
+                        type: 'service',
+                        title: '客服回复',
+                        content: '您好，关于您咨询的智能门锁安装问题，我们已为您安排专业技师上门服务。',
+                        sender: '客服小李',
+                        avatar: '客',
+                        time: new Date(now.getTime() - 8 * 60 * 60 * 1000), // 8小时前
+                        isRead: true,
+                        priority: 'medium'
+                    },
+                    {
+                        id: 6,
+                        type: 'system',
+                        title: '新功能上线',
+                        content: '智能场景模式功能已上线，快来体验全新的智能家居控制方式！',
+                        sender: '产品团队',
+                        avatar: '产',
+                        time: new Date(today.getTime() - 24 * 60 * 60 * 1000), // 昨天
+                        isRead: true,
+                        priority: 'low'
+                    },
+                    {
+                        id: 7,
+                        type: 'order',
+                        title: '商品已发货',
+                        content: '您购买的智能开关已发货，快递单号：SF1234567890，预计明日送达。',
+                        sender: '物流系统',
+                        avatar: '物',
+                        time: new Date(today.getTime() - 2 * 24 * 60 * 60 * 1000), // 前天
+                        isRead: true,
+                        priority: 'medium'
+                    },
+                    {
+                        id: 8,
+                        type: 'project',
+                        title: '设计师已接单',
+                        content: '设计师已接受您的设计需求，将在24小时内与您联系确认详细方案。',
+                        sender: '设计师小张',
+                        avatar: '张',
+                        time: new Date(today.getTime() - 3 * 24 * 60 * 60 * 1000), // 3天前
+                        isRead: false,
+                        priority: 'high'
+                    }
+                ];
+            }
+
+            // 初始化筛选标签
+            initFilterTabs() {
+                const filterTabs = document.querySelectorAll('.filter-tab');
+
+                filterTabs.forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        // 移除所有活动状态
+                        filterTabs.forEach(t => {
+                            t.classList.remove('active', 'bg-black', 'text-white');
+                            t.classList.add('border', 'border-gray-200', 'bg-gray-50', 'text-gray-700');
+                        });
+
+                        // 添加当前活动状态
+                        tab.classList.add('active', 'bg-black', 'text-white');
+                        tab.classList.remove('border', 'border-gray-200', 'bg-gray-50', 'text-gray-700');
+
+                        this.currentFilter = tab.dataset.filter;
+                        this.renderMessages();
+                    });
+                });
+            }
+
+            // 初始化操作按钮
+            initActions() {
+                // 全部已读按钮
+                document.getElementById('markAllRead').addEventListener('click', () => {
+                    this.markAllAsRead();
+                });
+
+                // 设置按钮
+                document.getElementById('messageSettings').addEventListener('click', () => {
+                    this.showSettings();
+                });
+            }
+
+            // 渲染消息列表
+            renderMessages() {
+                const messagesList = document.getElementById('messagesList');
+                const emptyState = document.getElementById('emptyState');
+
+                // 筛选消息
+                let filteredMessages = this.messages;
+                if (this.currentFilter !== 'all') {
+                    filteredMessages = this.messages.filter(msg => msg.type === this.currentFilter);
+                }
+
+                // 按时间排序（最新的在前）
+                filteredMessages.sort((a, b) => new Date(b.time) - new Date(a.time));
+
+                if (filteredMessages.length === 0) {
+                    messagesList.innerHTML = '';
+                    emptyState.classList.remove('hidden');
+                } else {
+                    emptyState.classList.add('hidden');
+                    messagesList.innerHTML = filteredMessages.map(msg => this.renderMessageItem(msg)).join('');
+
+                    // 添加消息项点击事件
+                    this.addMessageItemEvents();
+                }
+            }
+
+            // 渲染单个消息项
+            renderMessageItem(message) {
+                const timeStr = this.formatTime(message.time);
+                const priorityIcon = this.getPriorityIcon(message.priority);
+
+                return `
+                    <div class="message-item ${message.isRead ? '' : 'unread'} relative p-4 rounded-lg cursor-pointer" data-message-id="${message.id}">
+                        ${!message.isRead ? '<div class="message-dot"></div>' : ''}
+
+                        <div class="flex items-start space-x-3">
+                            <div class="message-avatar" style="background: ${this.getAvatarColor(message.type)}">
+                                ${message.avatar}
+                            </div>
+
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between mb-1">
+                                    <h4 class="text-xs font-medium text-gray-900 truncate">
+                                        ${priorityIcon} ${message.title}
+                                    </h4>
+                                    <span class="message-time">${timeStr}</span>
+                                </div>
+
+                                <p class="text-xs text-gray-600 mb-1 line-clamp-2">${message.content}</p>
+
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[10px] text-gray-500">${message.sender}</span>
+                                    <span class="text-[10px] px-2 py-0.5 rounded-full ${this.getTypeStyle(message.type)}">${this.getTypeName(message.type)}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 操作按钮 -->
+                        <div class="message-actions">
+                            <button class="action-btn mark-read-btn" data-message-id="${message.id}" title="${message.isRead ? '标记未读' : '标记已读'}">
+                                <i class="fas ${message.isRead ? 'fa-envelope' : 'fa-envelope-open'} text-xs"></i>
+                            </button>
+                            <button class="action-btn delete-btn" data-message-id="${message.id}" title="删除">
+                                <i class="fas fa-trash text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // 添加消息项事件
+            addMessageItemEvents() {
+                // 消息项点击事件
+                document.querySelectorAll('.message-item').forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        // 如果点击的是操作按钮，不触发消息点击
+                        if (e.target.closest('.message-actions')) return;
+
+                        const messageId = parseInt(item.dataset.messageId);
+                        this.openMessage(messageId);
+                    });
+                });
+
+                // 标记已读/未读按钮
+                document.querySelectorAll('.mark-read-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const messageId = parseInt(btn.dataset.messageId);
+                        this.toggleReadStatus(messageId);
+                    });
+                });
+
+                // 删除按钮
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const messageId = parseInt(btn.dataset.messageId);
+                        this.deleteMessage(messageId);
+                    });
+                });
+            }
+
+            // 打开消息详情
+            openMessage(messageId) {
+                const message = this.messages.find(msg => msg.id === messageId);
+                if (!message) return;
+
+                // 标记为已读
+                if (!message.isRead) {
+                    message.isRead = true;
+                    this.saveMessages();
+                    this.updateCounts();
+                    this.renderMessages();
+                }
+
+                // 显示消息详情（这里可以跳转到详情页面或显示弹窗）
+                alert(`消息详情：\n\n标题：${message.title}\n发送者：${message.sender}\n时间：${this.formatTime(message.time)}\n\n内容：${message.content}`);
+            }
+
+            // 切换已读状态
+            toggleReadStatus(messageId) {
+                const message = this.messages.find(msg => msg.id === messageId);
+                if (message) {
+                    message.isRead = !message.isRead;
+                    this.saveMessages();
+                    this.updateCounts();
+                    this.renderMessages();
+                }
+            }
+
+            // 删除消息
+            deleteMessage(messageId) {
+                if (confirm('确定要删除这条消息吗？')) {
+                    this.messages = this.messages.filter(msg => msg.id !== messageId);
+                    this.saveMessages();
+                    this.updateCounts();
+                    this.renderMessages();
+                }
+            }
+
+            // 全部标记为已读
+            markAllAsRead() {
+                let filteredMessages = this.messages;
+                if (this.currentFilter !== 'all') {
+                    filteredMessages = this.messages.filter(msg => msg.type === this.currentFilter);
+                }
+
+                const unreadMessages = filteredMessages.filter(msg => !msg.isRead);
+                if (unreadMessages.length === 0) {
+                    alert('当前筛选条件下没有未读消息');
+                    return;
+                }
+
+                if (confirm(`确定要将 ${unreadMessages.length} 条未读消息标记为已读吗？`)) {
+                    unreadMessages.forEach(msg => {
+                        msg.isRead = true;
+                    });
+                    this.saveMessages();
+                    this.updateCounts();
+                    this.renderMessages();
+                }
+            }
+
+            // 显示设置
+            showSettings() {
+                alert('消息设置功能开发中...\n\n可设置项：\n• 推送通知开关\n• 消息分类设置\n• 免打扰时间\n• 声音提醒');
+            }
+
+            // 更新计数
+            updateCounts() {
+                const unreadMessages = this.messages.filter(msg => !msg.isRead);
+                const today = new Date();
+                const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                const todayMessages = this.messages.filter(msg => new Date(msg.time) >= todayStart);
+
+                this.unreadCount = unreadMessages.length;
+
+                document.getElementById('unreadCount').textContent = this.unreadCount;
+                document.getElementById('todayCount').textContent = todayMessages.length;
+            }
+
+            // 格式化时间
+            formatTime(time) {
+                const now = new Date();
+                const msgTime = new Date(time);
+                const diffMs = now - msgTime;
+                const diffMins = Math.floor(diffMs / (1000 * 60));
+                const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+                if (diffMins < 1) return '刚刚';
+                if (diffMins < 60) return `${diffMins}分钟前`;
+                if (diffHours < 24) return `${diffHours}小时前`;
+                if (diffDays < 7) return `${diffDays}天前`;
+
+                return msgTime.toLocaleDateString('zh-CN', {
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+
+            // 获取优先级图标
+            getPriorityIcon(priority) {
+                switch (priority) {
+                    case 'high': return '<i class="fas fa-exclamation-circle text-black text-xs mr-1"></i>';
+                    case 'medium': return '<i class="fas fa-info-circle text-gray-600 text-xs mr-1"></i>';
+                    default: return '';
+                }
+            }
+
+            // 获取头像颜色
+            getAvatarColor(type) {
+                // 统一使用黑色背景，符合黑白风格
+                return '#000';
+            }
+
+            // 获取类型样式
+            getTypeStyle(type) {
+                // 统一使用黑白风格
+                return 'bg-gray-100 text-gray-600';
+            }
+
+            // 获取类型名称
+            getTypeName(type) {
+                const names = {
+                    system: '系统',
+                    project: '项目',
+                    order: '订单',
+                    service: '服务'
+                };
+                return names[type] || '其他';
+            }
+
+            // 添加新消息（供其他页面调用）
+            addMessage(message) {
+                const newMessage = {
+                    id: Date.now(),
+                    time: new Date(),
+                    isRead: false,
+                    priority: 'medium',
+                    ...message
+                };
+
+                this.messages.unshift(newMessage);
+                this.saveMessages();
+                this.updateCounts();
+
+                // 如果当前页面是消息中心，刷新显示
+                if (window.location.pathname.includes('messages.html')) {
+                    this.renderMessages();
+                }
+
+                return newMessage;
+            }
+
+            // 获取未读消息数量（供其他页面调用）
+            getUnreadCount() {
+                return this.messages.filter(msg => !msg.isRead).length;
+            }
+        }
+
+        // 全局消息管理器实例
+        window.messageManager = new MessageCenterManager();
+
+        // 全局通知推送工具
+        window.NotificationManager = {
+            // 推送新消息
+            pushMessage: function(message) {
+                if (window.messageManager) {
+                    return window.messageManager.addMessage(message);
+                } else {
+                    // 如果消息管理器未初始化，直接保存到localStorage
+                    const savedMessages = localStorage.getItem('appMessages');
+                    const messages = savedMessages ? JSON.parse(savedMessages) : [];
+
+                    const newMessage = {
+                        id: Date.now(),
+                        time: new Date(),
+                        isRead: false,
+                        priority: 'medium',
+                        ...message
+                    };
+
+                    messages.unshift(newMessage);
+                    localStorage.setItem('appMessages', JSON.stringify(messages));
+
+                    // 触发storage事件，通知其他页面更新
+                    window.dispatchEvent(new StorageEvent('storage', {
+                        key: 'appMessages',
+                        newValue: JSON.stringify(messages)
+                    }));
+
+                    return newMessage;
+                }
+            },
+
+            // 推送系统通知
+            pushSystemNotification: function(title, content, priority = 'medium') {
+                return this.pushMessage({
+                    type: 'system',
+                    title: title,
+                    content: content,
+                    sender: '系统通知',
+                    avatar: '系',
+                    priority: priority
+                });
+            },
+
+            // 推送项目消息
+            pushProjectMessage: function(title, content, sender = '项目系统', priority = 'high') {
+                return this.pushMessage({
+                    type: 'project',
+                    title: title,
+                    content: content,
+                    sender: sender,
+                    avatar: sender.charAt(0),
+                    priority: priority
+                });
+            },
+
+            // 推送订单消息
+            pushOrderMessage: function(title, content, priority = 'medium') {
+                return this.pushMessage({
+                    type: 'order',
+                    title: title,
+                    content: content,
+                    sender: '订单系统',
+                    avatar: '订',
+                    priority: priority
+                });
+            },
+
+            // 推送服务消息
+            pushServiceMessage: function(title, content, sender = '客服', priority = 'medium') {
+                return this.pushMessage({
+                    type: 'service',
+                    title: title,
+                    content: content,
+                    sender: sender,
+                    avatar: sender.charAt(0),
+                    priority: priority
+                });
+            },
+
+            // 获取未读消息数量
+            getUnreadCount: function() {
+                const savedMessages = localStorage.getItem('appMessages');
+                if (savedMessages) {
+                    const messages = JSON.parse(savedMessages);
+                    return messages.filter(msg => !msg.isRead).length;
+                }
+                return 0;
+            },
+
+            // 标记所有消息为已读
+            markAllAsRead: function() {
+                const savedMessages = localStorage.getItem('appMessages');
+                if (savedMessages) {
+                    const messages = JSON.parse(savedMessages);
+                    messages.forEach(msg => msg.isRead = true);
+                    localStorage.setItem('appMessages', JSON.stringify(messages));
+
+                    // 触发storage事件
+                    window.dispatchEvent(new StorageEvent('storage', {
+                        key: 'appMessages',
+                        newValue: JSON.stringify(messages)
+                    }));
+                }
+            }
+        };
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 消息管理器已在构造函数中初始化
+        });
+    </script>
+</body>
+</html>
